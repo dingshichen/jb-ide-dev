@@ -1,0 +1,41 @@
+<idea-plugin>
+    <id>cn.uniondrug.dev-kit</id>
+    <name>Uniondrug Dev Kit</name>
+    <vendor email="foreverhuiqiao@126.com" url="https://www.uniondrug.cn/">UnionDrug</vendor>
+
+    <description><![CDATA[
+        An auxiliary tool kit for Uniondrug Java developers. It provides API document preview, export, upload, and some handy little features in the future
+    ]]></description>
+
+    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
+    <depends>org.intellij.plugins.markdown</depends>
+
+    <idea-version since-build="204"/>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+        <applicationService serviceImplementation="cn.uniondrug.dev.service.DocService" />
+
+        <projectService serviceImplementation="cn.uniondrug.dev.config.DocSetting" />
+
+        <codeInsight.lineMarkerProvider language="JAVA"
+                                        implementationClass="cn.uniondrug.dev.provider.DocLineMarkerProvider" />
+
+        <projectConfigurable instance="cn.uniondrug.dev.config.DocSettingConfigurable"
+                             id="uniondrug.dev.kit.DocSettingConfigurable"
+                             displayName="Doc Settings"
+                             groupId="uniondrug.dev.kit.SettingsConfigurable"
+                             nonDefaultProject="true" />
+
+        <notificationGroup id="Uniondrug.Notification.Group"
+                           displayType="BALLOON"/>
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+
+    </actions>
+</idea-plugin>
