@@ -15,28 +15,28 @@ class DocConvertor {
 
         fun convert(api: Api): ApiDetail {
             return apiDetail(api) {
-                initRequestHeader {
-                    // TODO
-                }
+//                initRequestHeader {
+//
+//                }
                 initRequestBody {
-                    val example = JSONObject(true)
-                    api.requestParams?.forEach { putParamExample(it, example) }
-                    requestExample = example.jsonToString()
+                    val builder = StringBuilder("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
+                    api.requestParams?.forEach { append("", builder, it) }
+                    builder.toString()
                 }
                 initRequestExample {
                     val example = JSONObject(true)
-                    api.responseParams?.forEach { putParamExample(it, example) }
-                    responseExample = example.jsonToString()
+                    api.requestParams?.forEach { putParamExample(it, example) }
+                    example.jsonToString()
                 }
                 initResponseBody {
                     val builder = StringBuilder("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
-                    api.requestParams?.forEach { append("", builder, it) }
-                    requestBody = builder.toString()
+                    api.responseParams?.forEach { append("", builder, it) }
+                    builder.toString()
                 }
                 initResponseExample {
-                    val builder = StringBuilder("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
-                    api.responseParams?.forEach { append("", builder, it) }
-                    responseBody = builder.toString()
+                    val example = JSONObject(true)
+                    api.responseParams?.forEach { putParamExample(it, example) }
+                    example.jsonToString()
                 }
             }
         }

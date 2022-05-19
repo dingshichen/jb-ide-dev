@@ -57,14 +57,25 @@ data class ApiDetail(
     var responseExample: String? = null,
 ) {
 
-    fun initRequestHeader(init: ApiDetail.() -> Unit) = init()
+    fun initRequestHeader(init: ApiDetail.() -> String) {
+        requestHeader = init()
+    }
 
-    fun initRequestBody(init: ApiDetail.() -> Unit) = init()
+    fun initRequestBody(init: ApiDetail.() -> String) {
+        requestBody = init()
+    }
 
-    fun initRequestExample(init: ApiDetail.() -> Unit) = init()
+    fun initRequestExample(init: ApiDetail.() -> String) {
+        requestExample = init()
+    }
 
-    fun initResponseBody(init: ApiDetail.() -> Unit) = init()
+    fun initResponseBody(init: ApiDetail.() -> String) {
+        responseBody = init()
+    }
 
-    fun initResponseExample(init: ApiDetail.() -> Unit) = init()
+    fun initResponseExample(init: ApiDetail.() -> String) {
+        responseExample = init()
+    }
+
 
 }
