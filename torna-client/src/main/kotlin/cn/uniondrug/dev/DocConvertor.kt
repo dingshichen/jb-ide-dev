@@ -85,7 +85,7 @@ class DocConvertor {
             }
         }
 
-        private fun buildJsonString(builder: JSONObject.() -> Unit): String {
+        private inline fun buildJsonString(builder: JSONObject.() -> Unit): String {
             val json = JSONObject(true)
             json.builder()
             return json.toString(
