@@ -81,10 +81,9 @@ class DocService {
     fun export(project: Project, fileName: String, text: String) {
         val fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor()
         fileChooserDescriptor.isForcedToUseIdeaFileChooser = true
-        val chooser = FileChooser.chooseFile(fileChooserDescriptor, project, null)
-        chooser?.let {
+        FileChooser.chooseFile(fileChooserDescriptor, project, null)?.let {
             try {
-                val file = File("${chooser.path}/$fileName.md")
+                val file = File("${it.path}/$fileName.md")
                 FileUtil.writeToFile(file, text)
                 notifyInfo(project, "接口文档导出完成")
             } catch (ioException: IOException) {
