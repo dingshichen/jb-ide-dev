@@ -15,36 +15,37 @@ class DocConvertor {
 
         fun convert(api: Api): ApiDetail {
             return apiDetail(api) {
-//                initRequestHeader {
-//
-//                }
                 initRequestBody {
-                    val builder = StringBuilder("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
-                    api.requestParams?.forEach { append("", builder, it) }
-                    builder.toString()
+                    buildString {
+                        append("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
+                        api.requestParams?.forEach {
+                            treeAppend("", this, it)
+                        }
+                    }
                 }
                 initRequestExample {
-                    val example = JSONObject(true)
-                    api.requestParams?.forEach { putParamExample(it, example) }
-                    example.jsonToString()
+                    buildJsonString {
+                        api.requestParams?.forEach {
+                            putParamExample(it, this)
+                        }
+                    }
                 }
                 initResponseBody {
-                    val builder = StringBuilder("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
-                    api.responseParams?.forEach { append("", builder, it) }
-                    builder.toString()
+                    buildString {
+                        append("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
+                        api.responseParams?.forEach {
+                            treeAppend("", this, it)
+                        }
+                    }
                 }
                 initResponseExample {
-                    val example = JSONObject(true)
-                    api.responseParams?.forEach { putParamExample(it, example) }
-                    example.jsonToString()
+                    buildJsonString {
+                        api.responseParams?.forEach {
+                            putParamExample(it, this)
+                        }
+                    }
                 }
             }
-        }
-
-        private fun apiDetail(api: Api, init: ApiDetail.() -> Unit): ApiDetail {
-            val apiDetail = ApiDetail(api)
-            apiDetail.init()
-            return apiDetail
         }
 
         private fun putParamExample(responseParam: ApiParam, example: JSONObject) {
@@ -75,10 +76,10 @@ class DocConvertor {
             }
         }
 
-        private fun append(prefix: String, builder: StringBuilder, param: ApiParam) {
+        private fun treeAppend(prefix: String, builder: StringBuilder, param: ApiParam) {
             builder.append("| $prefix${param.name} | ${param.type} | ${param.required} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
             param.children?.forEach {
-                append(
+                treeAppend(
                     if (prefix == "") "└─" else "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$prefix",
                     builder,
                     it
@@ -86,14 +87,18 @@ class DocConvertor {
             }
         }
 
-        private fun JSONObject.jsonToString() = toString(
-            SerializerFeature.WriteMapNullValue,
-            SerializerFeature.WriteNullListAsEmpty,
-            SerializerFeature.WriteNullStringAsEmpty,
-            SerializerFeature.WriteNullNumberAsZero,
-            SerializerFeature.WriteNullBooleanAsFalse,
-            SerializerFeature.PrettyFormat
-        )
+        private fun buildJsonString(builder: JSONObject.() -> Unit): String {
+            val json = JSONObject(true)
+            json.builder()
+            return json.toString(
+                SerializerFeature.WriteMapNullValue,
+                SerializerFeature.WriteNullListAsEmpty,
+                SerializerFeature.WriteNullStringAsEmpty,
+                SerializerFeature.WriteNullNumberAsZero,
+                SerializerFeature.WriteNullBooleanAsFalse,
+                SerializerFeature.PrettyFormat
+            )
+        }
 
     }
 

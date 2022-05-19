@@ -79,3 +79,13 @@ data class ApiDetail(
 
 
 }
+
+fun api(init: Api.() -> Unit): Api {
+    TODO()
+}
+
+fun apiDetail(api: Api, init: ApiDetail.() -> Unit): ApiDetail {
+    val apiDetail = ApiDetail(api)
+    apiDetail.init()
+    return apiDetail
+}
