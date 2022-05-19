@@ -2,7 +2,7 @@ package cn.uniondrug.dev.service
 
 import cn.uniondrug.dev.Api
 import cn.uniondrug.dev.TEMPLATE
-import cn.uniondrug.dev.dto.DocConvertor
+import cn.uniondrug.dev.DocConvertor
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
 import cn.uniondrug.dev.util.*
@@ -74,7 +74,7 @@ class DocService {
      * 转成 Markdown 文本
      */
     fun parse(api: Api): String {
-        val detail = DocConvertor.build(api)
+        val detail = DocConvertor.convert(api)
         return VelocityUtil.convert(TEMPLATE, detail)
     }
 

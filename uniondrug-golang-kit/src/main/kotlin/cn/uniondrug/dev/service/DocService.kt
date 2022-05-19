@@ -1,8 +1,8 @@
 package cn.uniondrug.dev.service
 
 import cn.uniondrug.dev.Api
+import cn.uniondrug.dev.DocConvertor
 import cn.uniondrug.dev.TEMPLATE
-import cn.uniondrug.dev.dto.DocConvertor
 import cn.uniondrug.dev.dto.GoApiStruct
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
