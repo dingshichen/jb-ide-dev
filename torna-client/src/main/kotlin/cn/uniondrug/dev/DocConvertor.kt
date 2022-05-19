@@ -13,36 +13,34 @@ class DocConvertor {
 
     companion object {
 
-        fun convert(api: Api): ApiDetail {
-            return apiDetail(api) {
-                initRequestBody {
-                    buildString {
-                        append("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
-                        api.requestParams?.forEach {
-                            treeAppend("", this, it)
-                        }
+        fun convert(api: Api) = apiDetail(api) {
+            initRequestBody {
+                buildString {
+                    append("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
+                    api.requestParams?.forEach {
+                        treeAppend("", this, it)
                     }
                 }
-                initRequestExample {
-                    buildJsonString {
-                        api.requestParams?.forEach {
-                            putParamExample(it, this)
-                        }
+            }
+            initRequestExample {
+                buildJsonString {
+                    api.requestParams?.forEach {
+                        putParamExample(it, this)
                     }
                 }
-                initResponseBody {
-                    buildString {
-                        append("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
-                        api.responseParams?.forEach {
-                            treeAppend("", this, it)
-                        }
+            }
+            initResponseBody {
+                buildString {
+                    append("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
+                    api.responseParams?.forEach {
+                        treeAppend("", this, it)
                     }
                 }
-                initResponseExample {
-                    buildJsonString {
-                        api.responseParams?.forEach {
-                            putParamExample(it, this)
-                        }
+            }
+            initResponseExample {
+                buildJsonString {
+                    api.responseParams?.forEach {
+                        putParamExample(it, this)
                     }
                 }
             }
