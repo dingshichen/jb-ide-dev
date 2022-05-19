@@ -36,10 +36,13 @@ func (o *DirectController) PostBillCreate(ctx iris.Context) interface{} {
 
 ### 使用方法
 > 1 注释符合规范的API接口方法前面会显示 绿色 ⭐️
+
 ![1](../image/golang-1.png)
 
 > 2 点击 绿色 ⭐️ 即预览文档
+
 ![3](../image/golang-2.png)
 
 > 3 点击右下角导出按钮可选择地址导出
+
 ![3](../image/golang-3.png)
