@@ -6,6 +6,7 @@ import cn.uniondrug.dev.ApiParam
 import com.intellij.codeInsight.AnnotationUtil
 import com.intellij.psi.*
 import com.intellij.psi.javadoc.PsiDocComment
+import com.intellij.psi.javadoc.PsiDocTag
 import com.intellij.psi.util.PsiUtil
 
 const val DEPRECATED = "java.lang.Deprecated"
@@ -172,8 +173,7 @@ fun getApiAuthor(psiClass: PsiClass, psiMethod: PsiMethod): String {
 /**
  * 获取注释里的作者
  */
-fun getApiAuthor(docComment: PsiDocComment) =
-    docComment.findTagByName("author")?.text?.replace("@author ", "")?.replace("\n *", "")
+fun getApiAuthor(docComment: PsiDocComment) = docComment.findTagByName("author")?.valueElement?.commentText()
 
 /**
  * 获取字段描述

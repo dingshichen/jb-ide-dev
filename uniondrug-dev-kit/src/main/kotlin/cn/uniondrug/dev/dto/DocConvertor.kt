@@ -49,7 +49,7 @@ class DocConvertor {
             } else if (responseParam.children == null) {
                 val valus = BaseDataTypeMockUtil.getValByTypeAndFieldName(responseParam.type, responseParam.name);
                 example[responseParam.name] = valus
-            } else if (responseParam.type.endsWith("]") || responseParam.type!!.startsWith("List<")) {
+            } else if (responseParam.type.endsWith("]") || responseParam.type.startsWith("List<")) {
                 val array = JSONArray()
                 responseParam.children?.let { childrenParam ->
                     if (childrenParam.isNotEmpty()) {

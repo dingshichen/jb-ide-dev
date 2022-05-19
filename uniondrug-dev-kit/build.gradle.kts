@@ -1,7 +1,7 @@
 plugins {
     id("org.jetbrains.intellij") version "1.5.3"
-    id("org.jetbrains.kotlin.jvm") version "1.6.10"
-    java
+//    id("org.jetbrains.kotlin.jvm") version "1.6.10"
+//    java
 }
 
 version = "0.4"
@@ -26,4 +26,10 @@ tasks {
     patchPluginXml {
         changeNotes.set(file("changeNotes.html").readText())
     }
+//    compileKotlin {
+//        kotlinOptions.jvmTarget = "11"
+//    }
+//    compileTestKotlin {
+//        kotlinOptions.jvmTarget = "11"
+//    }
 }

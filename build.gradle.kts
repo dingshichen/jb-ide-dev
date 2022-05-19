@@ -6,12 +6,18 @@
  */
 plugins {
     java
+    kotlin("jvm") version "1.6.10"
 }
 group = "cn.uniondrug.dev"
 
 subprojects {
+
+    val lombok = "1.18.20"
+    val jdk = JavaVersion.VERSION_11.toString()
+
     apply {
         plugin("java")
+        plugin("org.jetbrains.kotlin.jvm")
     }
 
     repositories {
@@ -20,8 +26,6 @@ subprojects {
         maven { url = uri("https://maven.aliyun.com/repository/public") }
         mavenCentral()
     }
-
-    val lombok = "1.18.20"
 
     dependencies {
         compileOnly("org.projectlombok:lombok:$lombok")
@@ -32,12 +36,18 @@ subprojects {
 
     tasks {
         compileJava {
-            options.release.set(11)
+            options.release.set(jdk.toInt())
             options.compilerArgs.add("-parameters")
         }
         compileTestJava {
-            options.release.set(11)
+            options.release.set(jdk.toInt())
             options.compilerArgs.add("-parameters")
+        }
+        compileKotlin {
+            kotlinOptions.jvmTarget = jdk
+        }
+        compileTestKotlin {
+            kotlinOptions.jvmTarget = jdk
         }
     }
 }
