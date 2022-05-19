@@ -1,7 +1,9 @@
 package cn.uniondrug.dev.provider
 
+import cn.uniondrug.dev.ApiBuildException
 import cn.uniondrug.dev.consts.DevIcons
 import cn.uniondrug.dev.consts.DevKitPlugin
+import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.service.DocService
 import cn.uniondrug.dev.ui.PreviewForm
 import cn.uniondrug.dev.util.isNotSpringMVCMethod
@@ -37,8 +39,12 @@ class DocLineMarkerProvider : LineMarkerProvider {
                                 { "查看文档" },
                                 { _, _ ->
                                     val docService = DocService.getInstance()
-                                    val docItem = docService.buildApi(element.project, it, psiMethod)
-                                    PreviewForm.getInstance(element.project, element.containingFile, docItem).popup()
+                                    try {
+                                        val docItem = docService.buildApi(element.project, it, psiMethod)
+                                        PreviewForm.getInstance(element.project, element.containingFile, docItem).popup()
+                                    } catch (e: ApiBuildException) {
+                                        notifyError(element.project, e.localizedMessage)
+                                    }
                                 },
                                 GutterIconRenderer.Alignment.CENTER,
                                 { DevKitPlugin.NAME }

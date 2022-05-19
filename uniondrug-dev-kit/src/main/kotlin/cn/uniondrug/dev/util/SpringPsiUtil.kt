@@ -42,9 +42,9 @@ fun getUrl(project: Project, psiClass: PsiClass, psiMethod: PsiMethod): String {
     methodAnnotation ?: throw RuntimeException("获取 API 路径失败")
     val pathByMethod = AnnotationUtil.getStringAttributeValue(methodAnnotation, "value")
     val apiSettings = getInstance(project)
-    var state = apiSettings.state
+    val state = apiSettings.state
     val domain = state.domain ?: "https://{api_host}"
-    var url = (pathByClass?.let { "/$it/$pathByMethod".replace("//", "/") }
+    val url = (pathByClass?.let { "/$it/$pathByMethod".replace("//", "/") }
         ?: "/$pathByMethod".replace("//", "/"))
     return domain + url
 }

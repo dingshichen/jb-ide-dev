@@ -1,6 +1,7 @@
 /** @author dingshichen */
 package cn.uniondrug.dev.util
 
+import cn.uniondrug.dev.ApiBuildException
 import cn.uniondrug.dev.ApiParam
 import com.intellij.codeInsight.AnnotationUtil
 import com.intellij.psi.*
@@ -12,9 +13,7 @@ const val NOT_EMPTY = "javax.validation.constraints.NotEmpty"
 const val NOT_NULL = "javax.validation.constraints.NotNull"
 const val NOT_BLANK = "javax.validation.constraints.NotBlank"
 
-val required = arrayListOf(
-    NOT_BLANK, NOT_EMPTY, NOT_NULL
-)
+val required = arrayListOf(NOT_BLANK, NOT_EMPTY, NOT_NULL)
 
 const val BYTE = "java.lang.Byte"
 const val S_BYTE = "byte"
@@ -126,35 +125,33 @@ fun isBaseCollection(type: PsiType): Boolean {
 }
 
 /**
+ * 元素是否是注释内容
+ */
+fun PsiElement.isCommentData() = toString() == "PsiDocToken:DOC_COMMENT_DATA"
+
+/**
+ * 获取元素注释内容
+ */
+fun PsiElement.commentText() = text.replace("*", "").trim()
+
+/**
  * 获取 API 名称
  */
-fun getApiName(psiMethod: PsiMethod): String {
-    val docComment = psiMethod.docComment ?: return ""
-    for (element in docComment.children) {
-        if (element.toString() == "PsiDocToken:DOC_COMMENT_DATA") {
-            return element.text.replace("*", "").trim()
-        }
-    }
-    return ""
-}
+fun getApiName(psiMethod: PsiMethod) = psiMethod.docComment?.let { docComment ->
+    docComment.children.find { it.isCommentData() }?.commentText()
+} ?: throw ApiBuildException("获取 API 名称失败，请检查方法注释是否存在")
 
 /**
  * 获取 API 描述
  */
-fun getApiDescription(psiMethod: PsiMethod): String {
-    val docComment = psiMethod.docComment ?: return ""
-    var isFirst = false
-    for (element in docComment.children) {
-        if (element.toString() == "PsiDocToken:DOC_COMMENT_DATA") {
-            if (!isFirst) {
-                isFirst = true
-            } else {
-                return element.text.replace("*", "").trim()
-            }
-        }
+fun getApiDescription(psiMethod: PsiMethod) = psiMethod.docComment?.let {
+    val comments =  it.children.filter { e -> e.isCommentData() }
+    if (comments.size > 1) {
+        return comments[1].commentText()
+    } else {
+        return ""
     }
-    return ""
-}
+} ?: ""
 
 /**
  * 获取 API 作者
@@ -182,9 +179,7 @@ fun getApiAuthor(docComment: PsiDocComment) =
  * 获取字段描述
  */
 fun getFieldDescription(psiField: PsiField): String? {
-    return psiField.docComment?.children
-        ?.filter { it.toString() == "PsiDocToken:DOC_COMMENT_DATA" }
-        ?.joinToString("\n") { it.text.replace("*", "").trim() }
+    return psiField.docComment?.children?.filter { it.isCommentData() }?.joinToString("\n") { it.commentText() }
 }
 
 /**
