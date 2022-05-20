@@ -77,11 +77,6 @@ data class ApiDetail(
         responseExample = init()
     }
 
-
-}
-
-inline fun api(init: Api.() -> Unit): Api {
-    TODO()
 }
 
 inline fun apiDetail(api: Api, init: ApiDetail.() -> Unit): ApiDetail {

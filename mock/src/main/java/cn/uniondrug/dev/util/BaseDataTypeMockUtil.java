@@ -116,7 +116,8 @@ public class BaseDataTypeMockUtil {
         } else if ("Void".equals(type)) {
             return "null";
         } else {
-            return "\"" + value + "\"";
+//            return "\"" + value + "\"";
+            return value;
         }
     }
 
@@ -164,7 +165,8 @@ public class BaseDataTypeMockUtil {
             if (javaPrimaryType(type)) {
                 return value.toString();
             } else {
-                return handleJsonStr(value.toString());
+//                return handleJsonStr(value.toString());
+                return value.toString();
             }
         }
     }
