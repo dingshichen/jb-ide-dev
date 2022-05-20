@@ -18,7 +18,7 @@ class DocConvertor {
                 buildString {
                     append("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
                     api.requestParams?.forEach {
-                        treeAppend("", this, it)
+                        requestAppend("", this, it)
                     }
                 }
             }
@@ -31,9 +31,9 @@ class DocConvertor {
             }
             initResponseBody {
                 buildString {
-                    append("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
+                    append("|参数名|类型|最大长度|描述|\n|:-----|:-----|:-----|:-----|\n")
                     api.responseParams?.forEach {
-                        treeAppend("", this, it)
+                        responseAppend("", this, it)
                     }
                 }
             }
@@ -74,10 +74,21 @@ class DocConvertor {
             }
         }
 
-        fun treeAppend(prefix: String, builder: StringBuilder, param: ApiParam) {
+        fun requestAppend(prefix: String, builder: StringBuilder, param: ApiParam) {
             builder.append("| $prefix${param.name} | ${param.type} | ${param.required} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
             param.children?.forEach {
-                treeAppend(
+                requestAppend(
+                    if (prefix == "") "└─" else "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$prefix",
+                    builder,
+                    it
+                )
+            }
+        }
+
+        fun responseAppend(prefix: String, builder: StringBuilder, param: ApiParam) {
+            builder.append("| $prefix${param.name} | ${param.type} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
+            param.children?.forEach {
+                responseAppend(
                     if (prefix == "") "└─" else "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$prefix",
                     builder,
                     it

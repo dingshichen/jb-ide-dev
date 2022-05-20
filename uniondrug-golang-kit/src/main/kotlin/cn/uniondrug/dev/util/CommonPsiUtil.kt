@@ -16,35 +16,35 @@ import com.intellij.psi.PsiComment
 object CommonPsiUtil {
 
     fun getResultData() = arrayListOf(
-        ApiParam(name = "errno", type = "int", required = 1, description = "状态码：0-成功；其他-失败"),
-        ApiParam(name = "error", type = "string", required = 1, description = "状态描述"),
-        ApiParam(name = "dataType", type = "string", required = 1, description = "数据类型：OBJECT/LIST/ERROR"),
-        ApiParam(name = "data", type = "object", required = 1, description = "数据"),
+        ApiParam(name = "errno", type = "int", required = true, description = "状态码：0-成功；其他-失败"),
+        ApiParam(name = "error", type = "string", required = true, description = "状态描述"),
+        ApiParam(name = "dataType", type = "string", required = true, description = "数据类型：OBJECT/LIST/ERROR"),
+        ApiParam(name = "data", type = "object", required = true, description = "数据"),
     )
 
     fun getResultList() = arrayListOf(
-        ApiParam(name = "errno", type = "int", required = 1, description = "状态码：0-成功；其他-失败"),
-        ApiParam(name = "error", type = "string", required = 1, description = "状态描述"),
-        ApiParam(name = "dataType", type = "string", required = 1, description = "数据类型：OBJECT/LIST/ERROR"),
-        ApiParam(name = "data", type = "arrary[]", required = 1, description = "数据"),
+        ApiParam(name = "errno", type = "int", required = true, description = "状态码：0-成功；其他-失败"),
+        ApiParam(name = "error", type = "string", required = true, description = "状态描述"),
+        ApiParam(name = "dataType", type = "string", required = true, description = "数据类型：OBJECT/LIST/ERROR"),
+        ApiParam(name = "data", type = "arrary[]", required = true, description = "数据"),
     )
 
     fun getResultPagingBody() = arrayListOf(
-        ApiParam(name = "errno", type = "int", required = 1, description = "状态码：0-成功；其他-失败"),
-        ApiParam(name = "error", type = "string", required = 1, description = "状态描述"),
-        ApiParam(name = "dataType", type = "string", required = 1, description = "数据类型：OBJECT/LIST/ERROR"),
-        ApiParam(name = "data", type = "pagingBody", required = 1, description = "数据", children = arrayListOf(
-            ApiParam(name = "body", type = "arrary[]", required = 1, description = "列表信息", parentId = "data"),
-            ApiParam(name = "paging", type = "paging", required = 1, description = "分页信息", parentId = "data",
+        ApiParam(name = "errno", type = "int", required = true, description = "状态码：0-成功；其他-失败"),
+        ApiParam(name = "error", type = "string", required = true, description = "状态描述"),
+        ApiParam(name = "dataType", type = "string", required = true, description = "数据类型：OBJECT/LIST/ERROR"),
+        ApiParam(name = "data", type = "pagingBody", required = true, description = "数据", children = arrayListOf(
+            ApiParam(name = "body", type = "arrary[]", required = true, description = "列表信息", parentId = "data"),
+            ApiParam(name = "paging", type = "paging", required = true, description = "分页信息", parentId = "data",
                 children = arrayListOf(
-                    ApiParam(name = "first", type = "int", required = 1, description = "第一页", parentId = "paging"),
-                    ApiParam(name = "before", type = "int", required = 1, description = "前一页", parentId = "paging"),
-                    ApiParam(name = "current", type = "int", required = 1, description = "当前页", parentId = "paging"),
-                    ApiParam(name = "last", type = "int", required = 1, description = "最后一页", parentId = "paging"),
-                    ApiParam(name = "next", type = "int", required = 1, description = "下一页", parentId = "paging"),
-                    ApiParam(name = "limit", type = "int", required = 1, description = "每页条数", parentId = "paging"),
-                    ApiParam(name = "totalPages", type = "int", required = 1, description = "总页数", parentId = "paging"),
-                    ApiParam(name = "totalItems", type = "int", required = 1, description = "总数据量", parentId = "paging"),
+                    ApiParam(name = "first", type = "int", required = true, description = "第一页", parentId = "paging"),
+                    ApiParam(name = "before", type = "int", required = true, description = "前一页", parentId = "paging"),
+                    ApiParam(name = "current", type = "int", required = true, description = "当前页", parentId = "paging"),
+                    ApiParam(name = "last", type = "int", required = true, description = "最后一页", parentId = "paging"),
+                    ApiParam(name = "next", type = "int", required = true, description = "下一页", parentId = "paging"),
+                    ApiParam(name = "limit", type = "int", required = true, description = "每页条数", parentId = "paging"),
+                    ApiParam(name = "totalPages", type = "int", required = true, description = "总页数", parentId = "paging"),
+                    ApiParam(name = "totalItems", type = "int", required = true, description = "总数据量", parentId = "paging"),
             )),
         )),
     )
@@ -133,7 +133,7 @@ object CommonPsiUtil {
                 val param = ApiParam(
                     name = field.text.substring(0, field.text.indexOf(" ")),
                     type = it.text,
-                    required = tag.getValue("validate")?.let { validate -> if ("required" in validate) 1 else 0 } ?: 0,
+                    required = tag.getValue("validate")?.let { validate -> "required" in validate } ?: false,
 //                    maxLength =     TODO
 //                    example =
                     parentId = parent,

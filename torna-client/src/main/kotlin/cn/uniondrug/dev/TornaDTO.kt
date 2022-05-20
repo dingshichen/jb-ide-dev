@@ -34,7 +34,7 @@ data class ApiParam(
     /** 字段类型   */
     val type: String,
     /** 是否必须，1：是，0：否  */
-    val required: Byte,
+    val required: Boolean,
     /** 最大长度  */
     var maxLength: String? = null,
     /** 描述  */

@@ -142,7 +142,7 @@ private fun getBody(
         val param = ApiParam(
             name = it.name,
             type = fieldType.presentableText,
-            required = if (AnnotationUtil.isAnnotated(it, REQUIRED, 0)) 1 else 0,
+            required = AnnotationUtil.isAnnotated(it, REQUIRED, 0),
             maxLength = getMaxLength(it),
             description = getFieldDescription(it) ?: getUniondrugFieldDescription(it, psiType),
             parentId = parentField?.name ?: "",
