@@ -46,7 +46,7 @@ class DocConvertor {
             }
         }
 
-        private fun putParamExample(responseParam: ApiParam, example: JSONObject) {
+        fun putParamExample(responseParam: ApiParam, example: JSONObject) {
             if (responseParam.type == "List") {
                 example[responseParam.name] = JSONArray()
             } else if (responseParam.type in BASE_LIST) {
@@ -74,7 +74,7 @@ class DocConvertor {
             }
         }
 
-        private fun treeAppend(prefix: String, builder: StringBuilder, param: ApiParam) {
+        fun treeAppend(prefix: String, builder: StringBuilder, param: ApiParam) {
             builder.append("| $prefix${param.name} | ${param.type} | ${param.required} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
             param.children?.forEach {
                 treeAppend(
@@ -85,16 +85,16 @@ class DocConvertor {
             }
         }
 
-        private inline fun buildJsonString(builder: JSONObject.() -> Unit): String {
+        inline fun buildJsonString(builder: JSONObject.() -> Unit): String {
             val json = JSONObject(true)
             json.builder()
             return json.toString(
-                SerializerFeature.WriteMapNullValue,
-                SerializerFeature.WriteNullListAsEmpty,
-                SerializerFeature.WriteNullStringAsEmpty,
-                SerializerFeature.WriteNullNumberAsZero,
-                SerializerFeature.WriteNullBooleanAsFalse,
-                SerializerFeature.PrettyFormat
+                SerializerFeature.WriteMapNullValue,        // 输出 null 值的字段
+                SerializerFeature.WriteNullListAsEmpty,     // List 字段如果是 null，输出 []
+                SerializerFeature.WriteNullStringAsEmpty,   // 字符串如果为 null，输出 ""
+                SerializerFeature.WriteNullNumberAsZero,    // 数字字段如果为 null，输出 0
+                SerializerFeature.WriteNullBooleanAsFalse,  // boolean 字段如果为 null，输出 false
+                SerializerFeature.PrettyFormat              // 格式化
             )
         }
 
