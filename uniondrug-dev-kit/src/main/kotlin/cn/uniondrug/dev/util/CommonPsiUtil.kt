@@ -75,7 +75,7 @@ fun getApiAuthor(docComment: PsiDocComment) = docComment.findTagByName("author")
  * 获取字段描述
  */
 fun getFieldDescription(psiField: PsiField): String? {
-    return psiField.docComment?.children?.filter { it.isCommentData() }?.joinToString("\n") { it.commentText() }
+    return psiField.docComment?.children?.filter { it.isCommentData() }?.joinToString("<br>") { it.commentText() }
 }
 
 /**
