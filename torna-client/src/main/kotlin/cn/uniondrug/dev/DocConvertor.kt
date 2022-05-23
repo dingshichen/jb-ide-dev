@@ -1,6 +1,7 @@
 package cn.uniondrug.dev
 
 import cn.uniondrug.dev.util.BaseDataTypeMockUtil
+import cn.uniondrug.dev.util.StringUtil
 import com.alibaba.fastjson.JSONArray
 import com.alibaba.fastjson.JSONObject
 import com.alibaba.fastjson.serializer.SerializerFeature
@@ -53,10 +54,11 @@ class DocConvertor {
                 val firtsIndex = responseParam.type.indexOf("<")
                 val lastIndex = responseParam.type.indexOf(">")
                 val baseType = responseParam.type.substring(firtsIndex + 1, lastIndex)
-                example[responseParam.name] = "[${BaseDataTypeMockUtil.jsonValueByType(baseType)}]"
+                val jsonValueByType = BaseDataTypeMockUtil.jsonValueByType(baseType)
+                example[responseParam.name] = "[${StringUtil.removeQuotes(jsonValueByType)}]"
             } else if (responseParam.children == null) {
                 val valus = BaseDataTypeMockUtil.getValByTypeAndFieldName(responseParam.type, responseParam.name);
-                example[responseParam.name] = valus
+                example[responseParam.name] = StringUtil.removeQuotes(valus)
             } else if (responseParam.type.endsWith("]") || responseParam.type.startsWith("List<")) {
                 val array = JSONArray()
                 responseParam.children?.let { childrenParam ->

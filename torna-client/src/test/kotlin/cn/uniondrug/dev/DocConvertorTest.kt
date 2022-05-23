@@ -11,22 +11,61 @@ class DocConvertorTest {
 
     @Test fun putParamExample() {
         val example = JSONObject(true)
-        val param = ApiParam(
+        val age = ApiParam(
+            "age",
+            "int",
+            true,
+            "2",
+            "年龄"
+        )
+        DocConvertor.putParamExample(age, example)
+        val orderNo = ApiParam(
             "orderNo",
-            "String",
-            1,
+            "string",
+            true,
             "16",
             "订单号"
         )
-        DocConvertor.putParamExample(param, example)
+        DocConvertor.putParamExample(orderNo, example)
+        val policyNo = ApiParam(
+            "policyNo",
+            "string",
+            true,
+            "20",
+            "保单号"
+        )
+        DocConvertor.putParamExample(policyNo, example)
         println(example)
     }
 
     @Test fun buildJsonString() {
+        val example = JSONObject(true)
+        val age = ApiParam(
+            "age",
+            "int",
+            true,
+            "2",
+            "年龄"
+        )
+        DocConvertor.putParamExample(age, example)
+        val orderNo = ApiParam(
+            "orderNo",
+            "string",
+            true,
+            "16",
+            "订单号"
+        )
+        DocConvertor.putParamExample(orderNo, example)
+        val policyNo = ApiParam(
+            "policyNo",
+            "string",
+            true,
+            "20",
+            "保单号"
+        )
+        DocConvertor.putParamExample(policyNo, example)
         val jsonString = DocConvertor.buildJsonString {
-            val child = JSONObject(true)
-            child["orderNo"] = "123456"
-            this["order"] = child
+            example
         }
         println(jsonString)
     }
