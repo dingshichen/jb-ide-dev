@@ -1,5 +1,6 @@
 package cn.uniondrug.dev.util
 
+import cn.uniondrug.dev.ApiBuildException
 import cn.uniondrug.dev.ApiParam
 import cn.uniondrug.dev.CommonType
 import cn.uniondrug.dev.CommonTypeConvertor
@@ -137,10 +138,10 @@ object CommonPsiUtil {
         field.type?.let {
             field.tag?.let { tag ->
                 val param = ApiParam(
-                    name = field.text.substring(0, field.text.indexOf(" ")),
+                    name = GolangPsiUtil.getFieldJsonName(field) ?: throw ApiBuildException("获取参数属性 json 名称失败"),
                     // 从背后真实的类型转换
                     type = commonTypeConvertor.convert(it.contextlessUnderlyingType.presentationText),
-                    required = tag.getValue("validate")?.let { validate -> "required" in validate } ?: false,
+                    required = GolangPsiUtil.isRequired(tag),
 //                    maxLength =     TODO
 //                    example =
                     parentId = parent,
