@@ -3,6 +3,7 @@ package cn.uniondrug.dev.util
 
 import cn.uniondrug.dev.*
 import com.intellij.codeInsight.AnnotationUtil
+import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import com.intellij.psi.javadoc.PsiDocComment
 import com.intellij.psi.util.PsiUtil
@@ -88,12 +89,14 @@ fun isDeprecated(psiClass: PsiClass, psiMethod: PsiMethod) =
 /**
  * 从参数中获取类型
  */
-fun getRequestBody(parameter: PsiParameter) = getBody(null, parameter.type as PsiClassType)
+fun getRequestBody(project: Project, parameter: PsiParameter) =
+    getBody(project, psiType = parameter.type as PsiClassType)
 
 /**
  * 从返回值解析获取返回结构体
  */
-fun getResponseBody(returnTypeElement: PsiTypeElement) = getBody(null, returnTypeElement.type as PsiClassType)
+fun getResponseBody(project: Project, returnTypeElement: PsiTypeElement) =
+    getBody(project, psiType = returnTypeElement.type as PsiClassType)
 
 /**
  * 解析 body 参数
@@ -102,7 +105,8 @@ fun getResponseBody(returnTypeElement: PsiTypeElement) = getBody(null, returnTyp
  * @param childrenFields 指定子节点名
  */
 private fun getBody(
-    parentField: PsiField?,
+    project: Project,
+    parentField: PsiField? = null,
     psiType: PsiClassType,
     childrenFields: Array<PsiField>? = null
 ): ArrayList<ApiParam> {
@@ -116,7 +120,7 @@ private fun getBody(
         ) {
             return@forEach
         }
-        params += getBody(parentField, it as PsiClassType)
+        params += getBody(project, parentField, it as PsiClassType)
     }
     val psiClass = PsiUtil.resolveClassInClassTypeOnly(psiType) ?: throw RuntimeException("获取请求体参数失败")
     // 泛型对应真实类型关系 K: 泛型 V: 真实类型的 PsiType
@@ -139,14 +143,15 @@ private fun getBody(
             // 替换成真实类型
             fieldType = paramType
         }
+        val commonTypeConvertor = project.getService(CommonTypeConvertor::class.java)
         val param = ApiParam(
             name = it.name,
-            type = fieldType.presentableText,
+            type = commonTypeConvertor.convert(fieldType.presentableText),
             required = AnnotationUtil.isAnnotated(it, REQUIRED, 0),
             maxLength = getMaxLength(it),
             description = getFieldDescription(it) ?: getUniondrugFieldDescription(it, psiType),
             parentId = parentField?.name ?: "",
-            children = getChildren(it, fieldType, generics),
+            children = getChildren(project, it, fieldType, generics),
         )
         params += param
     }
@@ -260,7 +265,12 @@ private fun getGenericsType(psiClass: PsiClass, psiType: PsiClassType): Map<Stri
 /**
  * 获取子节点
  */
-private fun getChildren(psiField: PsiField, fieldType: PsiType, generics: Map<String, PsiType>): List<ApiParam>? {
+private fun getChildren(
+    project: Project,
+    psiField: PsiField,
+    fieldType: PsiType,
+    generics: Map<String, PsiType>
+): List<ApiParam>? {
     return if (isBaseType(fieldType) || isBaseCollection(fieldType)) {
         null
     } else {
@@ -268,11 +278,11 @@ private fun getChildren(psiField: PsiField, fieldType: PsiType, generics: Map<St
             if (fieldType.hasParameters()) {
                 generics[fieldType.parameters[0].presentableText]?.let {
                     PsiUtil.resolveClassInClassTypeOnly(it)?.fields.let { fields ->
-                        return getBody(psiField, fieldType, fields)
+                        return getBody(project, psiField, fieldType, fields)
                     }
                 }
             }
         }
-        getBody(psiField, fieldType as PsiClassType, tryGetCollectionGenericsType(fieldType))
+        getBody(project, psiField, fieldType as PsiClassType, tryGetCollectionGenericsType(fieldType))
     }
 }

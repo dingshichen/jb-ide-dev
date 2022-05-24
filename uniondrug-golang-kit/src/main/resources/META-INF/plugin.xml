@@ -20,6 +20,9 @@
         <!-- Add your extensions here -->
         <applicationService serviceImplementation="cn.uniondrug.dev.service.DocService" />
 
+        <projectService serviceInterface="cn.uniondrug.dev.CommonTypeConvertor"
+                            serviceImplementation="cn.uniondrug.dev.GoTypeConvertor" />
+
         <codeInsight.lineMarkerProvider language="go"
                                         implementationClass="cn.uniondrug.dev.provider.DocLineMarkerProvider" />
 

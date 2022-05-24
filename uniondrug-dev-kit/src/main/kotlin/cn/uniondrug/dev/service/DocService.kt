@@ -43,8 +43,8 @@ class DocService {
         deprecated = if (isDeprecated(psiClass, psiMethod)) "已废弃（仍然可用，不建议使用）" else null,
         httpMethod = getHttpMethod(psiMethod),
         contentType = getContentType(psiMethod),
-        requestParams = getRequestBody(psiMethod),
-        responseParams = getResponseBody(psiMethod),
+        requestParams = getRequestBody(project, psiMethod),
+        responseParams = getResponseBody(project, psiMethod),
     )
 
 //    /**

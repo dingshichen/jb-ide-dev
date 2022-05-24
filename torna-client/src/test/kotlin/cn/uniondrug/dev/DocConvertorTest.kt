@@ -13,8 +13,8 @@ class DocConvertorTest {
         val example = JSONObject(true)
         val param = ApiParam(
             "orderNo",
-            "String",
-            1,
+            CommonType.STRING,
+            true,
             "16",
             "订单号"
         )

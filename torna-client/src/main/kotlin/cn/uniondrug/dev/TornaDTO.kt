@@ -32,7 +32,7 @@ data class ApiParam(
     /** 字段名称  */
     val name: String,
     /** 字段类型   */
-    val type: String,
+    val type: CommonType,
     /** 是否必须，1：是，0：否  */
     val required: Boolean,
     /** 最大长度  */

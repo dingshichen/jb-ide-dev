@@ -77,17 +77,17 @@ fun getContentType(psiMethod: PsiMethod) =
 /**
  * 查询 RequestBody 参数
  */
-fun getRequestBody(psiMethod: PsiMethod) =
+fun getRequestBody(project: Project, psiMethod: PsiMethod) =
     psiMethod.parameterList.parameters.find {
         AnnotationUtil.isAnnotated(it, BODY, 0)
     }?.let {
-        getRequestBody(it)
+        getRequestBody(project, it)
     }
 
 /**
  * 查询 ResponseBody 参数
  */
-fun getResponseBody(psiMethod: PsiMethod) = psiMethod.returnTypeElement?.let { getResponseBody(it) }
+fun getResponseBody(project: Project, psiMethod: PsiMethod) = psiMethod.returnTypeElement?.let { getResponseBody(project, it) }
 
 /**
  * 获取属性最大长度

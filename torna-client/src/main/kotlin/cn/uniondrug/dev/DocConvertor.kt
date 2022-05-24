@@ -46,36 +46,39 @@ class DocConvertor {
             }
         }
 
+        /**
+         * TODO 基于枚举 CommonType 重新设计
+         */
         fun putParamExample(responseParam: ApiParam, example: JSONObject) {
-            if (responseParam.type == "List") {
-                example[responseParam.name] = JSONArray()
-            } else if (responseParam.type in BASE_LIST) {
-                val firtsIndex = responseParam.type.indexOf("<")
-                val lastIndex = responseParam.type.indexOf(">")
-                val baseType = responseParam.type.substring(firtsIndex + 1, lastIndex)
-                example[responseParam.name] = "[${BaseDataTypeMockUtil.jsonValueByType(baseType)}]"
-            } else if (responseParam.children == null) {
-                val valus = BaseDataTypeMockUtil.getValByTypeAndFieldName(responseParam.type, responseParam.name);
-                example[responseParam.name] = valus
-            } else if (responseParam.type.endsWith("]") || responseParam.type.startsWith("List<")) {
-                val array = JSONArray()
-                responseParam.children?.let { childrenParam ->
-                    if (childrenParam.isNotEmpty()) {
-                        val children = JSONObject(true)
-                        childrenParam.forEach { child -> putParamExample(child, children) }
-                        array.add(children)
-                    }
-                }
-                example[responseParam.name] = array
-            } else {
-                val children = JSONObject(true)
-                responseParam.children?.forEach { child -> putParamExample(child, children) }
-                example[responseParam.name] = children
-            }
+//            if (responseParam.type == CommonType.ARRAY) {
+//                example[responseParam.name] = JSONArray()
+//            } else if (responseParam.type in BASE_LIST) {
+//                val firtsIndex = responseParam.type.indexOf("<")
+//                val lastIndex = responseParam.type.indexOf(">")
+//                val baseType = responseParam.type.substring(firtsIndex + 1, lastIndex)
+//                example[responseParam.name] = "[${BaseDataTypeMockUtil.jsonValueByType(baseType)}]"
+//            } else if (responseParam.children == null) {
+//                val valus = BaseDataTypeMockUtil.getValByTypeAndFieldName(responseParam.type, responseParam.name);
+//                example[responseParam.name] = valus
+//            } else if (responseParam.type.endsWith("]") || responseParam.type.startsWith("List<")) {
+//                val array = JSONArray()
+//                responseParam.children?.let { childrenParam ->
+//                    if (childrenParam.isNotEmpty()) {
+//                        val children = JSONObject(true)
+//                        childrenParam.forEach { child -> putParamExample(child, children) }
+//                        array.add(children)
+//                    }
+//                }
+//                example[responseParam.name] = array
+//            } else {
+//                val children = JSONObject(true)
+//                responseParam.children?.forEach { child -> putParamExample(child, children) }
+//                example[responseParam.name] = children
+//            }
         }
 
         fun requestAppend(prefix: String, builder: StringBuilder, param: ApiParam) {
-            builder.append("| $prefix${param.name} | ${param.type} | ${param.required} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
+            builder.append("| $prefix${param.name} | ${param.type.value} | ${param.required} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
             param.children?.forEach {
                 requestAppend(
                     if (prefix == "") "└─" else "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$prefix",
@@ -86,7 +89,7 @@ class DocConvertor {
         }
 
         fun responseAppend(prefix: String, builder: StringBuilder, param: ApiParam) {
-            builder.append("| $prefix${param.name} | ${param.type} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
+            builder.append("| $prefix${param.name} | ${param.type.value} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
             param.children?.forEach {
                 responseAppend(
                     if (prefix == "") "└─" else "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$prefix",

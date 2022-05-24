@@ -1,9 +1,12 @@
 package cn.uniondrug.dev.util
 
 import cn.uniondrug.dev.ApiParam
+import cn.uniondrug.dev.CommonType
+import cn.uniondrug.dev.CommonTypeConvertor
 import com.goide.psi.GoFieldDeclaration
 import com.goide.psi.GoFile
 import com.goide.psi.GoStructType
+import com.goide.psi.impl.GoArrayOrSliceTypeImpl
 import com.goide.psi.impl.GoTypeUtil
 import com.goide.stubs.index.GoTypesIndex
 import com.intellij.openapi.project.Project
@@ -16,35 +19,35 @@ import com.intellij.psi.PsiComment
 object CommonPsiUtil {
 
     fun getResultData() = arrayListOf(
-        ApiParam(name = "errno", type = "int", required = true, description = "状态码：0-成功；其他-失败"),
-        ApiParam(name = "error", type = "string", required = true, description = "状态描述"),
-        ApiParam(name = "dataType", type = "string", required = true, description = "数据类型：OBJECT/LIST/ERROR"),
-        ApiParam(name = "data", type = "object", required = true, description = "数据"),
+        ApiParam(name = "errno", type = CommonType.INT, required = true, description = "状态码：0-成功；其他-失败"),
+        ApiParam(name = "error", type = CommonType.STRING, required = true, description = "状态描述"),
+        ApiParam(name = "dataType", type = CommonType.STRING, required = true, description = "数据类型：OBJECT/LIST/ERROR"),
+        ApiParam(name = "data", type = CommonType.OBJECT, required = true, description = "数据"),
     )
 
     fun getResultList() = arrayListOf(
-        ApiParam(name = "errno", type = "int", required = true, description = "状态码：0-成功；其他-失败"),
-        ApiParam(name = "error", type = "string", required = true, description = "状态描述"),
-        ApiParam(name = "dataType", type = "string", required = true, description = "数据类型：OBJECT/LIST/ERROR"),
-        ApiParam(name = "data", type = "arrary[]", required = true, description = "数据"),
+        ApiParam(name = "errno", type = CommonType.INT, required = true, description = "状态码：0-成功；其他-失败"),
+        ApiParam(name = "error", type = CommonType.STRING, required = true, description = "状态描述"),
+        ApiParam(name = "dataType", type = CommonType.STRING, required = true, description = "数据类型：OBJECT/LIST/ERROR"),
+        ApiParam(name = "data", type = CommonType.ARRAY, required = true, description = "数据"),
     )
 
     fun getResultPagingBody() = arrayListOf(
-        ApiParam(name = "errno", type = "int", required = true, description = "状态码：0-成功；其他-失败"),
-        ApiParam(name = "error", type = "string", required = true, description = "状态描述"),
-        ApiParam(name = "dataType", type = "string", required = true, description = "数据类型：OBJECT/LIST/ERROR"),
-        ApiParam(name = "data", type = "pagingBody", required = true, description = "数据", children = arrayListOf(
-            ApiParam(name = "body", type = "arrary[]", required = true, description = "列表信息", parentId = "data"),
-            ApiParam(name = "paging", type = "paging", required = true, description = "分页信息", parentId = "data",
+        ApiParam(name = "errno", type = CommonType.INT, required = true, description = "状态码：0-成功；其他-失败"),
+        ApiParam(name = "error", type = CommonType.STRING, required = true, description = "状态描述"),
+        ApiParam(name = "dataType", type = CommonType.STRING, required = true, description = "数据类型：OBJECT/LIST/ERROR"),
+        ApiParam(name = "data", type = CommonType.OBJECT, required = true, description = "数据", children = arrayListOf(
+            ApiParam(name = "body", type = CommonType.ARRAY, required = true, description = "列表信息", parentId = "data"),
+            ApiParam(name = "paging", type = CommonType.OBJECT, required = true, description = "分页信息", parentId = "data",
                 children = arrayListOf(
-                    ApiParam(name = "first", type = "int", required = true, description = "第一页", parentId = "paging"),
-                    ApiParam(name = "before", type = "int", required = true, description = "前一页", parentId = "paging"),
-                    ApiParam(name = "current", type = "int", required = true, description = "当前页", parentId = "paging"),
-                    ApiParam(name = "last", type = "int", required = true, description = "最后一页", parentId = "paging"),
-                    ApiParam(name = "next", type = "int", required = true, description = "下一页", parentId = "paging"),
-                    ApiParam(name = "limit", type = "int", required = true, description = "每页条数", parentId = "paging"),
-                    ApiParam(name = "totalPages", type = "int", required = true, description = "总页数", parentId = "paging"),
-                    ApiParam(name = "totalItems", type = "int", required = true, description = "总数据量", parentId = "paging"),
+                    ApiParam(name = "first", type = CommonType.INT, required = true, description = "第一页", parentId = "paging"),
+                    ApiParam(name = "before", type = CommonType.INT, required = true, description = "前一页", parentId = "paging"),
+                    ApiParam(name = "current", type = CommonType.INT, required = true, description = "当前页", parentId = "paging"),
+                    ApiParam(name = "last", type = CommonType.INT, required = true, description = "最后一页", parentId = "paging"),
+                    ApiParam(name = "next", type = CommonType.INT, required = true, description = "下一页", parentId = "paging"),
+                    ApiParam(name = "limit", type = CommonType.INT, required = true, description = "每页条数", parentId = "paging"),
+                    ApiParam(name = "totalPages", type = CommonType.INT, required = true, description = "总页数", parentId = "paging"),
+                    ApiParam(name = "totalItems", type = CommonType.INT, required = true, description = "总数据量", parentId = "paging"),
             )),
         )),
     )
@@ -128,26 +131,43 @@ object CommonPsiUtil {
      * 构建参数
      */
     private fun buildDocParam(parent: String?, field: GoFieldDeclaration, params: ArrayList<ApiParam>) {
+        val commonTypeConvertor = field.project.getService(CommonTypeConvertor::class.java)
         field.type?.let {
             field.tag?.let { tag ->
                 val param = ApiParam(
                     name = field.text.substring(0, field.text.indexOf(" ")),
-                    type = it.text,
+                    // 从背后真实的类型转换
+                    type = commonTypeConvertor.convert(it.contextlessUnderlyingType.presentationText),
                     required = tag.getValue("validate")?.let { validate -> "required" in validate } ?: false,
 //                    maxLength =     TODO
 //                    example =
                     parentId = parent,
                     description = tag.getValue("label")
                 )
-                if (GolangPsiUtil.isNotBaseType(it)) {
-                    val children = ArrayList<ApiParam>()
-                    val typeSpec = GoTypeUtil.findTypeSpec(it, it.context)
-                    when (val struct = typeSpec.specType.type) {
-                        is GoStructType -> {
-                            struct.fieldDeclarationList.forEach { buildDocParam(param.name, it, children) }
-                            param.children = children
+                when (param.type) {
+                    CommonType.OBJECT -> {
+                        val children = ArrayList<ApiParam>()
+                        val typeSpec = GoTypeUtil.findTypeSpec(it, it.context)
+                        when (val struct = typeSpec.specType.type) {
+                            is GoStructType -> {
+                                struct.fieldDeclarationList.forEach { buildDocParam(param.name, it, children) }
+                                param.children = children
+                            }
                         }
                     }
+                    CommonType.ARRAY_OBJECT -> {
+                        if (it is GoArrayOrSliceTypeImpl) {
+                            val children = ArrayList<ApiParam>()
+                            val typeSpec = GoTypeUtil.findTypeSpec(it.type, it.type.context)
+                            when (val struct = typeSpec.specType.type) {
+                                is GoStructType -> {
+                                    struct.fieldDeclarationList.forEach { buildDocParam(param.name, it, children) }
+                                    param.children = children
+                                }
+                            }
+                        }
+                    }
+                    else -> {}
                 }
                 params += param
             }
