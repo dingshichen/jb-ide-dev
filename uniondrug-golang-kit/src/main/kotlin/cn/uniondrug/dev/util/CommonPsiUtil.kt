@@ -6,11 +6,13 @@ import cn.uniondrug.dev.CommonTypeConvertor
 import com.goide.psi.GoFieldDeclaration
 import com.goide.psi.GoFile
 import com.goide.psi.GoStructType
+import com.goide.psi.GoType
 import com.goide.psi.impl.GoArrayOrSliceTypeImpl
 import com.goide.psi.impl.GoTypeUtil
 import com.goide.stubs.index.GoTypesIndex
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiComment
+import com.intellij.psi.PsiElement
 
 /**
  * @author dingshichen
@@ -146,30 +148,27 @@ object CommonPsiUtil {
                 )
                 when (param.type) {
                     CommonType.OBJECT -> {
-                        val children = ArrayList<ApiParam>()
-                        val typeSpec = GoTypeUtil.findTypeSpec(it, it.context)
-                        when (val struct = typeSpec.specType.type) {
-                            is GoStructType -> {
-                                struct.fieldDeclarationList.forEach { buildDocParam(param.name, it, children) }
-                                param.children = children
-                            }
-                        }
+                        findChildrenFieldDeclaration(param, it, it.context)
                     }
                     CommonType.ARRAY_OBJECT -> {
                         if (it is GoArrayOrSliceTypeImpl) {
-                            val children = ArrayList<ApiParam>()
-                            val typeSpec = GoTypeUtil.findTypeSpec(it.type, it.type.context)
-                            when (val struct = typeSpec.specType.type) {
-                                is GoStructType -> {
-                                    struct.fieldDeclarationList.forEach { buildDocParam(param.name, it, children) }
-                                    param.children = children
-                                }
-                            }
+                            findChildrenFieldDeclaration(param, it.type, it.type.context)
                         }
                     }
                     else -> {}
                 }
                 params += param
+            }
+        }
+    }
+
+    private fun findChildrenFieldDeclaration(param: ApiParam, goType: GoType, context: PsiElement?) {
+        val children = arrayListOf<ApiParam>()
+        val typeSpec = GoTypeUtil.findTypeSpec(goType, context)
+        when (val struct = typeSpec.specType.type) {
+            is GoStructType -> {
+                struct.fieldDeclarationList.forEach { buildDocParam(param.name, it, children) }
+                param.children = children
             }
         }
     }

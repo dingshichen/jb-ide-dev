@@ -21,32 +21,30 @@ import com.intellij.psi.util.PsiTreeUtil
  */
 class DocLineMarkerProvider : LineMarkerProvider {
 
-    override fun getLineMarkerInfo(element: PsiElement): LineMarkerInfo<*>? {
-        return when (element) {
-            is GoMethodDeclaration -> {
-                PsiTreeUtil.getParentOfType(element, GoFile::class.java)?.let { goFile ->
-                    resulveComment(element, goFile.children)?.let {
-                        LineMarkerInfo(
-                            element,
-                            element.textRange,
-                            DevIcons.DOC_VIEW,
-                            { "查看文档" },
-                            { _, _ ->
-                                resulveComment(element, goFile.children)?.let {
-                                    val docService = DocService.getInstance()
-                                    val docItem = docService.buildApi(element, it)
-                                    PreviewForm.getInstance(element.project, element.containingFile, docItem)
-                                        .popup()
-                                }
-                            },
-                            GutterIconRenderer.Alignment.CENTER,
-                            { DevKitPlugin.NAME }
-                        )
-                    }
+    override fun getLineMarkerInfo(element: PsiElement) = when (element) {
+        is GoMethodDeclaration -> {
+            PsiTreeUtil.getParentOfType(element, GoFile::class.java)?.let { goFile ->
+                resulveComment(element, goFile.children)?.let {
+                    LineMarkerInfo(
+                        element,
+                        element.textRange,
+                        DevIcons.DOC_VIEW,
+                        { "查看文档" },
+                        { _, _ ->
+                            resulveComment(element, goFile.children)?.let {
+                                val docService = DocService.getInstance()
+                                val docItem = docService.buildApi(element, it)
+                                PreviewForm.getInstance(element.project, element.containingFile, docItem)
+                                    .popup()
+                            }
+                        },
+                        GutterIconRenderer.Alignment.CENTER,
+                        { DevKitPlugin.NAME }
+                    )
                 }
             }
-            else -> null
         }
+        else -> null
     }
 
     /**
@@ -97,7 +95,7 @@ class DocLineMarkerProvider : LineMarkerProvider {
                         }
                         comment.text.startsWith("// Error") -> {
                             commentStruct.errorComment += comment
-                            resolve(commentStruct,  before)
+                            resolve(commentStruct, before)
                         }
                     }
                 }
