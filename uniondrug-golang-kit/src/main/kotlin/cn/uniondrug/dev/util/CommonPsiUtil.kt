@@ -142,8 +142,7 @@ object CommonPsiUtil {
                     // 从背后真实的类型转换
                     type = commonTypeConvertor.convert(it.contextlessUnderlyingType.presentationText),
                     required = GolangPsiUtil.isRequired(tag),
-//                    maxLength =     TODO
-//                    example =
+                    maxLength = GolangPsiUtil.getMaxLength(tag),
                     parentId = parent,
                     description = tag.getValue("label")
                 )

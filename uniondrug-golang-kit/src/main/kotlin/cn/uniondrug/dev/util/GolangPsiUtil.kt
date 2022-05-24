@@ -25,5 +25,12 @@ object GolangPsiUtil {
     /**
      * 标签是否有必填
      */
-    fun isRequired(tag: GoTag) = tag.getValue("validate")?.let { validate -> "required" in validate } ?: false
+    fun isRequired(tag: GoTag) = tag.getValue("validate")?.let { it -> "required" in it } ?: false
+
+    /**
+     * 获取标签中描述的最大长度
+     */
+    fun getMaxLength(tag: GoTag) = tag.getValue("validate")?.split(",")?.first { max ->
+        max.startsWith("max=")
+    }?.substring(4)
 }
