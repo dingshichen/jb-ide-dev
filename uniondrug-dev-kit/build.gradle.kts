@@ -21,6 +21,9 @@ intellij {
 }
 
 tasks {
+    buildSearchableOptions {
+        enabled = false
+    }
     patchPluginXml {
         changeNotes.set(file("changeNotes.html").readText())
     }
