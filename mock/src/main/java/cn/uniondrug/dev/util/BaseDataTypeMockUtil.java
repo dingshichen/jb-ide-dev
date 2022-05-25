@@ -102,7 +102,7 @@ public class BaseDataTypeMockUtil {
         /* ***************************** 投保理赔字段 ***************************/
         fieldValue.put("errno-int", 0);
         fieldValue.put("error-string", "请求成功");
-        fieldValue.put("dataType-string", "OBJECT");
+        fieldValue.put("datatype-string", "OBJECT");
 
 
     }
@@ -115,13 +115,12 @@ public class BaseDataTypeMockUtil {
      */
     public static Object jsonValueByType(String typeName) {
         String type = typeName.contains(".") ? typeName.substring(typeName.lastIndexOf(".") + 1) : typeName;
+        //基础类型 mock
         Object value = ApiRandomUtil.randomValueByType(type);
-        if (javaPrimaryType(type)) {
-            return value;
-        } else if ("Void".equals(type)) {
+        if ("Void".equals(type)) {
             return "null";
-        } else {
-            return "\"" + value + "\"";
+        }else {
+            return value;
         }
     }
 
@@ -156,13 +155,8 @@ public class BaseDataTypeMockUtil {
 
         if (Objects.isNull(value)) {
             return jsonValueByType(typeName);
-        } else {
-            if (javaPrimaryType(type)) {
-                return value.toString();
-            } else {
-                return handleJsonStr(value.toString());
-            }
         }
+        return value;
     }
 
     public static String handleJsonStr(String content) {

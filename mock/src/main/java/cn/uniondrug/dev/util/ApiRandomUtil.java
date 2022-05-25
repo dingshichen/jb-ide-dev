@@ -28,6 +28,7 @@ public class ApiRandomUtil extends RandomUtil {
         if (type.equals("BigDecimal")) {
             return randomDouble(1000000.00,2, RoundingMode.HALF_UP);
         } else {
+            //基础 类型 mock
             return baseRandomValueByType(type);
         }
     }

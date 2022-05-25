@@ -1,5 +1,6 @@
 package cn.uniondrug.dev
 
+import cn.uniondrug.dev.util.BaseDataTypeMockUtil
 import com.alibaba.fastjson.JSONArray
 import com.alibaba.fastjson.JSONObject
 
@@ -46,24 +47,21 @@ class DocConvertor {
 
         fun putParamExample(param: ApiParam, example: JSONObject) {
             when (param.type) {
-                CommonType.STRING -> example[param.name] = "xxxxxxx"
-                CommonType.BOOL -> example[param.name] = true
-                CommonType.BYTE -> example[param.name] = 0
-                CommonType.INT -> example[param.name] = 1
-                CommonType.LONG -> example[param.name] = 2
-                CommonType.FLOAT -> example[param.name] = 125.90
+                CommonType.STRING, CommonType.BYTE, CommonType.INT, CommonType.LONG, CommonType.FLOAT ->
+                    example[param.name] = BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name)
                 CommonType.ARRAY -> example[param.name] = JSONArray()
+                CommonType.BOOL -> example[param.name] = true
                 CommonType.OBJECT -> {
                     val children = JSONObject(true)
                     param.children?.forEach { putParamExample(it, children) }
                     example[param.name] = children
                 }
-                CommonType.ARRAY_STRING -> example[param.name] = arrayJsonOf("yyyyyyy", "zzzzzzz")
-                CommonType.ARRAY_BOOL -> example[param.name] = arrayJsonOf(false, true)
-                CommonType.ARRAY_BYTE -> example[param.name] = arrayJsonOf(3, 1)
-                CommonType.ARRAY_INT -> example[param.name] = arrayJsonOf(2, 5)
-                CommonType.ARRAY_LONG -> example[param.name] = arrayJsonOf(15680, 432771)
-                CommonType.ARRAY_FLOAT -> example[param.name] = arrayJsonOf(251.25, 180.07)
+                CommonType.ARRAY_STRING, CommonType.ARRAY_BOOL, CommonType.ARRAY_BYTE, CommonType.ARRAY_INT,
+                CommonType.ARRAY_LONG, CommonType.ARRAY_FLOAT -> example[param.name] =
+                    arrayJsonOf(
+                        BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name),
+                        BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name)
+                    )
                 CommonType.ARRAY_OBJECT -> {
                     val children1 = JSONObject(true)
                     param.children?.forEach { putParamExample(it, children1) }
