@@ -24,7 +24,7 @@ object GolangPsiUtil {
     /**
      * 获取标签中描述的最大长度
      */
-    fun getMaxLength(tag: GoTag) = tag.getValue("validate")?.split(",")?.first { max ->
+    fun getMaxLength(tag: GoTag) = tag.getValue("validate")?.split(",")?.find { max ->
         max.startsWith("max=")
     }?.substring(4)
 }

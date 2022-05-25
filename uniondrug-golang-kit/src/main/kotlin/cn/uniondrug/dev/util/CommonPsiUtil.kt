@@ -32,7 +32,7 @@ object CommonPsiUtil {
         ApiParam(name = "errno", type = CommonType.INT, required = true, description = "状态码：0-成功；其他-失败"),
         ApiParam(name = "error", type = CommonType.STRING, required = true, description = "状态描述"),
         ApiParam(name = "dataType", type = CommonType.STRING, required = true, description = "数据类型：OBJECT/LIST/ERROR"),
-        ApiParam(name = "data", type = CommonType.ARRAY, required = true, description = "数据"),
+        ApiParam(name = "data", type = CommonType.ARRAY_OBJECT, required = true, description = "数据"),
     )
 
     fun getResultPagingBody() = arrayListOf(
@@ -40,7 +40,7 @@ object CommonPsiUtil {
         ApiParam(name = "error", type = CommonType.STRING, required = true, description = "状态描述"),
         ApiParam(name = "dataType", type = CommonType.STRING, required = true, description = "数据类型：OBJECT/LIST/ERROR"),
         ApiParam(name = "data", type = CommonType.OBJECT, required = true, description = "数据", children = arrayListOf(
-            ApiParam(name = "body", type = CommonType.ARRAY, required = true, description = "列表信息", parentId = "data"),
+            ApiParam(name = "body", type = CommonType.ARRAY_OBJECT, required = true, description = "列表信息", parentId = "data"),
             ApiParam(name = "paging", type = CommonType.OBJECT, required = true, description = "分页信息", parentId = "data",
                 children = arrayListOf(
                     ApiParam(name = "first", type = CommonType.INT, required = true, description = "第一页", parentId = "paging"),
