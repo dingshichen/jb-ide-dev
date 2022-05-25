@@ -1,9 +1,7 @@
 package cn.uniondrug.dev
 
-import cn.uniondrug.dev.util.BaseDataTypeMockUtil
 import com.alibaba.fastjson.JSONArray
 import com.alibaba.fastjson.JSONObject
-import com.alibaba.fastjson.serializer.SerializerFeature
 
 /**
  * @author dingshichen
@@ -46,35 +44,34 @@ class DocConvertor {
             }
         }
 
-        /**
-         * TODO 基于枚举 CommonType 重新设计
-         */
-        fun putParamExample(responseParam: ApiParam, example: JSONObject) {
-//            if (responseParam.type == CommonType.ARRAY) {
-//                example[responseParam.name] = JSONArray()
-//            } else if (responseParam.type in BASE_LIST) {
-//                val firtsIndex = responseParam.type.indexOf("<")
-//                val lastIndex = responseParam.type.indexOf(">")
-//                val baseType = responseParam.type.substring(firtsIndex + 1, lastIndex)
-//                example[responseParam.name] = "[${BaseDataTypeMockUtil.jsonValueByType(baseType)}]"
-//            } else if (responseParam.children == null) {
-//                val valus = BaseDataTypeMockUtil.getValByTypeAndFieldName(responseParam.type, responseParam.name);
-//                example[responseParam.name] = valus
-//            } else if (responseParam.type.endsWith("]") || responseParam.type.startsWith("List<")) {
-//                val array = JSONArray()
-//                responseParam.children?.let { childrenParam ->
-//                    if (childrenParam.isNotEmpty()) {
-//                        val children = JSONObject(true)
-//                        childrenParam.forEach { child -> putParamExample(child, children) }
-//                        array.add(children)
-//                    }
-//                }
-//                example[responseParam.name] = array
-//            } else {
-//                val children = JSONObject(true)
-//                responseParam.children?.forEach { child -> putParamExample(child, children) }
-//                example[responseParam.name] = children
-//            }
+        fun putParamExample(param: ApiParam, example: JSONObject) {
+            when (param.type) {
+                CommonType.STRING -> example[param.name] = "xxxxxxx"
+                CommonType.BOOL -> example[param.name] = true
+                CommonType.BYTE -> example[param.name] = 0
+                CommonType.INT -> example[param.name] = 1
+                CommonType.LONG -> example[param.name] = 2
+                CommonType.FLOAT -> example[param.name] = 125.90
+                CommonType.ARRAY -> example[param.name] = JSONArray()
+                CommonType.OBJECT -> {
+                    val children = JSONObject(true)
+                    param.children?.forEach { putParamExample(it, children) }
+                    example[param.name] = children
+                }
+                CommonType.ARRAY_STRING -> example[param.name] = arrayJsonOf("yyyyyyy", "zzzzzzz")
+                CommonType.ARRAY_BOOL -> example[param.name] = arrayJsonOf(false, true)
+                CommonType.ARRAY_BYTE -> example[param.name] = arrayJsonOf(3, 1)
+                CommonType.ARRAY_INT -> example[param.name] = arrayJsonOf(2, 5)
+                CommonType.ARRAY_LONG -> example[param.name] = arrayJsonOf(15680, 432771)
+                CommonType.ARRAY_FLOAT -> example[param.name] = arrayJsonOf(251.25, 180.07)
+                CommonType.ARRAY_OBJECT -> {
+                    val children1 = JSONObject(true)
+                    param.children?.forEach { putParamExample(it, children1) }
+                    val children2 = JSONObject(true)
+                    param.children?.forEach { putParamExample(it, children2) }
+                    example[param.name] = arrayJsonOf(children1, children2)
+                }
+            }
         }
 
         fun requestAppend(prefix: String, builder: StringBuilder, param: ApiParam) {
@@ -97,19 +94,6 @@ class DocConvertor {
                     it
                 )
             }
-        }
-
-        inline fun buildJsonString(builder: JSONObject.() -> Unit): String {
-            val json = JSONObject(true)
-            json.builder()
-            return json.toString(
-                SerializerFeature.WriteMapNullValue,        // 输出 null 值的字段
-                SerializerFeature.WriteNullListAsEmpty,     // List 字段如果是 null，输出 []
-                SerializerFeature.WriteNullStringAsEmpty,   // 字符串如果为 null，输出 ""
-                SerializerFeature.WriteNullNumberAsZero,    // 数字字段如果为 null，输出 0
-                SerializerFeature.WriteNullBooleanAsFalse,  // boolean 字段如果为 null，输出 false
-                SerializerFeature.PrettyFormat              // 格式化
-            )
         }
 
     }

@@ -32,7 +32,7 @@ class DocLineMarkerProvider : LineMarkerProvider {
                                 || isNotSpringMVCMethod(psiMethod)) {
                                 return null
                             }
-                            LineMarkerInfo(
+                            return LineMarkerInfo(
                                 element,
                                 element.textRange,
                                 DevIcons.DOC_VIEW,
