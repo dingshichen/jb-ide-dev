@@ -55,7 +55,7 @@ public class ApiRandomUtil extends RandomUtil {
             case "double":
             case "Float": //6
             case "float":
-                return randomDouble(Double.parseDouble(FORMAT));
+                return randomDouble(1, 1000, 2, RoundingMode.HALF_UP);
             case "short":
             case "Short":
                 return randomInt(0, 32767);

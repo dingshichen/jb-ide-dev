@@ -4,6 +4,7 @@ import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.uniondrug.dev.consts.BaseFiledConstants;
 import cn.uniondrug.dev.consts.JmInsureFiledConstants;
 import com.github.javafaker.Faker;
 
@@ -151,6 +152,10 @@ public class BaseDataTypeMockUtil {
             value = new StringBuilder(faker.phoneNumber().cellPhone());
         } else if (filedName.toLowerCase().endsWith("idcard")) {
 //            value = new StringBuilder(IDCardUtil.getIdCard());
+        } else if (!filedName.equals("dataType") && BaseFiledConstants.TYPES_LIST.stream().anyMatch(v -> filedName.toLowerCase().contains(v)))
+            value = ApiRandomUtil.randomInt(10);
+        if (BaseFiledConstants.YES_NO_LIST.stream().anyMatch(v->v.equals(filedName.toLowerCase()))){
+            value = ApiRandomUtil.randomInt(2);
         }
 
         if (Objects.isNull(value)) {
