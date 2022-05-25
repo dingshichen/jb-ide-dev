@@ -11,12 +11,6 @@ import com.goide.psi.impl.GoTypeUtil
  */
 object GolangPsiUtil {
 
-    private const val STRING_TYPE = "string"
-
-    fun isBaseType(goType: GoType) = GoTypeUtil.isBasicType(goType, goType.context) || STRING_TYPE == goType.text
-
-    fun isNotBaseType(goType: GoType) = !isBaseType(goType)
-
     /**
      * 获取属性 json 字段名
      */

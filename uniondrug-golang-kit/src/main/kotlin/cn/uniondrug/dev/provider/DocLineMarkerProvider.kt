@@ -33,8 +33,8 @@ class DocLineMarkerProvider : LineMarkerProvider {
                         { _, _ ->
                             resulveComment(element, goFile.children)?.let {
                                 val docService = DocService.getInstance()
-                                val docItem = docService.buildApi(element, it)
-                                PreviewForm.getInstance(element.project, element.containingFile, docItem)
+                                val api = docService.buildApi(element, it)
+                                PreviewForm.getInstance(element.project, element.containingFile, api)
                                     .popup()
                             }
                         },

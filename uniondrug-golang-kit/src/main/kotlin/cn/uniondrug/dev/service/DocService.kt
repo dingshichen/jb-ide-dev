@@ -56,8 +56,8 @@ class DocService {
         }
         return Api(
             name = goApiStruct.nameComment?.text?.getCommentValue(method.name!!)!!,
-            description = goApiStruct.descComment?.text?.getCommentValue("Desc"),
-            author = goApiStruct.authorComment?.text?.getCommentValue("Author"),
+            description = goApiStruct.descComment?.text?.getCommentValue("Desc") ?: "",
+            author = goApiStruct.authorComment?.text?.getCommentValue("Author") ?: "",
             deprecated = goApiStruct.deprecatedComment?.text?.getCommentValue("Deprecated"),
             url = url,
             httpMethod = httpMethod,
