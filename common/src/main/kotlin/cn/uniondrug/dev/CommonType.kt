@@ -36,6 +36,7 @@ interface CommonTypeConvertor {
 
 class JavaTypeConvertor : CommonTypeConvertor {
 
+    private val stringList = arrayOf("String", "Date", "DateTime", "LocalDate", "LocalDateTime")
     private val boolList = arrayOf("Boolean", "boolean")
     private val byteList = arrayOf("byte", "Byte")
     private val intList = arrayOf("Integer", "int", "short", "Short")
@@ -44,7 +45,7 @@ class JavaTypeConvertor : CommonTypeConvertor {
     private val arrayList = arrayOf("List", "ArrayList", "LinkedList", "JSONArray")
 
     override fun convert(original: String): CommonType = when (original) {
-        "String" -> CommonType.STRING
+        in stringList -> CommonType.STRING
         in boolList -> CommonType.BOOL
         in byteList -> CommonType.BYTE
         in intList -> CommonType.INT
