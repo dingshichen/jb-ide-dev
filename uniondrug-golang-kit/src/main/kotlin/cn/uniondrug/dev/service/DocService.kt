@@ -46,8 +46,8 @@ class DocService {
         } ?: goApiStruct.nameComment?.let {
             if (it.text.startsWith("// Get")) {
                 url = it.text.substring(6).humpToPath()
-                httpMethod = "POST"
-                contentType = "application/json"
+                httpMethod = "Get"
+                contentType = "application/x-www-form-urlencoded"
             } else if (it.text.startsWith("// Post")) {
                 url = it.text.substring(7).humpToPath()
                 httpMethod = "POST"
