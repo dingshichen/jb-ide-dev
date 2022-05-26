@@ -17,6 +17,15 @@ fun <T> arrayJsonOf(vararg elements: T): JSONArray {
 }
 
 /**
+ * 构建 json
+ */
+inline fun jsonObject(builder: JSONObject.() -> Unit): JSONObject {
+    val json = JSONObject(true)
+    json.builder()
+    return json
+}
+
+/**
  * 输出 json
  */
 inline fun buildJsonString(builder: JSONObject.() -> Unit): String {

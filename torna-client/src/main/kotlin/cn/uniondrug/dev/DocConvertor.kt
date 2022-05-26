@@ -17,14 +17,14 @@ class DocConvertor {
                 buildString {
                     append("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
                     api.requestParams?.forEach {
-                        requestAppend("", this, it)
+                        requestAppend("", it)
                     }
                 }
             }
             initRequestExample {
                 buildJsonString {
                     api.requestParams?.forEach {
-                        putParamExample(it, this)
+                        putParamExample(it)
                     }
                 }
             }
@@ -32,63 +32,72 @@ class DocConvertor {
                 buildString {
                     append("|参数名|类型|最大长度|描述|\n|:-----|:-----|:-----|:-----|\n")
                     api.responseParams?.forEach {
-                        responseAppend("", this, it)
+                        responseAppend("", it)
                     }
                 }
             }
             initResponseExample {
                 buildJsonString {
                     api.responseParams?.forEach {
-                        putParamExample(it, this)
+                        putParamExample(it)
                     }
                 }
             }
         }
 
-        fun putParamExample(param: ApiParam, example: JSONObject) {
+        private fun JSONObject.putParamExample(param: ApiParam) {
             when (param.type) {
-                CommonType.STRING, CommonType.BYTE, CommonType.INT, CommonType.LONG, CommonType.FLOAT ->
-                    example[param.name] = BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name)
-                CommonType.ARRAY -> example[param.name] = JSONArray()
-                CommonType.BOOL -> example[param.name] = true
-                CommonType.OBJECT -> {
-                    val children = JSONObject(true)
-                    param.children?.forEach { putParamExample(it, children) }
-                    example[param.name] = children
+                CommonType.STRING,
+                CommonType.BYTE,
+                CommonType.INT,
+                CommonType.LONG,
+                CommonType.FLOAT ->
+                    this[param.name] = BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name)
+                CommonType.ARRAY -> this[param.name] = JSONArray()
+                CommonType.BOOL -> this[param.name] = true
+                CommonType.OBJECT -> this[param.name] = jsonObject {
+                    param.children?.forEach {
+                        putParamExample(it)
+                    }
                 }
-                CommonType.ARRAY_STRING, CommonType.ARRAY_BOOL, CommonType.ARRAY_BYTE, CommonType.ARRAY_INT,
-                CommonType.ARRAY_LONG, CommonType.ARRAY_FLOAT -> example[param.name] =
-                    arrayJsonOf(
+                CommonType.ARRAY_STRING,
+                CommonType.ARRAY_BOOL,
+                CommonType.ARRAY_BYTE,
+                CommonType.ARRAY_INT,
+                CommonType.ARRAY_LONG,
+                CommonType.ARRAY_FLOAT -> this[param.name] = arrayJsonOf(
                         BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name),
                         BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name)
-                    )
-                CommonType.ARRAY_OBJECT -> {
-                    val children1 = JSONObject(true)
-                    param.children?.forEach { putParamExample(it, children1) }
-                    val children2 = JSONObject(true)
-                    param.children?.forEach { putParamExample(it, children2) }
-                    example[param.name] = arrayJsonOf(children1, children2)
-                }
+                )
+                CommonType.ARRAY_OBJECT -> this[param.name] = arrayJsonOf(
+                    jsonObject {
+                        param.children?.forEach {
+                            putParamExample(it)
+                        }
+                    },
+                    jsonObject {
+                        param.children?.forEach {
+                            putParamExample(it)
+                        }
+                    }
+                )
             }
         }
 
-        fun requestAppend(prefix: String, builder: StringBuilder, param: ApiParam) {
-            builder.append("| $prefix${param.name} | ${param.type.value} | ${param.required} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
+        private fun StringBuilder.requestAppend(prefix: String, param: ApiParam) {
+            append("| $prefix${param.name} | ${param.type.value} | ${param.required} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
             param.children?.forEach {
-                requestAppend(
-                    if (prefix == "") "└─" else "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$prefix",
-                    builder,
+                requestAppend(if (prefix == "") "└─" else "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$prefix",
                     it
                 )
             }
         }
 
-        fun responseAppend(prefix: String, builder: StringBuilder, param: ApiParam) {
-            builder.append("| $prefix${param.name} | ${param.type.value} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
+        private fun StringBuilder.responseAppend(prefix: String, param: ApiParam) {
+            append("| $prefix${param.name} | ${param.type.value} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
             param.children?.forEach {
                 responseAppend(
                     if (prefix == "") "└─" else "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$prefix",
-                    builder,
                     it
                 )
             }
