@@ -10,16 +10,16 @@ import kotlin.test.Test
 class DocConvertorTest {
 
     @Test fun putParamExample() {
-        val example = JSONObject(true)
-        val param = ApiParam(
-            "count",
-            CommonType.INT,
-            true,
-            "16",
-            ""
-        )
-        DocConvertor.putParamExample(param, example)
-        println(example)
+//        val example = JSONObject(true)
+//        val param = ApiParam(
+//            "count",
+//            CommonType.INT,
+//            true,
+//            "16",
+//            ""
+//        )
+//        DocConvertor.putParamExample(param, example)
+//        println(example)
     }
 
     @Test fun buildJsonString() {

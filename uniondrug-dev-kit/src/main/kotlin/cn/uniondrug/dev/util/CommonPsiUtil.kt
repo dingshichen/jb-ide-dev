@@ -167,7 +167,7 @@ private fun tryGetCollectionGenericsType(psiType: PsiType): Array<PsiField>? {
     ) {
         if (psiType is PsiClassType) {
             psiType.parameters.first {
-                return PsiUtil.resolveClassInClassTypeOnly(it)?.fields
+                return PsiUtil.resolveClassInClassTypeOnly(it)?.allFields
             }
         }
     }
