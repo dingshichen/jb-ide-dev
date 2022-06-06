@@ -16,7 +16,7 @@ class DocSettingConfigurable(
     private val project: Project
 ) : SearchableConfigurable {
 
-    private var docSettingForm: DocSettingForm? = null
+    private lateinit var docSettingForm: DocSettingForm
 
     override fun getId(): @NonNls String {
         return "uniondrug.dev.kit.DocSettingConfigurable"
@@ -28,19 +28,19 @@ class DocSettingConfigurable(
 
     override fun createComponent(): JComponent? {
         docSettingForm = DocSettingForm(project)
-        return docSettingForm?.rootPanel
+        return docSettingForm.rootPanel
     }
 
     override fun isModified(): Boolean {
-        return docSettingForm!!.isModified
+        return docSettingForm.isModified
     }
 
     @Throws(ConfigurationException::class)
     override fun apply() {
-        docSettingForm?.apply()
+        docSettingForm.apply()
     }
 
     override fun reset() {
-        docSettingForm?.reset()
+        docSettingForm.reset()
     }
 }

@@ -8,7 +8,7 @@ const val NOT_NULL = "javax.validation.constraints.NotNull"
 const val NOT_BLANK = "javax.validation.constraints.NotBlank"
 
 // 必填
-val REQUIRED = arrayListOf(NOT_BLANK, NOT_EMPTY, NOT_NULL)
+val REQUIRED = listOf(NOT_BLANK, NOT_EMPTY, NOT_NULL)
 
 // Java 基础类型
 const val BYTE = "java.lang.Byte"
@@ -33,12 +33,12 @@ const val DATE = "java.util.Date"
 const val LOCAL_DATE = "java.time.LocalDate"
 const val LOCAL_DATE_TIME = "java.time.LocalDateTime"
 
-val BASE = arrayListOf(
+val BASE = arrayOf(
     BYTE, SHORT, INT, LONG, FLOAT, CHAR, BOOLEAN, STRING, BIG_DECIMAL, DATE, LOCAL_DATE, LOCAL_DATE_TIME,
     S_BYTE, S_SHORT, S_INT, S_LONG, S_FLOAT, S_CHAR, S_BOOLEAN, DOUBLE, S_DOUBLE
 )
 
-val BASE_LIST = arrayListOf(
+val BASE_LIST = listOf(
     "List<String>",
     "List<Byte>",
     "List<Short>",
@@ -50,7 +50,7 @@ val BASE_LIST = arrayListOf(
     "List<Boolean>"
 )
 
-val FULL_BASE_LIST = arrayListOf(
+val FULL_BASE_LIST = arrayOf(
     "java.util.List<$BYTE>",
     "java.util.List<$SHORT>",
     "java.util.List<$INT>",

@@ -57,30 +57,16 @@ data class ApiDetail(
     var responseExample: String? = null,
 ) {
 
-    inline fun initRequestHeader(init: ApiDetail.() -> String) {
-        requestHeader = init()
-    }
+    inline fun initRequestHeader(init: ApiDetail.() -> String) = apply { requestHeader = init() }
 
-    inline fun initRequestBody(init: ApiDetail.() -> String) {
-        requestBody = init()
-    }
+    inline fun initRequestBody(init: ApiDetail.() -> String) = apply { requestBody = init() }
 
-    inline fun initRequestExample(init: ApiDetail.() -> String) {
-        requestExample = init()
-    }
+    inline fun initRequestExample(init: ApiDetail.() -> String) = apply { requestExample = init() }
 
-    inline fun initResponseBody(init: ApiDetail.() -> String) {
-        responseBody = init()
-    }
+    inline fun initResponseBody(init: ApiDetail.() -> String) = apply { responseBody = init() }
 
-    inline fun initResponseExample(init: ApiDetail.() -> String) {
-        responseExample = init()
-    }
+    inline fun initResponseExample(init: ApiDetail.() -> String) = apply { responseExample = init() }
 
 }
 
-inline fun apiDetail(api: Api, init: ApiDetail.() -> Unit): ApiDetail {
-    val apiDetail = ApiDetail(api)
-    apiDetail.init()
-    return apiDetail
-}
+inline fun apiDetail(api: Api, init: ApiDetail.() -> Unit) = ApiDetail(api).apply { init() }

@@ -22,16 +22,17 @@ class DocLineMarkerProvider : LineMarkerProvider {
     override fun getLineMarkerInfo(element: PsiElement): LineMarkerInfo<*>? {
         when (element) {
             is PsiIdentifier -> {
-                when (element.getParent()) {
+                when (val parent = element.parent) {
                     is PsiMethod -> {
-                        val psiMethod = element.parent as PsiMethod
-                        PsiTreeUtil.getParentOfType(psiMethod, PsiClass::class.java)?.let {
+                        PsiTreeUtil.getParentOfType(parent, PsiClass::class.java)?.let {
                             if (it.isAnnotationType
                                 || it.isEnum
                                 || it.isInterface
-                                || isNotSpringMVCMethod(psiMethod)) {
+                                || isNotSpringMVCMethod(parent)) {
                                 return null
                             }
+                            val project = element.project
+                            val containingFile = element.containingFile
                             return LineMarkerInfo(
                                 element,
                                 element.textRange,
@@ -40,10 +41,10 @@ class DocLineMarkerProvider : LineMarkerProvider {
                                 { _, _ ->
                                     val docService = DocService.getInstance()
                                     try {
-                                        val docItem = docService.buildApi(element.project, it, psiMethod)
-                                        PreviewForm.getInstance(element.project, element.containingFile, docItem).popup()
+                                        val docItem = docService.buildApi(project, it, parent)
+                                        PreviewForm.getInstance(project, containingFile, docItem).popup()
                                     } catch (e: ApiBuildException) {
-                                        notifyError(element.project, e.localizedMessage)
+                                        notifyError(project, e.localizedMessage)
                                     }
                                 },
                                 GutterIconRenderer.Alignment.CENTER,
