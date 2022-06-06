@@ -2,7 +2,7 @@ plugins {
     id("org.jetbrains.intellij") version "1.6.0"
 }
 
-version = "0.5"
+version = "0.6"
 
 dependencies {
     implementation(project(":common"))
