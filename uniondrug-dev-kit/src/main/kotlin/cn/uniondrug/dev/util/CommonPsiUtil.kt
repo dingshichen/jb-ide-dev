@@ -23,27 +23,17 @@ fun isBaseCollection(type: PsiType): Boolean {
 }
 
 /**
- * 元素是否是注释内容
- */
-fun PsiElement.isCommentData() = toString() == "PsiDocToken:DOC_COMMENT_DATA"
-
-/**
- * 获取元素注释内容
- */
-fun PsiElement.commentText() = text.replace("*", "").trim()
-
-/**
  * 获取 API 名称
  */
-fun getApiName(psiMethod: PsiMethod) = psiMethod.docComment?.let { docComment ->
-    docComment.children.find { it.isCommentData() }?.commentText()
-} ?: throw ApiBuildException("获取 API 名称失败，请检查方法注释是否存在")
+fun getApiName(psiMethod: PsiMethod) = psiMethod.childrenDocComment()?.find {
+    it.isCommentData()
+}?.commentText() ?: throw ApiBuildFailException("获取 API 名称失败，请检查方法注释是否存在")
 
 /**
  * 获取 API 描述
  */
-fun getApiDescription(psiMethod: PsiMethod) = psiMethod.docComment?.let {
-    val comments =  it.children.filter { e -> e.isCommentData() }
+fun getApiDescription(psiMethod: PsiMethod) = psiMethod.childrenDocComment()?.let {
+    val comments =  it.filter { e -> e.isCommentData() }
     if (comments.size > 1) {
         return comments[1].commentText()
     } else {
@@ -54,30 +44,19 @@ fun getApiDescription(psiMethod: PsiMethod) = psiMethod.docComment?.let {
 /**
  * 获取 API 作者
  */
-fun getApiAuthor(psiClass: PsiClass, psiMethod: PsiMethod): String {
-    fun getClassAuthor() = psiClass.docComment?.let {
-        getApiAuthor(it)
-    } ?: ""
+fun getApiAuthor(psiClass: PsiClass, psiMethod: PsiMethod) = psiMethod.docComment?.let {
+    getApiAuthor(it) ?: getClassAuthor(psiClass)
+} ?: getClassAuthor(psiClass)
 
-    val methodComment = psiMethod.docComment
-    return if (methodComment == null) {
-        getClassAuthor()
-    } else {
-        getApiAuthor(methodComment) ?: getClassAuthor()
-    }
-}
+/**
+ * 获取类注释里的作者
+ */
+fun getClassAuthor(psiClass: PsiClass) = psiClass.docComment?.let { getApiAuthor(it) } ?: ""
 
 /**
  * 获取注释里的作者
  */
 fun getApiAuthor(docComment: PsiDocComment) = docComment.findTagByName("author")?.valueElement?.commentText()
-
-/**
- * 获取字段描述
- */
-fun getFieldDescription(psiField: PsiField): String? {
-    return psiField.docComment?.children?.filter { it.isCommentData() }?.joinToString("<br>") { it.commentText() }
-}
 
 /**
  * 是否弃用
@@ -89,14 +68,12 @@ fun isDeprecated(psiClass: PsiClass, psiMethod: PsiMethod) =
 /**
  * 从参数中获取类型
  */
-fun getRequestBody(project: Project, parameter: PsiParameter) =
-    getBody(project, psiType = parameter.type as PsiClassType)
+fun getRequestBody(project: Project, parameter: PsiParameter) = getBody(project, psiType = parameter.type as PsiClassType)
 
 /**
  * 从返回值解析获取返回结构体
  */
-fun getResponseBody(project: Project, returnTypeElement: PsiTypeElement) =
-    getBody(project, psiType = returnTypeElement.type as PsiClassType)
+fun getResponseBody(project: Project, returnElement: PsiTypeElement) = getBody(project, psiType = returnElement.type as PsiClassType)
 
 /**
  * 解析 body 参数
@@ -109,8 +86,8 @@ private fun getBody(
     parentField: PsiField? = null,
     psiType: PsiClassType,
     childrenFields: Array<PsiField>? = null
-): ArrayList<ApiParam> {
-    val params = ArrayList<ApiParam>()
+): MutableList<ApiParam> {
+    val params = mutableListOf<ApiParam>()
     // 递归获取父类字段
     psiType.superTypes.forEach {
         if (it.canonicalText == "java.lang.Object"
@@ -122,12 +99,12 @@ private fun getBody(
         }
         params += getBody(project, parentField, it as PsiClassType)
     }
-    val psiClass = PsiUtil.resolveClassInClassTypeOnly(psiType) ?: throw RuntimeException("获取请求体参数失败")
+    val psiClass = PsiUtil.resolveClassInClassTypeOnly(psiType) ?: throw ApiBuildFailException("获取请求体参数类型失败")
     // 泛型对应真实类型关系 K: 泛型 V: 真实类型的 PsiType
     val generics = getGenericsType(psiClass, psiType)
     // 没有给出属性字段，则解析类型里的属性
-    val field = childrenFields ?: psiClass.fields
-    field?.forEach {
+    val fields = childrenFields ?: psiClass.fields
+    fields?.forEach {
         if (it.name == "serialVersionUID") {
             // 序列化 ID 字段，跳过
             return@forEach
@@ -144,16 +121,15 @@ private fun getBody(
             fieldType = paramType
         }
         val commonTypeConvertor = project.getService(CommonTypeConvertor::class.java)
-        val param = ApiParam(
+        params += ApiParam(
             name = it.name,
             type = commonTypeConvertor.convert(fieldType.presentableText),
             required = AnnotationUtil.isAnnotated(it, REQUIRED, 0),
             maxLength = getMaxLength(it),
-            description = getFieldDescription(it) ?: getUniondrugFieldDescription(it, psiType),
+            description = it.getFieldDescription() ?: getUniondrugFieldDescription(it, psiType),
             parentId = parentField?.name ?: "",
             children = getChildren(project, it, fieldType, generics),
         )
-        params += param
     }
     return params
 }

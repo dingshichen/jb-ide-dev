@@ -4,4 +4,4 @@ package cn.uniondrug.dev
 /**
  * API 构建异常
  */
-class ApiBuildException(message: String) : Exception(message)
+class ApiBuildFailException(message: String) : Exception(message)

@@ -1,6 +1,6 @@
 package cn.uniondrug.dev.provider
 
-import cn.uniondrug.dev.ApiBuildException
+import cn.uniondrug.dev.ApiBuildFailException
 import cn.uniondrug.dev.consts.DevIcons
 import cn.uniondrug.dev.consts.DevKitPlugin
 import cn.uniondrug.dev.notifier.notifyError
@@ -43,7 +43,7 @@ class DocLineMarkerProvider : LineMarkerProvider {
                                     try {
                                         val docItem = docService.buildApi(project, it, parent)
                                         PreviewForm.getInstance(project, containingFile, docItem).popup()
-                                    } catch (e: ApiBuildException) {
+                                    } catch (e: ApiBuildFailException) {
                                         notifyError(project, e.localizedMessage)
                                     }
                                 },

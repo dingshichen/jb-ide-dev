@@ -20,9 +20,9 @@ data class Api(
     /** HTTP ContentType  */
     val contentType: String,
     /** 请求入参 */
-    var requestParams: ArrayList<ApiParam>?,
+    var requestParams: MutableList<ApiParam>?,
     /** 响应返回值入参 */
-    var responseParams: ArrayList<ApiParam>?,
+    var responseParams: MutableList<ApiParam>?,
 ) {
 
     val fileName: String by lazy {
