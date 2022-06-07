@@ -333,7 +333,7 @@ public class PreviewForm {
             public void actionPerformed(@NotNull AnActionEvent e) {
                 popup.cancel();
                 DocService service = ApplicationManager.getApplication().getService(DocService.class);
-                service.export(project, currentDocView.getName(), currentMarkdownText);
+                service.export(project, currentDocView.getFileName(), currentMarkdownText);
             }
         });
 

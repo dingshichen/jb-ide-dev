@@ -25,6 +25,8 @@ class DocLineMarkerProvider : LineMarkerProvider {
         is GoMethodDeclaration -> {
             PsiTreeUtil.getParentOfType(element, GoFile::class.java)?.let { goFile ->
                 resulveComment(element, goFile.children)?.let {
+                    val project = element.project
+                    val containingFile = element.containingFile
                     LineMarkerInfo(
                         element,
                         element.textRange,
@@ -34,7 +36,7 @@ class DocLineMarkerProvider : LineMarkerProvider {
                             resulveComment(element, goFile.children)?.let {
                                 val docService = DocService.getInstance()
                                 val api = docService.buildApi(element, it)
-                                PreviewForm.getInstance(element.project, element.containingFile, api)
+                                PreviewForm.getInstance(project, containingFile, api)
                                     .popup()
                             }
                         },
