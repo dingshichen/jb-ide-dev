@@ -23,7 +23,15 @@ data class Api(
     var requestParams: ArrayList<ApiParam>?,
     /** 响应返回值入参 */
     var responseParams: ArrayList<ApiParam>?,
-)
+) {
+
+    val fileName: String by lazy {
+        url.substring(8).run {
+            "${substring(indexOf("/") + 1).splitToSmallHump("/")}.md"
+        }
+    }
+
+}
 
 /**
  * API 接口参数

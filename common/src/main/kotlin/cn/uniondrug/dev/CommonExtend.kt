@@ -22,3 +22,19 @@ fun String.isGoArray() = this.startsWith("[]")
  * 截出 GO 集合里的类型
  */
 fun String.subGoTypeInArray() = this.substring(2)
+
+/**
+ * 分割符转小驼峰
+ */
+fun String.splitToSmallHump(split: String): String {
+    val builder = StringBuilder()
+    for (s in this.split(split)) {
+        if (builder.toString() == "") {
+            builder.append(s)
+        } else {
+            builder.append(s[0].uppercase())
+            builder.append(s.substring(1))
+        }
+    }
+    return builder.toString()
+}
