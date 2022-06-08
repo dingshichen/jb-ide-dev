@@ -1,6 +1,7 @@
 package cn.uniondrug.dev.util;
 
 import cn.uniondrug.dev.ApiDetail;
+import cn.uniondrug.dev.MbsEventDetail;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
@@ -44,4 +45,15 @@ public class VelocityUtil {
         return writer.toString();
     }
 
+    public static String convert(String template, MbsEventDetail data) {
+        StringWriter writer = new StringWriter();
+        VelocityContext velocityContext = new VelocityContext();
+        velocityContext.put("item", data.getMbsEvent());
+        velocityContext.put("detail", data);
+        boolean isSuccess = engine.evaluate(velocityContext, writer, VM_LOG_TAG, template);
+        if (!isSuccess) {
+            return "ERROR";
+        }
+        return writer.toString();
+    }
 }

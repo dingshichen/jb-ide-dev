@@ -12,7 +12,7 @@ dependencies {
 
 intellij {
     pluginName.set("Uniondrug Dev Kit")
-    type.set("IU")
+//    type.set("IU")
 //    version.set("2022.1")
     localPath.set("/Applications/IntelliJ IDEA.app")
     plugins.set(listOf("com.intellij.java", "markdown"))

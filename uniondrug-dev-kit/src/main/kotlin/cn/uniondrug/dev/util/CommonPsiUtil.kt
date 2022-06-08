@@ -30,9 +30,29 @@ fun getApiName(psiMethod: PsiMethod) = psiMethod.childrenDocComment()?.find {
 }?.commentText() ?: throw ApiBuildFailException("获取 API 名称失败，请检查方法注释是否存在")
 
 /**
+ * 获取 MBS 事件名称
+ */
+fun getMbsName(psiClass: PsiClass) = psiClass.childrenDocComment()?.find {
+    it.isCommentData()
+}?.commentText() ?: throw ApiBuildFailException("获取 MBS 事件名称失败，请检查类注释是否有效")
+
+/**
  * 获取 API 描述
  */
 fun getApiDescription(psiMethod: PsiMethod) = psiMethod.childrenDocComment()?.let {
+    val comments =  it.filter { e -> e.isCommentData() }
+    if (comments.size > 1) {
+        return comments[1].commentText()
+    } else {
+        return ""
+    }
+} ?: ""
+
+
+/**
+ * 获取 Mbs 描述
+ */
+fun getMbsDescription(psiClass: PsiClass) = psiClass.childrenDocComment()?.let {
     val comments =  it.filter { e -> e.isCommentData() }
     if (comments.size > 1) {
         return comments[1].commentText()
@@ -81,7 +101,7 @@ fun getResponseBody(project: Project, returnElement: PsiTypeElement) = getBody(p
  * @param psiType 当前属性类型
  * @param childrenFields 指定子节点名
  */
-private fun getBody(
+fun getBody(
     project: Project,
     parentField: PsiField? = null,
     psiType: PsiClassType,

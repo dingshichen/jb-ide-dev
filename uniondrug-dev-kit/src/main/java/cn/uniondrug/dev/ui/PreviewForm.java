@@ -1,6 +1,7 @@
 package cn.uniondrug.dev.ui;
 
 import cn.uniondrug.dev.Api;
+import cn.uniondrug.dev.MbsEvent;
 import cn.uniondrug.dev.config.DocSetting;
 import cn.uniondrug.dev.config.DocSettingConfigurable;
 import cn.uniondrug.dev.service.DocService;
@@ -82,15 +83,14 @@ public class PreviewForm {
     private EditorEx markdownEditor;
     private String currentMarkdownText;
 
-    private Api currentDocView;
+    private Api api;
+    private MbsEvent mbsEvent;
     private JBPopup popup;
 
     public PreviewForm(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull Api api) {
-
         this.project = project;
         this.psiFile = psiFile;
-        this.currentDocView = api;
-
+        this.api = api;
         // UI调整
         initUI();
         initHeadToolbar();
@@ -101,10 +101,26 @@ public class PreviewForm {
         initPreviewLeftToolbar();
         initPreviewRightToolbar();
         // 生成文档
-        buildDoc();
-
+        buildApiDoc();
         addMouseListeners();
+    }
 
+    public PreviewForm(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull MbsEvent mbsEvent) {
+        this.project = project;
+        this.psiFile = psiFile;
+        this.mbsEvent = mbsEvent;
+        // UI调整
+        initUI();
+        initHeadToolbar();
+        // 右侧文档
+        initMarkdownSourceScrollPanel();
+        initMarkdownHtmlPanel();
+        initPreviewPanel();
+        initPreviewLeftToolbar();
+        initPreviewRightToolbar();
+        // 生成文档
+        buildMbsDoc();
+        addMouseListeners();
     }
 
     private void addMouseListeners() {
@@ -118,6 +134,10 @@ public class PreviewForm {
 
     public static PreviewForm getInstance(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull Api api) {
         return new PreviewForm(project, psiFile, api);
+    }
+
+    public static PreviewForm getInstance(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull MbsEvent mbsEvent) {
+        return new PreviewForm(project, psiFile, mbsEvent);
     }
 
     public void popup() {
@@ -339,7 +359,7 @@ public class PreviewForm {
             public void actionPerformed(@NotNull AnActionEvent e) {
                 popup.cancel();
                 DocService service = ApplicationManager.getApplication().getService(DocService.class);
-                service.export(project, currentDocView.getFileName(), currentMarkdownText);
+                service.export(project, api.getFileName(), currentMarkdownText);
             }
         });
 
@@ -370,10 +390,10 @@ public class PreviewForm {
     }
 
 
-    private void buildDoc() {
+    private void buildApiDoc() {
         DocService docService = ApplicationManager.getApplication().getService(DocService.class);
         // 将 docView 按照模版转换
-        currentMarkdownText = docService.parse(currentDocView);
+        currentMarkdownText = docService.parse(api);
         if (JBCefApp.isSupported()) {
             markdownHtmlPanel.setHtml(MarkdownUtil.INSTANCE.generateMarkdownHtml(psiFile.getVirtualFile(), currentMarkdownText, project), 0);
         }
@@ -383,4 +403,17 @@ public class PreviewForm {
         });
     }
 
+
+    private void buildMbsDoc() {
+        DocService docService = ApplicationManager.getApplication().getService(DocService.class);
+        // 将 docView 按照模版转换
+        currentMarkdownText = docService.parse(mbsEvent);
+        if (JBCefApp.isSupported()) {
+            markdownHtmlPanel.setHtml(MarkdownUtil.INSTANCE.generateMarkdownHtml(psiFile.getVirtualFile(), currentMarkdownText, project), 0);
+        }
+        WriteCommandAction.runWriteCommandAction(project, () -> {
+            // 光标放在顶部
+            markdownDocument.setText(currentMarkdownText);
+        });
+    }
 }

@@ -1,8 +1,6 @@
 package cn.uniondrug.dev.service
 
-import cn.uniondrug.dev.Api
-import cn.uniondrug.dev.TEMPLATE
-import cn.uniondrug.dev.DocConvertor
+import cn.uniondrug.dev.*
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
 import cn.uniondrug.dev.util.*
@@ -12,6 +10,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiElementFactory
 import com.intellij.psi.PsiMethod
 import java.io.File
 import java.io.IOException
@@ -23,7 +22,6 @@ import java.io.IOException
 class DocService {
 
     companion object {
-
         fun getInstance(): DocService {
             return ApplicationManager.getApplication().getService(DocService::class.java)
         }
@@ -31,9 +29,6 @@ class DocService {
 
     /**
      * 构建 Torna API
-     * @param psiClass
-     * @param psiMethod
-     * @return
      */
     fun buildApi(project: Project, psiClass: PsiClass, psiMethod: PsiMethod) = Api(
         name = getApiName(psiMethod),
@@ -47,10 +42,15 @@ class DocService {
         responseParams = getResponseBody(project, psiMethod),
     )
 
-//    /**
+    /**
+     * 构建 MBS 文档
+     */
+    fun buildMbs(project: Project, psiClass: PsiClass, mbsEvent: MbsEvent) = mbsEvent.apply {
+        messageParams = getBody(project, psiType = PsiElementFactory.getInstance(project).createType(psiClass))
+    }
+
+    //    /**
 //     * 上传文档
-//     * @param project
-//     * @param api
 //     */
 //    fun upload(project: Project, api: Api) {
 //        val docSetting = getInstance(project)
@@ -75,7 +75,12 @@ class DocService {
      */
     fun parse(api: Api): String {
         val detail = DocConvertor.convert(api)
-        return VelocityUtil.convert(TEMPLATE, detail)
+        return VelocityUtil.convert(API_DOC_TEMPLATE, detail)
+    }
+
+    fun parse(mbsEvent: MbsEvent): String {
+        val detail = DocConvertor.convert(mbsEvent)
+        return VelocityUtil.convert(MBS_DOC_TEMPLATE, detail)
     }
 
     /**

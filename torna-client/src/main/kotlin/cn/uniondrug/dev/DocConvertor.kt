@@ -45,6 +45,24 @@ class DocConvertor {
             }
         }
 
+        fun convert(mbsEvent: MbsEvent) = mbsEventDetail(mbsEvent) {
+            initMessageBody {
+                buildString {
+                    append("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
+                    mbsEvent.messageParams?.forEach {
+                        requestAppend("", it)
+                    }
+                }
+            }
+            initMessageExample {
+                buildJsonString {
+                    mbsEvent.messageParams?.forEach {
+                        putParamExample(it)
+                    }
+                }
+            }
+        }
+
         private fun JSONObject.putParamExample(param: ApiParam) {
             when (param.type) {
                 CommonType.STRING,

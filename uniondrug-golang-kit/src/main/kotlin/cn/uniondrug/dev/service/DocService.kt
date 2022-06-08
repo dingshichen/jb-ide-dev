@@ -2,7 +2,7 @@ package cn.uniondrug.dev.service
 
 import cn.uniondrug.dev.Api
 import cn.uniondrug.dev.DocConvertor
-import cn.uniondrug.dev.TEMPLATE
+import cn.uniondrug.dev.API_DOC_TEMPLATE
 import cn.uniondrug.dev.dto.GoApiStruct
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
@@ -72,7 +72,7 @@ class DocService {
      */
     fun parse(api: Api): String {
         val detail = DocConvertor.convert(api)
-        return VelocityUtil.convert(TEMPLATE, detail)
+        return VelocityUtil.convert(API_DOC_TEMPLATE, detail)
     }
 
     /**

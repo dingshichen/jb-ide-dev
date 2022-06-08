@@ -1,12 +1,11 @@
 /** @author dingshichen */
 package cn.uniondrug.dev.consts
 
-import com.intellij.openapi.util.IconLoader
+import com.intellij.icons.AllIcons
 
 object DevKitPlugin {
 
     const val NAME = "Uniondrug Dev Kit"
-    const val DOC_ICON = "/icons/star.svg"
 
 }
 
@@ -15,6 +14,7 @@ object DevKitPlugin {
  */
 object DevIcons {
 
-    val DOC_VIEW = IconLoader.getIcon(DevKitPlugin.DOC_ICON, DevIcons::class.java)
+    @JvmField
+    val DOC_VIEW = AllIcons.CodeWithMe.CwmPermissionView
 
 }

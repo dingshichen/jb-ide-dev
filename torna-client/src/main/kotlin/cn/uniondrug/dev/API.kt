@@ -20,9 +20,9 @@ data class Api(
     /** HTTP ContentType  */
     val contentType: String,
     /** 请求入参 */
-    var requestParams: MutableList<ApiParam>?,
+    var requestParams: List<ApiParam>?,
     /** 响应返回值入参 */
-    var responseParams: MutableList<ApiParam>?,
+    var responseParams: List<ApiParam>?,
 ) {
 
     val fileName: String by lazy {
@@ -77,4 +77,41 @@ data class ApiDetail(
 
 }
 
+/**
+ * MBS 事件结构
+ */
+data class MbsEvent(
+    /** 事件名称 */
+    val name: String,
+    /** 事件概述  */
+    var description: String?,
+    /** MBS 编号（1 或 2） */
+    val mbs: String,
+    /** 主题 */
+    val topic: String,
+    /** 标签 */
+    val tag: String,
+    /** 作者 */
+    val author: String?,
+    /** 消息体字段 */
+    var messageParams: List<ApiParam>? = null
+)
+
+/**
+ * MBS 事件结构扩展，用于填充模版
+ */
+data class MbsEventDetail(
+    val mbsEvent: MbsEvent,
+    var messageBody: String? = null,
+    var messageExample: String? = null,
+) {
+
+    inline fun initMessageBody(init: MbsEventDetail.() -> String) = apply { messageBody = init() }
+
+    inline fun initMessageExample(init: MbsEventDetail.() -> String) = apply { messageExample = init() }
+
+}
+
 inline fun apiDetail(api: Api, init: ApiDetail.() -> Unit) = ApiDetail(api).apply { init() }
+
+inline fun mbsEventDetail(mbsEvent: MbsEvent, init: MbsEventDetail.() -> Unit) = MbsEventDetail(mbsEvent).apply { init() }
