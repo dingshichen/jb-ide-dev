@@ -31,7 +31,7 @@ data class Api(
 
     val fileName: String by lazy {
         url.substring(8).run {
-            "${substring(indexOf("/") + 1).splitToSmallHump("/")}.md"
+            substring(indexOf("/") + 1).splitToSmallHump("/")
         }
     }
 
@@ -123,7 +123,7 @@ data class MbsEvent(
 ) {
 
     val fileName: String by lazy {
-        "${tag.splitToSmallHump("_")}.md"
+        tag.splitToSmallHump("_")
     }
 
     val messageBody: String by lazy {
