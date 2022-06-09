@@ -1,6 +1,7 @@
 package cn.uniondrug.dev.service
 
 import cn.uniondrug.dev.Api
+import cn.uniondrug.dev.DocBuildFailException
 import cn.uniondrug.dev.MbsEvent
 import cn.uniondrug.dev.dto.GoApiStruct
 import cn.uniondrug.dev.dto.GoMbsStruct
@@ -11,11 +12,13 @@ import cn.uniondrug.dev.util.getCommentValue
 import cn.uniondrug.dev.util.humpToPath
 import com.goide.psi.GoMethodDeclaration
 import com.goide.psi.GoTypeDeclaration
+import com.goide.psi.GoTypeSpec
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
+import com.intellij.psi.PsiElement
 import java.io.File
 import java.io.IOException
 
@@ -73,14 +76,21 @@ class DocService {
     /**
      * 构建 MBS 文档
      */
-    fun buildMbsDoc(type: GoTypeDeclaration, goMbsStruct: GoMbsStruct) = MbsEvent(
-        name = goMbsStruct.nameComment?.text?.getCommentValue(type.typeSpecList[0].name!!)!!,
-        mbs = goMbsStruct.mbsComment?.text?.getCommentValue("Mbs")!!,
-        topic = goMbsStruct.topicComment?.text?.getCommentValue("Topic")!!,
-        tag = goMbsStruct.tagComment?.text?.getCommentValue("Tag")!!,
-        author = goMbsStruct.authorComment?.text?.getCommentValue("Author") ?: "",
-        messageParams =  CommonPsiUtil.getMessageBody(type.typeSpecList[0])
-    )
+    fun buildMbsDoc(type: PsiElement, goMbsStruct: GoMbsStruct): MbsEvent {
+        val typeSpec = when(type) {
+            is GoTypeDeclaration -> type.typeSpecList[0]
+            is GoTypeSpec -> type
+            else -> throw DocBuildFailException("")
+        }
+        return MbsEvent(
+            name = goMbsStruct.nameComment?.text?.getCommentValue(typeSpec.name!!)!!,
+            mbs = goMbsStruct.mbsComment?.text?.getCommentValue("Mbs")!!,
+            topic = goMbsStruct.topicComment?.text?.getCommentValue("Topic")!!,
+            tag = goMbsStruct.tagComment?.text?.getCommentValue("Tag")!!,
+            author = goMbsStruct.authorComment?.text?.getCommentValue("Author") ?: "",
+            messageParams =  CommonPsiUtil.getMessageBody(typeSpec)
+        )
+    }
 
     /**
      * 导出

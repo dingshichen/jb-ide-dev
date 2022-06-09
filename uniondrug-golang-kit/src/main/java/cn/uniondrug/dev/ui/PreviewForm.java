@@ -395,7 +395,7 @@ public class PreviewForm {
         }
         WriteCommandAction.runWriteCommandAction(project, () -> {
             // 光标放在顶部
-            markdownDocument.setText(api.getMarkdownText());
+            markdownDocument.setText(isApi ? api.getMarkdownText() : mbsEvent.getMarkdownText());
         });
     }
 }

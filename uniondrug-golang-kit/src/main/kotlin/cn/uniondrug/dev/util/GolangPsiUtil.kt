@@ -2,6 +2,7 @@ package cn.uniondrug.dev.util
 
 import com.goide.psi.GoFieldDeclaration
 import com.goide.psi.GoTag
+import com.intellij.psi.PsiElement
 
 /**
  * @author dingshichen
@@ -31,5 +32,21 @@ object GolangPsiUtil {
      */
     fun getFieldDescription(field: GoFieldDeclaration, tag: GoTag): String? {
         return tag.getValue("label")
+    }
+
+    /**
+     * 获取真实子集
+     */
+    fun getRealChildren(psiElement: PsiElement): List<PsiElement> {
+        val children = mutableListOf<PsiElement>()
+        addNextSibling(psiElement.firstChild, children)
+        return children
+    }
+
+    private fun addNextSibling(psiElement: PsiElement?, list: MutableList<PsiElement>) {
+        if (psiElement != null) {
+            list += psiElement
+            addNextSibling(psiElement.nextSibling, list)
+        }
     }
 }

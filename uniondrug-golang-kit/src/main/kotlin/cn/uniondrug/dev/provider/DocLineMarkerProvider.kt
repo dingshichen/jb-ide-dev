@@ -6,13 +6,16 @@ import cn.uniondrug.dev.dto.GoApiStruct
 import cn.uniondrug.dev.dto.GoMbsStruct
 import cn.uniondrug.dev.service.DocService
 import cn.uniondrug.dev.ui.PreviewForm
+import cn.uniondrug.dev.util.GolangPsiUtil
 import com.goide.psi.GoMethodDeclaration
 import com.goide.psi.GoTypeDeclaration
+import com.goide.psi.GoTypeSpec
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.LineMarkerProvider
 import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 
 /**
  * Api Method Marker
@@ -45,9 +48,10 @@ class DocLineMarkerProvider : LineMarkerProvider {
                 }
             }
         }
-        is GoTypeDeclaration -> {
+        is GoTypeDeclaration,
+        is GoTypeSpec -> {
             element.containingFile.run {
-                resulveStructComment(element, children)?.let {
+                resulveStructComment(element, this)?.let {
                     val project = element.project
                     LineMarkerInfo(
                         element,
@@ -55,7 +59,7 @@ class DocLineMarkerProvider : LineMarkerProvider {
                         DevIcons.DOC_VIEW,
                         { "查看文档" },
                         { _, _ ->
-                            resulveStructComment(element, children)?.let {
+                            resulveStructComment(element, this)?.let {
                                 val docService = DocService.getInstance()
                                 val mbsEvent = docService.buildMbsDoc(element, it)
                                 PreviewForm.getInstance(project, this, mbsEvent)
@@ -82,6 +86,9 @@ class DocLineMarkerProvider : LineMarkerProvider {
             index: Int,
         ) {
             val before = index - 2
+            if (before < 0) {
+                return
+            }
             when (val comment = psiElements[before]) {
                 is PsiComment -> {
                     when {
@@ -132,18 +139,39 @@ class DocLineMarkerProvider : LineMarkerProvider {
     /**
      * 解析结构体注释
      */
-    private fun resulveStructComment(type: GoTypeDeclaration, psiElements: Array<PsiElement>): GoMbsStruct? {
-        val firstIndex = psiElements.indexOf(type)
+    private fun resulveStructComment(element: PsiElement, psiFile: PsiFile): GoMbsStruct? {
+        // 需要遍历的上级集合
+        val psiElements: List<PsiElement> = when (element) {
+            is GoTypeDeclaration -> psiFile.children.toList()
+            is GoTypeSpec -> GolangPsiUtil.getRealChildren(element.parent)
+            else -> listOf()
+        }
+        // 结构体名称
+        val structName = when (element) {
+            is GoTypeDeclaration -> element.typeSpecList[0].name
+            is GoTypeSpec -> element.name
+            else -> null
+        } ?: return null
+        // 步长
+        val step = when (element) {
+            is GoTypeDeclaration -> 2
+            is GoTypeSpec -> 3
+            else -> 2
+        }
+        val firstIndex = psiElements.indexOf(element)
         val commentStruct = GoMbsStruct()
         tailrec fun resolve(
             commentStruct: GoMbsStruct,
             index: Int,
         ) {
-            val before = index - 2
+            val before = index - step
+            if (before < 0) {
+                return
+            }
             when (val comment = psiElements[before]) {
                 is PsiComment -> {
                     when {
-                        comment.text.startsWith("// ${type.typeSpecList[0].name}") -> {
+                        comment.text.startsWith("// $structName") -> {
                             commentStruct.nameComment = comment
                             resolve(commentStruct, before)
                         }
