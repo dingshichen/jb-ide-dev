@@ -1,6 +1,7 @@
 package cn.uniondrug.dev.service
 
-import cn.uniondrug.dev.*
+import cn.uniondrug.dev.Api
+import cn.uniondrug.dev.MbsEvent
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
 import cn.uniondrug.dev.util.*
@@ -45,43 +46,14 @@ class DocService {
     /**
      * 构建 MBS 文档
      */
-    fun buildMbs(project: Project, psiClass: PsiClass, mbsEvent: MbsEvent) = mbsEvent.apply {
+    fun buildMbs(project: Project, psiClass: PsiClass, mbs: String, topic: String, tag: String, author: String?) = MbsEvent (
+        name = getMbsName(psiClass),
+        mbs = mbs,
+        topic = topic,
+        tag = tag,
+        author = author,
         messageParams = getBody(project, psiType = PsiElementFactory.getInstance(project).createType(psiClass))
-    }
-
-    //    /**
-//     * 上传文档
-//     */
-//    fun upload(project: Project, api: Api) {
-//        val docSetting = getInstance(project)
-//        val client = OpenClient(docSetting.state.url)
-//        val request = DocPushRequest(docSetting.state.token)
-//        request.debugEnvs = listOf(DebugEnv("Testing", docSetting.state.domain))
-//        request.apis = listOf(api)
-//        request.author = docSetting.state.author
-//        // 发送请求
-//        val response = client.execute(request)
-//        if (response.isSuccess) {
-//            // 返回结果
-//            val data = response.data
-//            println(JSON.toJSONString(data, SerializerFeature.PrettyFormat))
-//        } else {
-//            println("errorCode:" + response.code + ",errorMsg:" + response.msg)
-//        }
-//    }
-
-    /**
-     * 转成 Markdown 文本
-     */
-    fun parse(api: Api): String {
-        val detail = DocConvertor.convert(api)
-        return VelocityUtil.convert(API_DOC_TEMPLATE, detail)
-    }
-
-    fun parse(mbsEvent: MbsEvent): String {
-        val detail = DocConvertor.convert(mbsEvent)
-        return VelocityUtil.convert(MBS_DOC_TEMPLATE, detail)
-    }
+    )
 
     /**
      * 导出

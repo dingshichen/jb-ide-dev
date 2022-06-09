@@ -81,7 +81,6 @@ public class PreviewForm {
     private JPanel previewToolbarPanel;
     private JLabel docNameLabel;
     private EditorEx markdownEditor;
-    private String currentMarkdownText;
 
     private Api api;
     private MbsEvent mbsEvent;
@@ -359,7 +358,7 @@ public class PreviewForm {
             public void actionPerformed(@NotNull AnActionEvent e) {
                 popup.cancel();
                 DocService service = ApplicationManager.getApplication().getService(DocService.class);
-                service.export(project, api.getFileName(), currentMarkdownText);
+                service.export(project, api.getFileName(), api.getMarkdownText());
             }
         });
 
@@ -367,7 +366,7 @@ public class PreviewForm {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
 
-                StringSelection selection = new StringSelection(currentMarkdownText);
+                StringSelection selection = new StringSelection(api.getMarkdownText());
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 clipboard.setContents(selection, selection);
                 notifyInfo(project, "复制成功");
@@ -391,29 +390,23 @@ public class PreviewForm {
 
 
     private void buildApiDoc() {
-        DocService docService = ApplicationManager.getApplication().getService(DocService.class);
-        // 将 docView 按照模版转换
-        currentMarkdownText = docService.parse(api);
         if (JBCefApp.isSupported()) {
-            markdownHtmlPanel.setHtml(MarkdownUtil.INSTANCE.generateMarkdownHtml(psiFile.getVirtualFile(), currentMarkdownText, project), 0);
+            markdownHtmlPanel.setHtml(MarkdownUtil.INSTANCE.generateMarkdownHtml(psiFile.getVirtualFile(), api.getMarkdownText(), project), 0);
         }
         WriteCommandAction.runWriteCommandAction(project, () -> {
             // 光标放在顶部
-            markdownDocument.setText(currentMarkdownText);
+            markdownDocument.setText(api.getMarkdownText());
         });
     }
 
 
     private void buildMbsDoc() {
-        DocService docService = ApplicationManager.getApplication().getService(DocService.class);
-        // 将 docView 按照模版转换
-        currentMarkdownText = docService.parse(mbsEvent);
         if (JBCefApp.isSupported()) {
-            markdownHtmlPanel.setHtml(MarkdownUtil.INSTANCE.generateMarkdownHtml(psiFile.getVirtualFile(), currentMarkdownText, project), 0);
+            markdownHtmlPanel.setHtml(MarkdownUtil.INSTANCE.generateMarkdownHtml(psiFile.getVirtualFile(), mbsEvent.getMarkdownText(), project), 0);
         }
         WriteCommandAction.runWriteCommandAction(project, () -> {
             // 光标放在顶部
-            markdownDocument.setText(currentMarkdownText);
+            markdownDocument.setText(mbsEvent.getMarkdownText());
         });
     }
 }

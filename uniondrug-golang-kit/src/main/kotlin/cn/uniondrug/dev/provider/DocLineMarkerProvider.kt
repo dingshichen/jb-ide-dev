@@ -3,16 +3,16 @@ package cn.uniondrug.dev.provider
 import cn.uniondrug.dev.consts.DevIcons
 import cn.uniondrug.dev.consts.DevKitPlugin
 import cn.uniondrug.dev.dto.GoApiStruct
+import cn.uniondrug.dev.dto.GoMbsStruct
 import cn.uniondrug.dev.service.DocService
 import cn.uniondrug.dev.ui.PreviewForm
-import com.goide.psi.GoFile
 import com.goide.psi.GoMethodDeclaration
+import com.goide.psi.GoTypeDeclaration
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.LineMarkerProvider
 import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
-import com.intellij.psi.util.PsiTreeUtil
 
 /**
  * Api Method Marker
@@ -23,20 +23,42 @@ class DocLineMarkerProvider : LineMarkerProvider {
 
     override fun getLineMarkerInfo(element: PsiElement) = when (element) {
         is GoMethodDeclaration -> {
-            PsiTreeUtil.getParentOfType(element, GoFile::class.java)?.let { goFile ->
-                resulveComment(element, goFile.children)?.let {
+            element.containingFile.run {
+                resulveFuncComment(element, children)?.let {
                     val project = element.project
-                    val containingFile = element.containingFile
                     LineMarkerInfo(
                         element,
                         element.textRange,
                         DevIcons.DOC_VIEW,
                         { "查看文档" },
                         { _, _ ->
-                            resulveComment(element, goFile.children)?.let {
+                            resulveFuncComment(element, children)?.let {
                                 val docService = DocService.getInstance()
-                                val api = docService.buildApi(element, it)
-                                PreviewForm.getInstance(project, containingFile, api)
+                                val api = docService.buildApiDoc(project, element, it)
+                                PreviewForm.getInstance(project, this, api)
+                                    .popup()
+                            }
+                        },
+                        GutterIconRenderer.Alignment.CENTER,
+                        { DevKitPlugin.NAME }
+                    )
+                }
+            }
+        }
+        is GoTypeDeclaration -> {
+            element.containingFile.run {
+                resulveStructComment(element, children)?.let {
+                    val project = element.project
+                    LineMarkerInfo(
+                        element,
+                        element.textRange,
+                        DevIcons.DOC_VIEW,
+                        { "查看文档" },
+                        { _, _ ->
+                            resulveStructComment(element, children)?.let {
+                                val docService = DocService.getInstance()
+                                val mbsEvent = docService.buildMbsDoc(element, it)
+                                PreviewForm.getInstance(project, this, mbsEvent)
                                     .popup()
                             }
                         },
@@ -52,7 +74,7 @@ class DocLineMarkerProvider : LineMarkerProvider {
     /**
      * 解析方法注释
      */
-    private fun resulveComment(menthod: GoMethodDeclaration, psiElements: Array<PsiElement>): GoApiStruct? {
+    private fun resulveFuncComment(menthod: GoMethodDeclaration, psiElements: Array<PsiElement>): GoApiStruct? {
         val firstIndex = psiElements.indexOf(menthod)
         val commentStruct = GoApiStruct()
         tailrec fun resolve(
@@ -97,6 +119,48 @@ class DocLineMarkerProvider : LineMarkerProvider {
                         }
                         comment.text.startsWith("// Error") -> {
                             commentStruct.errorComment += comment
+                            resolve(commentStruct, before)
+                        }
+                    }
+                }
+            }
+        }
+        resolve(commentStruct, firstIndex)
+        return if (commentStruct.isValid()) commentStruct else null
+    }
+
+    /**
+     * 解析结构体注释
+     */
+    private fun resulveStructComment(type: GoTypeDeclaration, psiElements: Array<PsiElement>): GoMbsStruct? {
+        val firstIndex = psiElements.indexOf(type)
+        val commentStruct = GoMbsStruct()
+        tailrec fun resolve(
+            commentStruct: GoMbsStruct,
+            index: Int,
+        ) {
+            val before = index - 2
+            when (val comment = psiElements[before]) {
+                is PsiComment -> {
+                    when {
+                        comment.text.startsWith("// ${type.typeSpecList[0].name}") -> {
+                            commentStruct.nameComment = comment
+                            resolve(commentStruct, before)
+                        }
+                        comment.text.startsWith("// Mbs") -> {
+                            commentStruct.mbsComment = comment
+                            resolve(commentStruct, before)
+                        }
+                        comment.text.startsWith("// Topic") -> {
+                            commentStruct.topicComment = comment
+                            resolve(commentStruct, before)
+                        }
+                        comment.text.startsWith("// Tag") -> {
+                            commentStruct.tagComment = comment
+                            resolve(commentStruct, before)
+                        }
+                        comment.text.startsWith("// Author") -> {
+                            commentStruct.authorComment = comment
                             resolve(commentStruct, before)
                         }
                     }

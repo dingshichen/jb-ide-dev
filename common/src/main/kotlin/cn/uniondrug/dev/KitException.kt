@@ -2,6 +2,6 @@
 package cn.uniondrug.dev
 
 /**
- * API 构建异常
+ * 文档构建失败抛出此异常
  */
-class ApiBuildFailException(message: String) : Exception(message)
+class DocBuildFailException(message: String) : Exception(message)

@@ -1,15 +1,12 @@
 package cn.uniondrug.dev.provider
 
-import cn.uniondrug.dev.ApiBuildFailException
-import cn.uniondrug.dev.MbsEvent
+import cn.uniondrug.dev.DocBuildFailException
 import cn.uniondrug.dev.consts.DevIcons
 import cn.uniondrug.dev.consts.DevKitPlugin
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.service.DocService
 import cn.uniondrug.dev.ui.PreviewForm
 import cn.uniondrug.dev.util.commentText
-import cn.uniondrug.dev.util.getMbsDescription
-import cn.uniondrug.dev.util.getMbsName
 import cn.uniondrug.dev.util.isNotSpringMVCMethod
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.LineMarkerProvider
@@ -27,84 +24,87 @@ import com.intellij.psi.util.PsiTreeUtil
 class DocLineMarkerProvider : LineMarkerProvider {
 
     override fun getLineMarkerInfo(element: PsiElement): LineMarkerInfo<*>? {
-        when (element) {
+        return when (element) {
             is PsiIdentifier -> {
                 when (val parent = element.parent) {
-                    is PsiMethod -> {
-                        PsiTreeUtil.getParentOfType(parent, PsiClass::class.java)?.let {
-                            if (it.isAnnotationType
-                                || it.isEnum
-                                || it.isInterface
-                                || isNotSpringMVCMethod(parent)) {
-                                return null
-                            }
-                            val project = element.project
-                            val containingFile = element.containingFile
-                            return LineMarkerInfo(
-                                element,
-                                element.textRange,
-                                DevIcons.DOC_VIEW,
-                                { "查看文档" },
-                                { _, _ ->
-                                    val docService = DocService.getInstance()
-                                    try {
-                                        val docItem = docService.buildApi(project, it, parent)
-                                        PreviewForm.getInstance(project, containingFile, docItem).popup()
-                                    } catch (e: ApiBuildFailException) {
-                                        notifyError(project, e.localizedMessage)
-                                    }
-                                },
-                                GutterIconRenderer.Alignment.CENTER,
-                                { DevKitPlugin.NAME }
-                            )
-                        }
-                    }
-                    is PsiClass -> {
-                        if (parent.isAnnotationType
-                            || parent.isEnum
-                            || parent.isInterface) {
-                            return null
-                        }
-                        parent.docComment?.apply {
-                            val mbs = findTagByName("mbs")?.valueElement?.commentText()
-                            val topic = findTagByName("topic")?.valueElement?.commentText()
-                            val tag = findTagByName("tag")?.valueElement?.commentText()
-                            val author = findTagByName("author")?.valueElement?.commentText()
-                            if (mbs != null && topic != null && tag != null) {
-                                val project = element.project
-                                val containingFile = element.containingFile
-                                val mbsEvent = MbsEvent(
-                                    name = getMbsName(parent),
-                                    description = getMbsDescription(parent),
-                                    mbs = mbs,
-                                    topic = topic,
-                                    tag = tag,
-                                    author = author
-                                )
-                                return LineMarkerInfo(
-                                    element,
-                                    element.textRange,
-                                    DevIcons.DOC_VIEW,
-                                    { "查看文档" },
-                                    { _, _ ->
-                                        val docService = DocService.getInstance()
-                                        try {
-                                            docService.buildMbs(project, parent, mbsEvent)
-                                            PreviewForm.getInstance(project, containingFile, mbsEvent).popup()
-                                        } catch (e: ApiBuildFailException) {
-                                            notifyError(project, e.localizedMessage)
-                                        }
-                                    },
-                                    GutterIconRenderer.Alignment.CENTER,
-                                    { DevKitPlugin.NAME }
-                                )
-                            }
-                        }
-                    }
+                    is PsiMethod -> apiLineMarkerInfo(element, parent)
+                    is PsiClass -> mbsLineMarkerInfo(element, parent)
+                    else -> null
                 }
             }
+            else -> null
         }
-        return null
     }
 
+    /**
+     * API 标记
+     */
+    private fun apiLineMarkerInfo(element: PsiElement, psiMethod: PsiMethod): LineMarkerInfo<*>? {
+        return PsiTreeUtil.getParentOfType(psiMethod, PsiClass::class.java)?.let {
+            if (it.isAnnotationType
+                || it.isEnum
+                || it.isInterface
+                || isNotSpringMVCMethod(psiMethod)) {
+                return null
+            }
+            val project = element.project
+            val containingFile = element.containingFile
+            LineMarkerInfo(
+                element,
+                element.textRange,
+                DevIcons.DOC_VIEW,
+                { "查看文档" },
+                { _, _ ->
+                    val docService = DocService.getInstance()
+                    try {
+                        val docItem = docService.buildApi(project, it, psiMethod)
+                        PreviewForm.getInstance(project, containingFile, docItem).popup()
+                    } catch (e: DocBuildFailException) {
+                        notifyError(project, e.localizedMessage)
+                    }
+                },
+                GutterIconRenderer.Alignment.CENTER,
+                { DevKitPlugin.NAME }
+            )
+        }
+    }
+
+    /**
+     * MBS 消息体标记
+     */
+    private fun mbsLineMarkerInfo(element: PsiElement, psiClass: PsiClass): LineMarkerInfo<*>? {
+        if (psiClass.isAnnotationType
+            || psiClass.isEnum
+            || psiClass.isInterface) {
+            return null
+        }
+        return psiClass.docComment?.let {
+            val mbs = it.findTagByName("mbs")?.valueElement?.commentText()
+            val topic = it.findTagByName("topic")?.valueElement?.commentText()
+            val tag = it.findTagByName("tag")?.valueElement?.commentText()
+            val author = it.findTagByName("author")?.valueElement?.commentText()
+            if (mbs == null || topic == null || tag == null) {
+                return null
+            }
+            val project = element.project
+            val containingFile = element.containingFile
+            LineMarkerInfo(
+                element,
+                element.textRange,
+                DevIcons.DOC_VIEW,
+                { "查看文档" },
+                { _, _ ->
+                    val docService = DocService.getInstance()
+                    try {
+                        val mbsEvent = docService.buildMbs(project, psiClass, mbs, topic, tag, author)
+                        PreviewForm.getInstance(project, containingFile, mbsEvent).popup()
+                    } catch (e: DocBuildFailException) {
+                        notifyError(project, e.localizedMessage)
+                    }
+                },
+                GutterIconRenderer.Alignment.CENTER,
+                { DevKitPlugin.NAME }
+            )
+        }
+    }
 }

@@ -29,3 +29,24 @@ data class GoApiStruct(
             || nameComment!!.text.startsWith("// Get"))
 
 }
+
+/**
+ * GO MBS 注释结构
+ */
+data class GoMbsStruct(
+    var nameComment: PsiComment? = null,
+    var authorComment: PsiComment? = null,
+    var mbsComment: PsiComment? = null,
+    var topicComment: PsiComment? = null,
+    var tagComment: PsiComment? = null,
+) {
+
+    /**
+     * 接口有效判断
+     */
+    fun isValid() = nameComment != null
+            && mbsComment != null
+            && topicComment != null
+            && tagComment != null
+
+}

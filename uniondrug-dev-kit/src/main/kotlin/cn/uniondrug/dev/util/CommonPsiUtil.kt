@@ -27,32 +27,19 @@ fun isBaseCollection(type: PsiType): Boolean {
  */
 fun getApiName(psiMethod: PsiMethod) = psiMethod.childrenDocComment()?.find {
     it.isCommentData()
-}?.commentText() ?: throw ApiBuildFailException("获取 API 名称失败，请检查方法注释是否存在")
+}?.commentText() ?: throw DocBuildFailException("获取 API 名称失败，请检查方法注释是否存在")
 
 /**
  * 获取 MBS 事件名称
  */
 fun getMbsName(psiClass: PsiClass) = psiClass.childrenDocComment()?.find {
     it.isCommentData()
-}?.commentText() ?: throw ApiBuildFailException("获取 MBS 事件名称失败，请检查类注释是否有效")
+}?.commentText() ?: throw DocBuildFailException("获取 MBS 事件名称失败，请检查类注释是否有效")
 
 /**
  * 获取 API 描述
  */
 fun getApiDescription(psiMethod: PsiMethod) = psiMethod.childrenDocComment()?.let {
-    val comments =  it.filter { e -> e.isCommentData() }
-    if (comments.size > 1) {
-        return comments[1].commentText()
-    } else {
-        return ""
-    }
-} ?: ""
-
-
-/**
- * 获取 Mbs 描述
- */
-fun getMbsDescription(psiClass: PsiClass) = psiClass.childrenDocComment()?.let {
     val comments =  it.filter { e -> e.isCommentData() }
     if (comments.size > 1) {
         return comments[1].commentText()
@@ -119,7 +106,7 @@ fun getBody(
         }
         params += getBody(project, parentField, it as PsiClassType)
     }
-    val psiClass = PsiUtil.resolveClassInClassTypeOnly(psiType) ?: throw ApiBuildFailException("获取请求体参数类型失败")
+    val psiClass = PsiUtil.resolveClassInClassTypeOnly(psiType) ?: throw DocBuildFailException("获取请求体参数类型失败")
     // 泛型对应真实类型关系 K: 泛型 V: 真实类型的 PsiType
     val generics = getGenericsType(psiClass, psiType)
     // 没有给出属性字段，则解析类型里的属性

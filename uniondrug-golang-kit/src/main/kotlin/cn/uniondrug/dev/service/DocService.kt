@@ -1,13 +1,16 @@
 package cn.uniondrug.dev.service
 
 import cn.uniondrug.dev.Api
-import cn.uniondrug.dev.DocConvertor
-import cn.uniondrug.dev.API_DOC_TEMPLATE
+import cn.uniondrug.dev.MbsEvent
 import cn.uniondrug.dev.dto.GoApiStruct
+import cn.uniondrug.dev.dto.GoMbsStruct
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
-import cn.uniondrug.dev.util.*
+import cn.uniondrug.dev.util.CommonPsiUtil
+import cn.uniondrug.dev.util.getCommentValue
+import cn.uniondrug.dev.util.humpToPath
 import com.goide.psi.GoMethodDeclaration
+import com.goide.psi.GoTypeDeclaration
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
@@ -31,7 +34,7 @@ class DocService {
     /**
      * 构建 API DTO
      */
-    fun buildApi(method: GoMethodDeclaration, goApiStruct: GoApiStruct): Api {
+    fun buildApiDoc(project: Project, method: GoMethodDeclaration, goApiStruct: GoApiStruct): Api {
         var url = ""
         var httpMethod = ""
         var contentType = ""
@@ -62,18 +65,22 @@ class DocService {
             url = url,
             httpMethod = httpMethod,
             contentType = contentType,
-            requestParams = CommonPsiUtil.getRequestBody(method.project, goApiStruct.requestComment!!),
-            responseParams = CommonPsiUtil.getResponseBody(method.project, goApiStruct.responseComment),
+            requestParams = CommonPsiUtil.getRequestBody(project, goApiStruct.requestComment!!),
+            responseParams = CommonPsiUtil.getResponseBody(project, goApiStruct.responseComment),
         )
     }
 
     /**
-     * 解析成字符串
+     * 构建 MBS 文档
      */
-    fun parse(api: Api): String {
-        val detail = DocConvertor.convert(api)
-        return VelocityUtil.convert(API_DOC_TEMPLATE, detail)
-    }
+    fun buildMbsDoc(type: GoTypeDeclaration, goMbsStruct: GoMbsStruct) = MbsEvent(
+        name = goMbsStruct.nameComment?.text?.getCommentValue(type.typeSpecList[0].name!!)!!,
+        mbs = goMbsStruct.mbsComment?.text?.getCommentValue("Mbs")!!,
+        topic = goMbsStruct.topicComment?.text?.getCommentValue("Topic")!!,
+        tag = goMbsStruct.tagComment?.text?.getCommentValue("Tag")!!,
+        author = goMbsStruct.authorComment?.text?.getCommentValue("Author") ?: "",
+        messageParams =  CommonPsiUtil.getMessageBody(type.typeSpecList[0])
+    )
 
     /**
      * 导出

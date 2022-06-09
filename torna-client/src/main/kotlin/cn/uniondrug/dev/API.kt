@@ -1,6 +1,10 @@
 /** @author dingshichen */
 package cn.uniondrug.dev
 
+import cn.uniondrug.dev.util.BaseDataTypeMockUtil
+import com.alibaba.fastjson.JSONArray
+import com.alibaba.fastjson.JSONObject
+
 /**
  * API 接口
  */
@@ -31,6 +35,53 @@ data class Api(
         }
     }
 
+    val requestBody: String by lazy {
+        buildString {
+            append("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
+            requestParams?.forEach {
+                requestAppend("", it)
+            }
+        }
+    }
+
+    val requestExample: String by lazy {
+        buildJsonString {
+            requestParams?.forEach {
+                putParamExample(it)
+            }
+        }
+    }
+
+    val responseBody: String by lazy {
+        buildString {
+            append("|参数名|类型|最大长度|描述|\n|:-----|:-----|:-----|:-----|\n")
+            responseParams?.forEach {
+                responseAppend("", it)
+            }
+        }
+    }
+
+    val responseExample: String by lazy {
+        buildJsonString {
+            responseParams?.forEach {
+                putParamExample(it)
+            }
+        }
+    }
+
+    val markdownText: String by lazy {
+        "**$name**\n\n" +
+                "**URL:** `$url`\n\n" +
+                "**Type:** `$httpMethod`\n\n" +
+                "**Author:** $author\n\n" +
+                "**Content-Type:** `$contentType`\n\n" +
+                "**Description:** $description\n\n" +
+                "**Body-parameters:**\n\n$requestBody\n\n" +
+                "**Request-example:**\n```json\n$requestExample\n```\n\n" +
+                "**Response-fields:**\n\n$responseBody\n\n" +
+                "**Response-example:**\n```json\n$responseExample\n```\n\n"
+    }
+
 }
 
 /**
@@ -54,37 +105,11 @@ data class ApiParam(
 )
 
 /**
- * 扩展，用于填充模版
- */
-data class ApiDetail(
-    val api: Api,
-    var requestHeader: String? = null,
-    var requestBody: String? = null,
-    var requestExample: String? = null,
-    var responseBody: String? = null,
-    var responseExample: String? = null,
-) {
-
-    inline fun initRequestHeader(init: ApiDetail.() -> String) = apply { requestHeader = init() }
-
-    inline fun initRequestBody(init: ApiDetail.() -> String) = apply { requestBody = init() }
-
-    inline fun initRequestExample(init: ApiDetail.() -> String) = apply { requestExample = init() }
-
-    inline fun initResponseBody(init: ApiDetail.() -> String) = apply { responseBody = init() }
-
-    inline fun initResponseExample(init: ApiDetail.() -> String) = apply { responseExample = init() }
-
-}
-
-/**
  * MBS 事件结构
  */
 data class MbsEvent(
     /** 事件名称 */
     val name: String,
-    /** 事件概述  */
-    var description: String?,
     /** MBS 编号（1 或 2） */
     val mbs: String,
     /** 主题 */
@@ -95,23 +120,93 @@ data class MbsEvent(
     val author: String?,
     /** 消息体字段 */
     var messageParams: List<ApiParam>? = null
-)
-
-/**
- * MBS 事件结构扩展，用于填充模版
- */
-data class MbsEventDetail(
-    val mbsEvent: MbsEvent,
-    var messageBody: String? = null,
-    var messageExample: String? = null,
 ) {
 
-    inline fun initMessageBody(init: MbsEventDetail.() -> String) = apply { messageBody = init() }
+    val fileName: String by lazy {
+        "${tag.splitToSmallHump("_")}.md"
+    }
 
-    inline fun initMessageExample(init: MbsEventDetail.() -> String) = apply { messageExample = init() }
+    val messageBody: String by lazy {
+        buildString {
+            append("|参数名|类型|是否必填|最大长度|描述|\n|:-----|:-----|:-----|:-----|:-----|\n")
+            messageParams?.forEach {
+                requestAppend("", it)
+            }
+        }
+    }
 
+    val messageExample: String by lazy {
+        buildJsonString {
+            messageParams?.forEach {
+                putParamExample(it)
+            }
+        }
+    }
+
+    val markdownText: String by lazy {
+        "**$name**\n\n" +
+                "**MBS:** `$mbs`\n\n" +
+                "**Topic:** `$topic`\n\n" +
+                "**Tag:** `$tag`\n\n" +
+                "**Author:** $author\n\n" +
+                "**Message-parameters:**\n\n$messageBody\n\n" +
+                "**Message-example:**\n```json\n$messageExample\n```"
+    }
 }
 
-inline fun apiDetail(api: Api, init: ApiDetail.() -> Unit) = ApiDetail(api).apply { init() }
+fun JSONObject.putParamExample(param: ApiParam) {
+    when (param.type) {
+        CommonType.STRING,
+        CommonType.BYTE,
+        CommonType.INT,
+        CommonType.LONG,
+        CommonType.FLOAT -> this[param.name] = BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name)
+        CommonType.ARRAY -> this[param.name] = JSONArray()
+        CommonType.BOOL -> this[param.name] = true
+        CommonType.OBJECT -> this[param.name] = jsonObject {
+            param.children?.forEach {
+                putParamExample(it)
+            }
+        }
+        CommonType.ARRAY_STRING,
+        CommonType.ARRAY_BOOL,
+        CommonType.ARRAY_BYTE,
+        CommonType.ARRAY_INT,
+        CommonType.ARRAY_LONG,
+        CommonType.ARRAY_FLOAT -> this[param.name] = arrayJsonOf(
+            BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name),
+            BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name)
+        )
+        CommonType.ARRAY_OBJECT -> this[param.name] = arrayJsonOf(
+            jsonObject {
+                param.children?.forEach {
+                    putParamExample(it)
+                }
+            },
+            jsonObject {
+                param.children?.forEach {
+                    putParamExample(it)
+                }
+            }
+        )
+    }
+}
 
-inline fun mbsEventDetail(mbsEvent: MbsEvent, init: MbsEventDetail.() -> Unit) = MbsEventDetail(mbsEvent).apply { init() }
+private fun StringBuilder.requestAppend(prefix: String, param: ApiParam) {
+    append("| $prefix${param.name} | ${param.type.value} | ${param.required} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
+    param.children?.forEach {
+        requestAppend(if (prefix == "") "└─" else "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$prefix",
+            it
+        )
+    }
+}
+
+private fun StringBuilder.responseAppend(prefix: String, param: ApiParam) {
+    append("| $prefix${param.name} | ${param.type.value} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
+    param.children?.forEach {
+        responseAppend(
+            if (prefix == "") "└─" else "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$prefix",
+            it
+        )
+    }
+}

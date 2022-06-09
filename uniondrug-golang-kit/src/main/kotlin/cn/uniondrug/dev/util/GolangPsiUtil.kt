@@ -2,8 +2,6 @@ package cn.uniondrug.dev.util
 
 import com.goide.psi.GoFieldDeclaration
 import com.goide.psi.GoTag
-import com.goide.psi.GoType
-import com.goide.psi.impl.GoTypeUtil
 
 /**
  * @author dingshichen
@@ -27,4 +25,11 @@ object GolangPsiUtil {
     fun getMaxLength(tag: GoTag) = tag.getValue("validate")?.split(",")?.find { max ->
         max.startsWith("max=")
     }?.substring(4)
+
+    /**
+     * 获取属性的描述
+     */
+    fun getFieldDescription(field: GoFieldDeclaration, tag: GoTag): String? {
+        return tag.getValue("label")
+    }
 }

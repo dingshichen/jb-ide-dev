@@ -1,13 +1,10 @@
 package cn.uniondrug.dev.util
 
-import cn.uniondrug.dev.ApiBuildFailException
 import cn.uniondrug.dev.ApiParam
 import cn.uniondrug.dev.CommonType
 import cn.uniondrug.dev.CommonTypeConvertor
-import com.goide.psi.GoFieldDeclaration
-import com.goide.psi.GoFile
-import com.goide.psi.GoStructType
-import com.goide.psi.GoType
+import cn.uniondrug.dev.DocBuildFailException
+import com.goide.psi.*
 import com.goide.psi.impl.GoArrayOrSliceTypeImpl
 import com.goide.psi.impl.GoTypeUtil
 import com.goide.stubs.index.GoTypesIndex
@@ -91,6 +88,20 @@ object CommonPsiUtil {
         }
     }
 
+    /**
+     * 获取消息体参数
+     */
+    fun getMessageBody(goTypeSpec: GoTypeSpec): List<ApiParam> {
+        val params = ArrayList<ApiParam>()
+        when (val struct = goTypeSpec.specType.type) {
+            is GoStructType -> {
+                struct.fieldDeclarationList.forEach { buildDocParam(field = it, params = params) }
+            }
+            else -> throw DocBuildFailException("解析消息体异常，如需帮助请联系开发者")
+        }
+        return params
+    }
+
     private fun getBody(
         project: Project,
         psiComment: PsiComment,
@@ -133,18 +144,18 @@ object CommonPsiUtil {
     /**
      * 构建参数
      */
-    private fun buildDocParam(parent: String?, field: GoFieldDeclaration, params: ArrayList<ApiParam>) {
+    private fun buildDocParam(parent: String? = null, field: GoFieldDeclaration, params: ArrayList<ApiParam>) {
         val commonTypeConvertor = field.project.getService(CommonTypeConvertor::class.java)
         field.type?.let {
             field.tag?.let { tag ->
                 val param = ApiParam(
-                    name = GolangPsiUtil.getFieldJsonName(field) ?: throw ApiBuildFailException("获取参数属性 json 名称失败"),
+                    name = GolangPsiUtil.getFieldJsonName(field) ?: throw DocBuildFailException("获取参数属性 json 名称失败"),
                     // 从背后真实的类型转换
                     type = commonTypeConvertor.convert(it.contextlessUnderlyingType.presentationText),
                     required = GolangPsiUtil.isRequired(tag),
                     maxLength = GolangPsiUtil.getMaxLength(tag),
                     parentId = parent,
-                    description = tag.getValue("label")
+                    description = GolangPsiUtil.getFieldDescription(field, tag)
                 )
                 when (param.type) {
                     CommonType.OBJECT -> {

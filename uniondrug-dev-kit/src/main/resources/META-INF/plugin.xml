@@ -39,6 +39,9 @@
 
     <actions>
         <!-- Add your actions here -->
-
+        <action id="cn.uniondrug.dev.action.CopyJsonAnAction" class="cn.uniondrug.dev.action.CopyJsonAnAction"
+                text="Copy as Json Text" description="Copy as json text">
+            <add-to-group group-id="Copy.Paste.Special" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>
