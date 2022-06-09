@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":torna-client"))
     implementation(project(":mock"))
+    testImplementation(kotlin("test-junit"))
 }
 
 intellij {

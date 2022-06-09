@@ -85,11 +85,14 @@ public class PreviewForm {
     private Api api;
     private MbsEvent mbsEvent;
     private JBPopup popup;
+    // 如果是 API 文档预览，这里设置为 true ，如果是 MBS 文档预览，这里设置为 false
+    private boolean isApi;
 
     public PreviewForm(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull Api api) {
         this.project = project;
         this.psiFile = psiFile;
         this.api = api;
+        this.isApi = true;
         // UI调整
         initUI();
         initHeadToolbar();
@@ -100,7 +103,7 @@ public class PreviewForm {
         initPreviewLeftToolbar();
         initPreviewRightToolbar();
         // 生成文档
-        buildApiDoc();
+        buildDoc();
         addMouseListeners();
     }
 
@@ -108,6 +111,7 @@ public class PreviewForm {
         this.project = project;
         this.psiFile = psiFile;
         this.mbsEvent = mbsEvent;
+        this.isApi = false;
         // UI调整
         initUI();
         initHeadToolbar();
@@ -118,7 +122,7 @@ public class PreviewForm {
         initPreviewLeftToolbar();
         initPreviewRightToolbar();
         // 生成文档
-        buildMbsDoc();
+        buildDoc();
         addMouseListeners();
     }
 
@@ -330,35 +334,37 @@ public class PreviewForm {
     private void initPreviewRightToolbar() {
         DefaultActionGroup rightGroup = new DefaultActionGroup();
 
-        rightGroup.add(new AnAction("Upload", "Upload To Torna", AllIcons.Actions.Upload) {
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
+        if (isApi) {
+            rightGroup.add(new AnAction("Upload", "Upload To Torna", AllIcons.Actions.Upload) {
+                @Override
+                public void actionPerformed(@NotNull AnActionEvent e) {
 
-                DocSetting apiSettings = DocSetting.Companion.getInstance(project);
-                DocSetting.TornaState state = apiSettings.getState();
-                if (StringUtils.isAnyBlank(state.getUrl(), state.getDomain(), state.getToken())) {
-                    // 说明没有配置 Torna, 跳转到配置页面
-                    notifyError(project, "Torna 未配置，无法完成上传");
-                    ShowSettingsUtil.getInstance().showSettingsDialog(e.getProject(), DocSettingConfigurable.class);
-                    popup.cancel();
-                    return;
-                }
-                // 上传到 torna
-                DocService service = ApplicationManager.getApplication().getService(DocService.class);
-                // TODO 上传未实现
+                    DocSetting apiSettings = DocSetting.Companion.getInstance(project);
+                    DocSetting.TornaState state = apiSettings.getState();
+                    if (StringUtils.isAnyBlank(state.getUrl(), state.getDomain(), state.getToken())) {
+                        // 说明没有配置 Torna, 跳转到配置页面
+                        notifyError(project, "Torna 未配置，无法完成上传");
+                        ShowSettingsUtil.getInstance().showSettingsDialog(e.getProject(), DocSettingConfigurable.class);
+                        popup.cancel();
+                        return;
+                    }
+                    // 上传到 torna
+                    DocService service = ApplicationManager.getApplication().getService(DocService.class);
+                    // TODO 上传未实现
 //                service.upload(project, currentDocView);
-            }
-        });
-
-
-        rightGroup.addSeparator();
+                }
+            });
+            rightGroup.addSeparator();
+        }
 
         rightGroup.add(new AnAction("Export", "Export markdown", AllIcons.ToolbarDecorator.Export) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 popup.cancel();
                 DocService service = ApplicationManager.getApplication().getService(DocService.class);
-                service.export(project, api.getFileName(), api.getMarkdownText());
+                service.export(project,
+                        isApi ? api.getFileName() : mbsEvent.getFileName(),
+                        isApi ? api.getMarkdownText() : mbsEvent.getMarkdownText());
             }
         });
 
@@ -366,7 +372,7 @@ public class PreviewForm {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
 
-                StringSelection selection = new StringSelection(api.getMarkdownText());
+                StringSelection selection = new StringSelection(isApi ? api.getMarkdownText() : mbsEvent.getMarkdownText());
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 clipboard.setContents(selection, selection);
                 notifyInfo(project, "复制成功");
@@ -388,25 +394,14 @@ public class PreviewForm {
 
     }
 
-
-    private void buildApiDoc() {
+    private void buildDoc() {
         if (JBCefApp.isSupported()) {
-            markdownHtmlPanel.setHtml(MarkdownUtil.INSTANCE.generateMarkdownHtml(psiFile.getVirtualFile(), api.getMarkdownText(), project), 0);
+            markdownHtmlPanel.setHtml(MarkdownUtil.INSTANCE.generateMarkdownHtml(psiFile.getVirtualFile(),
+                    isApi ? api.getMarkdownText() : mbsEvent.getMarkdownText(), project), 0);
         }
         WriteCommandAction.runWriteCommandAction(project, () -> {
             // 光标放在顶部
-            markdownDocument.setText(api.getMarkdownText());
-        });
-    }
-
-
-    private void buildMbsDoc() {
-        if (JBCefApp.isSupported()) {
-            markdownHtmlPanel.setHtml(MarkdownUtil.INSTANCE.generateMarkdownHtml(psiFile.getVirtualFile(), mbsEvent.getMarkdownText(), project), 0);
-        }
-        WriteCommandAction.runWriteCommandAction(project, () -> {
-            // 光标放在顶部
-            markdownDocument.setText(mbsEvent.getMarkdownText());
+            markdownDocument.setText(isApi ? api.getMarkdownText() : mbsEvent.getMarkdownText());
         });
     }
 }
