@@ -15,6 +15,7 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiIdentifier
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.javadoc.PsiDocComment
 import com.intellij.psi.util.PsiTreeUtil
 
 /**
@@ -79,11 +80,8 @@ class DocLineMarkerProvider : LineMarkerProvider {
             return null
         }
         return psiClass.docComment?.let {
-            val mbs = it.findTagByName("mbs")?.valueElement?.commentText()
-            val topic = it.findTagByName("topic")?.valueElement?.commentText()
-            val tag = it.findTagByName("tag")?.valueElement?.commentText()
-            val author = it.findTagByName("author")?.valueElement?.commentText()
-            if (mbs == null || topic == null || tag == null) {
+            val mbsCommentTag = mbsCommentTag(it)
+            if (!mbsCommentTag.isValid()) {
                 return null
             }
             val project = element.project
@@ -96,8 +94,10 @@ class DocLineMarkerProvider : LineMarkerProvider {
                 { _, _ ->
                     val docService = DocService.getInstance()
                     try {
-                        val mbsEvent = docService.buildMbs(project, psiClass, mbs, topic, tag, author)
-                        PreviewForm.getInstance(project, containingFile, mbsEvent).popup()
+                        mbsCommentTag(it).apply {
+                            val mbsEvent = docService.buildMbs(project, psiClass, mbs!!, topic!!, tag!!, author)
+                            PreviewForm.getInstance(project, containingFile, mbsEvent).popup()
+                        }
                     } catch (e: DocBuildFailException) {
                         notifyError(project, e.localizedMessage)
                     }
@@ -107,4 +107,22 @@ class DocLineMarkerProvider : LineMarkerProvider {
             )
         }
     }
+
+    private fun mbsCommentTag(psiDocComment: PsiDocComment) = MbsCommentTag(
+        mbs = psiDocComment.findTagByName("mbs")?.valueElement?.commentText(),
+        topic = psiDocComment.findTagByName("topic")?.valueElement?.commentText(),
+        tag = psiDocComment.findTagByName("tag")?.valueElement?.commentText(),
+        author = psiDocComment.findTagByName("author")?.valueElement?.commentText(),
+    )
+
+    data class MbsCommentTag(
+        val mbs: String?,
+        val topic: String?,
+        val tag: String?,
+        val author: String?
+    ) {
+        fun isValid() = mbs != null && topic != null && tag != null
+    }
+
+
 }
