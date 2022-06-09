@@ -341,7 +341,7 @@ public class PreviewForm {
 
                     DocSetting apiSettings = DocSetting.Companion.getInstance(project);
                     DocSetting.TornaState state = apiSettings.getState();
-                    if (StringUtils.isAnyBlank(state.getUrl(), state.getDomain(), state.getToken())) {
+                    if (StringUtils.isAnyBlank(state.getUrl(), state.getDomain(), state.getUsername())) {
                         // 说明没有配置 Torna, 跳转到配置页面
                         notifyError(project, "Torna 未配置，无法完成上传");
                         ShowSettingsUtil.getInstance().showSettingsDialog(e.getProject(), DocSettingConfigurable.class);

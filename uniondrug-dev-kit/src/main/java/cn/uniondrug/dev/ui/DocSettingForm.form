@@ -41,18 +41,18 @@
           </grid>
         </constraints>
         <properties>
-          <text value="http://127.0.0.1:7700/open/api"/>
+          <text value="http://ud-torna.uniondrug.cn"/>
         </properties>
       </component>
-      <component id="5d650" class="javax.swing.JLabel" binding="tornaTokenLabel">
+      <component id="5d650" class="javax.swing.JLabel" binding="tornaUsernameLabel">
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="torna token"/>
+          <text value="torna username"/>
         </properties>
       </component>
-      <component id="c8a13" class="javax.swing.JTextField" binding="tornaTokenText">
+      <component id="c8a13" class="javax.swing.JTextField" binding="tornaUsernameText">
         <constraints>
           <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>
@@ -69,15 +69,15 @@
         <border type="none"/>
         <children/>
       </grid>
-      <component id="291e0" class="javax.swing.JLabel" binding="authorLabel">
+      <component id="291e0" class="javax.swing.JLabel" binding="tornaPasswordLabel">
         <constraints>
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="your name"/>
+          <text value="torna password"/>
         </properties>
       </component>
-      <component id="90082" class="javax.swing.JTextField" binding="authorText">
+      <component id="35772" class="javax.swing.JPasswordField" binding="tornaPasswordField">
         <constraints>
           <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>

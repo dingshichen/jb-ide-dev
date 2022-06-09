@@ -32,8 +32,8 @@ class DocSetting : PersistentStateComponent<DocSetting.TornaState> {
     data class TornaState(
         var domain: String? = null,
         var url: String? = null,
-        var token: String? = null,
-        var author: String? = null,
+        var username: String? = null,
+        var password: String? = null,
     )
 
 }

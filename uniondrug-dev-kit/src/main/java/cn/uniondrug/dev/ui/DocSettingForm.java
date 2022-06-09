@@ -17,11 +17,11 @@ public class DocSettingForm {
     private JTextField domainText;
     private JLabel tornaLabel;
     private JTextField tornaText;
-    private JLabel tornaTokenLabel;
-    private JTextField tornaTokenText;
+    private JLabel tornaUsernameLabel;
+    private JTextField tornaUsernameText;
     private JPanel rootPanel;
-    private JLabel authorLabel;
-    private JTextField authorText;
+    private JLabel tornaPasswordLabel;
+    private JPasswordField tornaPasswordField;
 
     private Project project;
 
@@ -42,10 +42,10 @@ public class DocSettingForm {
         if (!StringUtils.equals(state.getUrl(), tornaText.getText())) {
             return true;
         }
-        if (!StringUtils.equals(state.getToken(), tornaTokenText.getText())) {
+        if (!StringUtils.equals(state.getUsername(), tornaUsernameText.getText())) {
             return true;
         }
-        if (!StringUtils.equals(state.getAuthor(), authorText.getText())) {
+        if (!StringUtils.equals(state.getPassword(), new String(tornaPasswordField.getPassword()))) {
             return true;
         }
         return false;
@@ -57,8 +57,8 @@ public class DocSettingForm {
         DocSetting.TornaState state = docSetting.getState();
         state.setDomain(domainText.getText());
         state.setUrl(tornaText.getText());
-        state.setToken(tornaTokenText.getText());
-        state.setAuthor(authorText.getText());
+        state.setUsername(tornaUsernameText.getText());
+        state.setPassword(new String(tornaPasswordField.getPassword()));
     }
 
     public void reset() {
@@ -66,8 +66,8 @@ public class DocSettingForm {
         DocSetting.TornaState state = docSetting.getState();
         domainText.setText(state.getDomain());
         tornaText.setText(state.getUrl());
-        tornaTokenText.setText(state.getToken());
-        authorText.setText(state.getAuthor());
+        tornaUsernameText.setText(state.getUsername());
+        tornaPasswordField.setText(state.getPassword());
     }
 
 }
