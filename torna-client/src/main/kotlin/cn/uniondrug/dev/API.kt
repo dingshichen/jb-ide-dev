@@ -160,7 +160,8 @@ fun JSONObject.putParamExample(param: ApiParam) {
         CommonType.BYTE,
         CommonType.INT,
         CommonType.LONG,
-        CommonType.FLOAT -> this[param.name] = BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name)
+        CommonType.FLOAT -> this[param.name] =
+            BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name)
         CommonType.ARRAY -> this[param.name] = JSONArray()
         CommonType.BOOL -> this[param.name] = true
         CommonType.OBJECT -> this[param.name] = jsonObject {
@@ -173,10 +174,15 @@ fun JSONObject.putParamExample(param: ApiParam) {
         CommonType.ARRAY_BYTE,
         CommonType.ARRAY_INT,
         CommonType.ARRAY_LONG,
-        CommonType.ARRAY_FLOAT -> this[param.name] = arrayJsonOf(
-            BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name),
-            BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name)
-        )
+        CommonType.ARRAY_FLOAT -> {
+            val begin = param.type.value.indexOf("[")
+            val end = param.type.value.indexOf("]")
+            val sampleType = param.type.value.substring(begin + 1, end)
+            this[param.name] = arrayJsonOf(
+                BaseDataTypeMockUtil.getValByTypeAndFieldName(sampleType, param.name),
+                BaseDataTypeMockUtil.getValByTypeAndFieldName(sampleType, param.name)
+            )
+        }
         CommonType.ARRAY_OBJECT -> this[param.name] = arrayJsonOf(
             jsonObject {
                 param.children?.forEach {
