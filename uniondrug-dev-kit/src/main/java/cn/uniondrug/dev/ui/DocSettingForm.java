@@ -1,6 +1,7 @@
 package cn.uniondrug.dev.ui;
 
 import cn.uniondrug.dev.config.DocSetting;
+import cn.uniondrug.dev.config.TornaPasswordService;
 import com.intellij.openapi.project.Project;
 import org.apache.commons.lang3.StringUtils;
 
@@ -45,20 +46,22 @@ public class DocSettingForm {
         if (!StringUtils.equals(state.getUsername(), tornaUsernameText.getText())) {
             return true;
         }
-        if (!StringUtils.equals(state.getPassword(), new String(tornaPasswordField.getPassword()))) {
+        TornaPasswordService tornaPasswordService = TornaPasswordService.Companion.getInstance(project);
+        if (!StringUtils.equals(tornaPasswordService.getPassword(), new String(tornaPasswordField.getPassword()))) {
             return true;
         }
         return false;
     }
 
     public void apply() {
-
         DocSetting docSetting = DocSetting.Companion.getInstance(project);
         DocSetting.TornaState state = docSetting.getState();
         state.setDomain(domainText.getText());
         state.setUrl(tornaText.getText());
         state.setUsername(tornaUsernameText.getText());
-        state.setPassword(new String(tornaPasswordField.getPassword()));
+
+        TornaPasswordService tornaPasswordService = TornaPasswordService.Companion.getInstance(project);
+        tornaPasswordService.setPassword(new String(tornaPasswordField.getPassword()));
     }
 
     public void reset() {
@@ -67,7 +70,9 @@ public class DocSettingForm {
         domainText.setText(state.getDomain());
         tornaText.setText(state.getUrl());
         tornaUsernameText.setText(state.getUsername());
-        tornaPasswordField.setText(state.getPassword());
+
+        TornaPasswordService tornaPasswordService = TornaPasswordService.Companion.getInstance(project);
+        tornaPasswordField.setText(tornaPasswordService.getPassword());
     }
 
 }
