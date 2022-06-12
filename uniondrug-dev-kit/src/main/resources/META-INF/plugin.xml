@@ -43,5 +43,9 @@
                 text="Copy as Json Text" description="Copy as json text">
             <add-to-group group-id="Copy.Paste.Special" anchor="last"/>
         </action>
+        <action id="cn.uniondrug.dev.action.AnalyzeApiCouplingAction"
+                class="cn.uniondrug.dev.action.AnalyzeApiCouplingAction" text="Analyze Uniondrug Api Coupling">
+            <add-to-group group-id="AnalyzeJavaMenu" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>

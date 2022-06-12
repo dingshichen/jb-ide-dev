@@ -20,6 +20,10 @@ const val BODY = "org.springframework.web.bind.annotation.RequestBody"
 
 const val LENGTH = "org.hibernate.validator.constraints.Length"
 
+const val EVENT = "org.springframework.context.ApplicationEvent"
+const val EVENT_PUBLISHER = "org.springframework.context.ApplicationEventPublisher"
+const val EVENT_LISTENER = "org.springframework.context.ApplicationListener"
+
 /**
  * 判断 PSI 方法是否不是 Spring 的方法
  */
