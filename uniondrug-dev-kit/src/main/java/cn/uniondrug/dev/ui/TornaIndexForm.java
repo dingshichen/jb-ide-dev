@@ -2,9 +2,8 @@ package cn.uniondrug.dev.ui;
 
 import cn.uniondrug.dev.*;
 import cn.uniondrug.dev.config.DocSetting;
-import cn.uniondrug.dev.config.TornaPasswordService;
-import cn.uniondrug.dev.util.StringUtil;
-import com.intellij.ide.util.PropertiesComponent;
+import cn.uniondrug.dev.config.TornaKeyService;
+import cn.uniondrug.dev.dialog.CreateFolderDialog;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 
@@ -30,11 +29,15 @@ public class TornaIndexForm {
     private ComboBox<ProjectDTO> projectBox;
     private ComboBox<ModuleDTO> moduleBox;
     private ComboBox<DocumentDTO> folderBox;
+    private JButton createFolderButton;
 
     private Project project;
 
+    private TornaKeyService tornaKeyService;
+
     public TornaIndexForm(Project project) {
         this.project = project;
+        this.tornaKeyService = TornaKeyService.Companion.getInstance(project);
         initListener();
         initValue();
     }
@@ -42,7 +45,22 @@ public class TornaIndexForm {
     private void initListener() {
         DocSetting docSetting = DocSetting.Companion.getInstance(project);
         String url = docSetting.getState().getUrl();
-        String token = getToken(url, docSetting);
+        String token = tornaKeyService.getToken(project, url, docSetting);
+        createFolderButton.addActionListener(e -> {
+            CreateFolderDialog dialog = new CreateFolderDialog(project);
+            if (dialog.showAndGet()) {
+                DocumentService documentService = project.getService(DocumentService.class);
+                documentService.saveFolder(url, token, moduleBox.getItem().getId(), dialog.getFolder());
+                List<DocumentDTO> docs = documentService.listFolderByModule(url, token, moduleBox.getItem().getId());
+                docs.stream()
+                        .filter(folder -> folder.getName().equals(dialog.getFolder()))
+                        .findFirst()
+                        .ifPresent(folder -> {
+                            folderBox.addItem(folder);
+                            folderBox.setItem(folder);
+                        });
+            }
+        });
         spaceBox.addItemListener(s -> {
             if (s.getStateChange() == ItemEvent.SELECTED) {
                 ProjectService projectService = project.getService(ProjectService.class);
@@ -75,7 +93,7 @@ public class TornaIndexForm {
     private void initValue() {
         DocSetting docSetting = DocSetting.Companion.getInstance(project);
         String url = docSetting.getState().getUrl();
-        String token = getToken(url, docSetting);
+        String token = tornaKeyService.getToken(project, url, docSetting);
         SpaceService spaceService = project.getService(SpaceService.class);
         List<SpaceDTO> spaces = spaceService.listMySpace(url, token);
         spaceBox.removeAllItems();
@@ -86,27 +104,15 @@ public class TornaIndexForm {
         return rootPanel;
     }
 
-    private String getToken(String url, DocSetting docSetting) {
-        String username = docSetting.getState().getUsername();
-        TornaPasswordService tornaPasswordService = TornaPasswordService.Companion.getInstance(project);
-        String password = tornaPasswordService.getPassword();
-        if (StringUtil.isAnyEmpty(url, username, password)) {
-            // TODO 需要异常 中断
-            return null;
-        }
-        PropertiesComponent properties = PropertiesComponent.getInstance();
-        String token = properties.getValue(TOKEN_KEY);
-        if (StringUtil.isEmpty(token)) {
-            UserService loginService = project.getService(UserService.class);
-            try {
-                token = loginService.login(url, username, password);
-            } catch (Exception e) {
-                // TODO 中断
-                return null;
-            }
-            properties.setValue(TOKEN_KEY, token);
-        }
-        return token;
+    public String getProjectId() {
+        return projectBox.getItem().getId();
     }
 
+    public String getModuleId() {
+        return moduleBox.getItem().getId();
+    }
+
+    public String getFolderId() {
+        return folderBox.getItem().getId();
+    }
 }

@@ -21,7 +21,7 @@
 
         <projectService serviceImplementation="cn.uniondrug.dev.config.DocSetting" />
 
-        <projectService serviceImplementation="cn.uniondrug.dev.config.TornaPasswordService" />
+        <projectService serviceImplementation="cn.uniondrug.dev.config.TornaKeyService" />
 
         <projectService serviceInterface="cn.uniondrug.dev.CommonTypeConvertor"
                         serviceImplementation="cn.uniondrug.dev.JavaTypeConvertor" />

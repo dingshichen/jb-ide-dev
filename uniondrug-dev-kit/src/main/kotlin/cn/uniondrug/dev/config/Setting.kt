@@ -1,11 +1,14 @@
 /** @author dingshichen */
 package cn.uniondrug.dev.config
 
+import cn.uniondrug.dev.UserService
 import cn.uniondrug.dev.ui.DocSettingForm
+import cn.uniondrug.dev.util.StringUtil
 import com.intellij.credentialStore.CredentialAttributes
 import com.intellij.credentialStore.Credentials
 import com.intellij.credentialStore.generateServiceName
 import com.intellij.ide.passwordSafe.PasswordSafe
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
@@ -42,11 +45,12 @@ class DocSetting : PersistentStateComponent<DocSetting.TornaState> {
 
 }
 
-class TornaPasswordService {
+class TornaKeyService {
 
     companion object {
-        const val KEY = "Torna"
-        fun getInstance(project: Project): TornaPasswordService = project.getService(TornaPasswordService::class.java)
+        const val CREDENTIA_KEY = "Torna"
+        const val TOKEN_KEY = "cn.uniondrug.dev.torna.token"
+        fun getInstance(project: Project): TornaKeyService = project.getService(TornaKeyService::class.java)
     }
 
     /**
@@ -54,7 +58,7 @@ class TornaPasswordService {
      */
     fun setPassword(password: String) {
         createCredentialAttributes().apply {
-            Credentials(KEY, password).let {
+            Credentials(CREDENTIA_KEY, password).let {
                 PasswordSafe.instance.set(this, it)
             }
         }
@@ -68,9 +72,34 @@ class TornaPasswordService {
     }
 
     /**
+     * 获取 token
+     */
+    fun getToken(project: Project, url: String, docSetting: DocSetting): String? {
+        val username = docSetting.state.username
+        val password = getPassword()
+        if (StringUtil.isAnyEmpty(url, username, password)) {
+            // TODO 需要异常 中断
+            return null
+        }
+        val properties = PropertiesComponent.getInstance()
+        var token = properties.getValue(TOKEN_KEY)
+        if (StringUtil.isEmpty(token)) {
+            val loginService = project.getService(UserService::class.java)
+            token = try {
+                loginService.login(url, username!!, password!!)
+            } catch (e: Exception) {
+                // TODO 中断
+                return null
+            }
+            properties.setValue(TOKEN_KEY, token)
+        }
+        return token
+    }
+
+    /**
      * 创建凭证
      */
-    private fun createCredentialAttributes() = CredentialAttributes(generateServiceName("Uniondrug Torna Passphrase", KEY), KEY)
+    private fun createCredentialAttributes() = CredentialAttributes(generateServiceName("Uniondrug Torna Passphrase", CREDENTIA_KEY), CREDENTIA_KEY)
 
 }
 

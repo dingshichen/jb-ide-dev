@@ -1,7 +1,10 @@
 package cn.uniondrug.dev
 
+import cn.uniondrug.dev.util.DigestUtils
+import cn.uniondrug.dev.util.IdUtil
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import java.nio.charset.Charset
 
 /**
  * 文档
@@ -147,6 +150,10 @@ data class DocInfoSaveCmd (
     val globalReturns: List<DocParamSaveCmd>? = null
 }
 
+data class DocIdCmd(
+    val id: String
+)
+
 class DocumentService {
 
     /**
@@ -187,7 +194,7 @@ class DocumentService {
             .setDateFormat("yyyy-MM-dd")
             .create()
         val folderAddCmd = FolderAddCmd(moduleId, folder)
-        val body = doPost("$host/folder/add", gson.toJson(folderAddCmd), token)
+        val body = doPost("$host/doc/folder/add", gson.toJson(folderAddCmd), token)
         val result: Result<*> = gson.fromJson(body, object : TypeToken<Result<*>>() {}.type!!)
         if (result.isError()) {
             throw DocumentException("创建目录失败：${result.msg}")
@@ -218,48 +225,61 @@ class DocumentService {
      * 保存文档（可覆盖）
      */
     fun saveDocument(host: String, token: String, projectId: String, moduleId: String, folderId: String, api: Api) {
-
-        val docId = ""
-        val exist = existDocument(host, token, docId)
-        if (exist) {
-
+        val docId = getDocDataId(folderId, moduleId, api.url, api.httpMethod)
+        val doc = getDocumentDetail(host, token, docId)
+        doc?.let {
+            // 先删除
+            deleteDocument(host, token, it.id)
         }
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val body = doPost("$host/doc/save", "TODO", token)
+        val docSaveCmd = apiToCmd(projectId, moduleId, folderId, api)
+        val body = doPost("$host/doc/save", gson.toJson(docSaveCmd), token)
         val result: Result<*> = gson.fromJson(body, object : TypeToken<Result<*>>() {}.type!!)
         if (result.isError()) {
             throw DocumentException("保存文档失败：${result.msg}")
         }
-        TODO()
     }
-//
-//    fun apiToCmd(projectId: String, moduleId: String, folderId: String, api: Api) = DocInfoSaveCmd(
-//        name = api.name,
-//        description = api.description ?: "",
-//        author = api.author ?: "",
-//        url = api.url,
-//        httpMethod = api.httpMethod,
-//        contentType = api.contentType,
-//        parentId = folderId,
-//        moduleId = moduleId,
-//        projectId = projectId,
-//        requestParams = apiParamToDocParamSaveCmd(getDocId(), api.requestParams, style = 1),
-//        responseParams = apiParamToDocParamSaveCmd(getDocId(), api.responseParams, style = 2),
-//    )
-//
-//    fun getDocId(parentId: String? = null, moduleId: String, url: String, httpMethod: String): String {
-//        val parent: Long = parentId?.let { IdUtil.decode(it) } ?: 0L
-//        val content = "$moduleId:$parent:$url:$httpMethod"
-//        return DigestUtils.md5DigestAsHex(content.)
-//    }
-//
-//    fun getParamId(): String {
-//        TODO()
-//    }
 
-    fun apiParamToDocParamSaveCmd(
+    /**
+     * 删除文档
+     */
+    fun deleteDocument(host: String, token: String, docId: String) {
+        val gson = GsonBuilder()
+            .setDateFormat("yyyy-MM-dd")
+            .create()
+        val body = doPost("$host/doc/delete", gson.toJson(DocIdCmd(docId)), token)
+        val result: Result<*> = gson.fromJson(body, object : TypeToken<Result<*>>() {}.type!!)
+        if (result.isError()) {
+            throw DocumentException("删除文档失败：${result.msg}")
+        }
+    }
+
+    private fun apiToCmd(projectId: String, moduleId: String, folderId: String, api: Api): DocInfoSaveCmd {
+        val docId = getDocDataId(folderId, moduleId, api.url, api.httpMethod)
+        return DocInfoSaveCmd(
+            name = api.name,
+            description = api.description ?: "",
+            author = api.author ?: "",
+            url = api.url,
+            httpMethod = api.httpMethod,
+            contentType = api.contentType,
+            parentId = folderId,
+            moduleId = moduleId,
+            projectId = projectId,
+            requestParams = apiParamToDocParamSaveCmd(docId, api.requestParams, style = 1),
+            responseParams = apiParamToDocParamSaveCmd(docId, api.responseParams, style = 2),
+        )
+    }
+
+    private fun getDocDataId(parentId: String? = null, moduleId: String, url: String, httpMethod: String): String {
+        val parent: Long = parentId?.let { IdUtil.decode(it) } ?: 0L
+        val content = "$moduleId:$parent:$url:$httpMethod"
+        return DigestUtils.md5DigestAsHex(content.toByteArray(Charset.defaultCharset()))
+    }
+
+    private fun apiParamToDocParamSaveCmd(
         docId: String,
         params: List<ApiParam>? = null,
         parentId: String? = null,

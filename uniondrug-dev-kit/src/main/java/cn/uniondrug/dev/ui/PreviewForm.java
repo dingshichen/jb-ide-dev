@@ -1,9 +1,11 @@
 package cn.uniondrug.dev.ui;
 
 import cn.uniondrug.dev.Api;
+import cn.uniondrug.dev.DocumentService;
 import cn.uniondrug.dev.MbsEvent;
 import cn.uniondrug.dev.config.DocSetting;
 import cn.uniondrug.dev.config.DocSettingConfigurable;
+import cn.uniondrug.dev.config.TornaKeyService;
 import cn.uniondrug.dev.dialog.TornaIndexDialog;
 import cn.uniondrug.dev.service.DocService;
 import com.intellij.find.editorHeaderActions.Utils;
@@ -350,12 +352,12 @@ public class PreviewForm {
                         return;
                     }
                     // 上传到 torna
-                    DocService service = ApplicationManager.getApplication().getService(DocService.class);
-                    // TODO 上传未实现
                     TornaIndexDialog dialog = new TornaIndexDialog(project);
                     if (dialog.showAndGet()) {
-                        // 上传
-//                        service.upload(project, currentDocView);
+                        DocumentService service = project.getService(DocumentService.class);
+                        TornaKeyService tornaKeyService = TornaKeyService.Companion.getInstance(project);
+                        String token = tornaKeyService.getToken(project, state.getUrl(), apiSettings);
+                        service.saveDocument(state.getUrl(), token, dialog.getProjectId(), dialog.getModuleId(), dialog.getFolderId(), api);
                     }
                 }
             });

@@ -12,7 +12,7 @@ import java.time.Duration
 data class Result<T>(
     val code: String,
     val msg: String,
-    val data: T
+    var data: T? = null,
 ) {
 
     fun isError() = code != "0"
@@ -39,17 +39,19 @@ fun doGet(url: String, token: String): String {
 /**
  * POST
  */
-fun doPost(url: String, body: String): String {
-    val request = HttpRequest.newBuilder()
+fun doPost(url: String, body: String, token: String? = null): String {
+    val builder = HttpRequest.newBuilder()
         .uri(URI.create(url))
         .header("Content-Type", "application/json")
         .POST(HttpRequest.BodyPublishers.ofString(body))
         .timeout(Duration.ofSeconds(2L))
-        .build()
+    token?.let {
+        builder.header("Authorization", "Bearer $token")
+    }
     val client = HttpClient.newBuilder()
         .version(HttpClient.Version.HTTP_1_1)
         .connectTimeout(Duration.ofSeconds(2L))
         .build()
-    val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+    val response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString())
     return response.body()
 }
