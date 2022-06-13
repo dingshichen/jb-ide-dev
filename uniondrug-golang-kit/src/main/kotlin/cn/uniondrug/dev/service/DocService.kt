@@ -98,7 +98,7 @@ class DocService {
     fun export(project: Project, fileName: String, text: String) {
         val fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor()
         fileChooserDescriptor.isForcedToUseIdeaFileChooser = true
-        FileChooser.chooseFile(fileChooserDescriptor, project, null)?.let {
+        FileChooser.chooseFile(fileChooserDescriptor, project, null) {
             try {
                 val file = File("${it.path}/$fileName.md")
                 FileUtil.writeToFile(file, text)
