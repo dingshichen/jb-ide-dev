@@ -4,6 +4,7 @@ import cn.uniondrug.dev.Api;
 import cn.uniondrug.dev.MbsEvent;
 import cn.uniondrug.dev.config.DocSetting;
 import cn.uniondrug.dev.config.DocSettingConfigurable;
+import cn.uniondrug.dev.dialog.TornaIndexDialog;
 import cn.uniondrug.dev.service.DocService;
 import com.intellij.find.editorHeaderActions.Utils;
 import com.intellij.icons.AllIcons;
@@ -160,10 +161,10 @@ public class PreviewForm {
                 .setCancelOnMouseOutCallback(event -> event.getID() == MouseEvent.MOUSE_PRESSED && !myIsPinned.get())
 
                 // 单击外部时取消弹窗
-                .setCancelOnClickOutside(false)
+                .setCancelOnClickOutside(true)
                 // 在其他窗口打开时取消
-                .setCancelOnOtherWindowOpen(false)
-                .setCancelOnWindowDeactivation(false)
+                .setCancelOnOtherWindowOpen(true)
+                .setCancelOnWindowDeactivation(true)
                 .createPopup();
         popup.showCenteredInCurrentWindow(project);
     }
@@ -351,7 +352,11 @@ public class PreviewForm {
                     // 上传到 torna
                     DocService service = ApplicationManager.getApplication().getService(DocService.class);
                     // TODO 上传未实现
-//                service.upload(project, currentDocView);
+                    TornaIndexDialog dialog = new TornaIndexDialog(project);
+                    if (dialog.showAndGet()) {
+                        // 上传
+//                        service.upload(project, currentDocView);
+                    }
                 }
             });
             rightGroup.addSeparator();

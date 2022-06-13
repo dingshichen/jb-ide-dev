@@ -26,6 +26,9 @@
         <projectService serviceInterface="cn.uniondrug.dev.CommonTypeConvertor"
                         serviceImplementation="cn.uniondrug.dev.JavaTypeConvertor" />
 
+        <projectService serviceImplementation="cn.uniondrug.dev.SpaceService" />
+        <projectService serviceImplementation="cn.uniondrug.dev.UserService" />
+
         <codeInsight.lineMarkerProvider language="JAVA"
                                         implementationClass="cn.uniondrug.dev.provider.DocLineMarkerProvider" />
 
