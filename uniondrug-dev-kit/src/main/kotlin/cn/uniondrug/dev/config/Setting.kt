@@ -12,12 +12,9 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.ComboBox
 import org.jetbrains.annotations.Nls
 import org.jetbrains.annotations.NonNls
-import java.awt.event.ItemEvent
 import javax.swing.JComponent
-import javax.swing.JFrame
 
 
 @State(name = "UniondrugDevKitDocSettingService", storages = [Storage("UniondrugDevKitDocSetting.xml")])
@@ -107,30 +104,5 @@ class DocSettingConfigurable(
 
     override fun reset() {
         docSettingForm.reset()
-    }
-}
-
-class Open: JFrame() {
-
-    var box = ComboBox(arrayOf(null, "南京", "上海", "合肥"))
-
-    init {
-        add(box)
-        // 添加此事件，当发生选择变更时，会出发两次，一个是原选中值触发 DESELECTED ，另一个是新选中的值触发 SELECTED (null 元素不触发)
-        box.addItemListener {
-            if (it.stateChange == ItemEvent.SELECTED) {
-                println("${it.item} 被选中")
-            }
-        }
-    }
-
-    fun clear() {
-        box.removeAllItems()
-    }
-
-    fun addNewItems() {
-        box.addItem("广州")
-        box.addItem("北京")
-        box.addItem("重庆")
     }
 }

@@ -10,7 +10,9 @@ data class ModuleDTO(
     val id: String,
     val name: String,
     val projectId: String,
-)
+) {
+    override fun toString() = name
+}
 
 class ModuleService {
 
@@ -26,6 +28,6 @@ class ModuleService {
         if (result.isError()) {
             throw ProjectException("查询项目失败：${result.msg}")
         }
-        return result.data
+        return result.data!!
     }
 }

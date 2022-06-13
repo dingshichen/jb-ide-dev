@@ -8,8 +8,11 @@ import com.google.gson.reflect.TypeToken
  */
 data class UserLogin(
     val username: String,
-    val password: String,
-)
+    val password: String
+) {
+    // 固定来源
+    val source = "ldap"
+}
 
 /**
  * 登录接口出参
@@ -34,7 +37,7 @@ class UserService {
         if (result.isError()) {
             throw LoginException("登录失败：${result.msg}")
         }
-        return result.data.token
+        return result.data!!.token
     }
 
 }

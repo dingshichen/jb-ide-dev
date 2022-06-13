@@ -9,7 +9,9 @@ import com.google.gson.reflect.TypeToken
 data class SpaceDTO(
     val id: String,
     val name: String,
-)
+) {
+    override fun toString() = name
+}
 
 class SpaceService {
 
@@ -25,7 +27,7 @@ class SpaceService {
         if (result.isError()) {
             throw SpaceException("查询空间失败：${result.msg}")
         }
-        return result.data
+        return result.data!!
     }
 
 }

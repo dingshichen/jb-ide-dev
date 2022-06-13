@@ -28,6 +28,9 @@
 
         <projectService serviceImplementation="cn.uniondrug.dev.SpaceService" />
         <projectService serviceImplementation="cn.uniondrug.dev.UserService" />
+        <projectService serviceImplementation="cn.uniondrug.dev.ProjectService" />
+        <projectService serviceImplementation="cn.uniondrug.dev.ModuleService" />
+        <projectService serviceImplementation="cn.uniondrug.dev.DocumentService" />
 
         <codeInsight.lineMarkerProvider language="JAVA"
                                         implementationClass="cn.uniondrug.dev.provider.DocLineMarkerProvider" />
