@@ -223,11 +223,14 @@ class DocumentService {
 
     /**
      * 保存文档（可覆盖）
+     * 先获取模块下所有文档，然后匹配到本文档，如果匹配到，删除此文档，再新增～～
      */
     fun saveDocument(host: String, token: String, projectId: String, moduleId: String, folderId: String, api: Api) {
+        val docs = listDocumentByModule(host, token, moduleId)
         val docId = getDocDataId(folderId, moduleId, api.url, api.httpMethod)
-        val doc = getDocumentDetail(host, token, docId)
-        doc?.let {
+        docs.find {
+            getDocDataId(it.parentId, moduleId, it.url, it.httpMethod) == docId
+        }?.let {
             // 先删除
             deleteDocument(host, token, it.id)
         }
@@ -275,7 +278,7 @@ class DocumentService {
 
     private fun getDocDataId(parentId: String? = null, moduleId: String, url: String, httpMethod: String): String {
         val parent: Long = parentId?.let { IdUtil.decode(it) } ?: 0L
-        val content = "$moduleId:$parent:$url:$httpMethod"
+        val content = "${IdUtil.decode(moduleId)}:$parent:$url:$httpMethod"
         return DigestUtils.md5DigestAsHex(content.toByteArray(Charset.defaultCharset()))
     }
 
