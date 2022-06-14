@@ -1,6 +1,5 @@
 package cn.uniondrug.dev
 
-import com.alibaba.fastjson.JSONObject
 import kotlin.test.Test
 
 /**

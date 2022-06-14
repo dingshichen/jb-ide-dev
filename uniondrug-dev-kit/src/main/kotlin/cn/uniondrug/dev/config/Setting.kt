@@ -77,7 +77,7 @@ class TornaKeyService {
     /**
      * 获取 token
      */
-    fun getToken(project: Project, docSetting: DocSetting): String? {
+    fun getToken(project: Project, docSetting: DocSetting): String {
         val username = docSetting.state.username
         val password = getPassword()
         if (StringUtil.isAnyEmpty(username, password)) {
@@ -85,7 +85,7 @@ class TornaKeyService {
         }
         val properties = PropertiesComponent.getInstance()
         var token = properties.getValue(TOKEN_KEY)
-        if (StringUtil.isEmpty(token)) {
+        if (token.isNullOrBlank()) {
             val loginService = project.getService(UserService::class.java)
             token = try {
                 loginService.login(username!!, password!!)
@@ -94,7 +94,7 @@ class TornaKeyService {
             }
             properties.setValue(TOKEN_KEY, token)
         }
-        return token
+        return token!!
     }
 
     /**

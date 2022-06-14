@@ -55,5 +55,9 @@
                 class="cn.uniondrug.dev.action.AnalyzeApiCouplingAction" text="Analyze Uniondrug Api Coupling">
             <add-to-group group-id="AnalyzeJavaMenu" anchor="last"/>
         </action>
+        <action id="cn.uniondrug.dev.action.PushAllDocAnAction" class="cn.uniondrug.dev.action.PushAllDocAnAction"
+                text="Push All Api to Torna">
+            <add-to-group group-id="AnalyzeJavaMenu" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>
