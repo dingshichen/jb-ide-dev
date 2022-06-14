@@ -104,7 +104,12 @@ data class ApiParam(
     var parentId: String? = null,
     /** 子节点  */
     var children: List<ApiParam>? = null,
-)
+) {
+    val example: String
+        get() {
+            return if (type.isBaseType) getExample(this).toString() else ""
+        }
+}
 
 /**
  * MBS 事件结构
@@ -157,18 +162,21 @@ data class MbsEvent(
 }
 
 fun JSONObject.putParamExample(param: ApiParam) {
-    when (param.type) {
+    this[param.name] = getExample(param)
+}
+
+fun getExample(param: ApiParam): Any {
+    return when (param.type) {
         CommonType.STRING,
         CommonType.BYTE,
         CommonType.INT,
         CommonType.LONG,
-        CommonType.FLOAT -> this[param.name] =
-            BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name)
-        CommonType.ARRAY -> this[param.name] = JSONArray()
-        CommonType.BOOL -> this[param.name] = true
-        CommonType.OBJECT -> this[param.name] = jsonObject {
+        CommonType.FLOAT -> BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name)
+        CommonType.ARRAY -> JSONArray()
+        CommonType.BOOL -> true
+        CommonType.OBJECT -> jsonObject {
             param.children?.forEach {
-                putParamExample(it)
+                this[it.name] = getExample(it)
             }
         }
         CommonType.ARRAY_STRING,
@@ -180,20 +188,20 @@ fun JSONObject.putParamExample(param: ApiParam) {
             val begin = param.type.value.indexOf("[")
             val end = param.type.value.indexOf("]")
             val sampleType = param.type.value.substring(begin + 1, end)
-            this[param.name] = arrayJsonOf(
+            arrayJsonOf(
                 BaseDataTypeMockUtil.getValByTypeAndFieldName(sampleType, param.name),
                 BaseDataTypeMockUtil.getValByTypeAndFieldName(sampleType, param.name)
             )
         }
-        CommonType.ARRAY_OBJECT -> this[param.name] = arrayJsonOf(
+        CommonType.ARRAY_OBJECT -> arrayJsonOf(
             jsonObject {
                 param.children?.forEach {
-                    putParamExample(it)
+                    this[it.name] = getExample(it)
                 }
             },
             jsonObject {
                 param.children?.forEach {
-                    putParamExample(it)
+                    this[it.name] = getExample(it)
                 }
             }
         )

@@ -62,6 +62,8 @@ data class DocParamSaveCmd (
     val name: String,
     /** 字段类型, 数据库字段：type  */
     val type: String,
+    /** 示例值, 数据库字段：example  */
+    val example: String,
     /** 是否必须，1：是，0：否, 数据库字段：required  */
     val required: Byte,
     /** 最大长度, 数据库字段：max_length  */
@@ -77,8 +79,6 @@ data class DocParamSaveCmd (
     var children: List<DocParamSaveCmd>? = null,
 ) {
     var id: String? = null
-    /** 示例值, 数据库字段：example  */
-    val example: String = ""
     val enumId: String = ""
     /** 新增操作方式，0：人工操作，1：开放平台推送, 数据库字段：create_mode  */
     val createMode: Byte = 1
@@ -159,8 +159,8 @@ class DocumentService {
     /**
      * 查询模块里的文件夹
      */
-    fun listFolderByModule(host: String, token: String, moduleId: String): List<DocumentDTO> {
-        val body = doGet("$host/doc/folder/list?moduleId=$moduleId", token)
+    fun listFolderByModule(token: String, moduleId: String): List<DocumentDTO> {
+        val body = doGet("/doc/folder/list?moduleId=$moduleId", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
@@ -174,8 +174,8 @@ class DocumentService {
     /**
      * 查询模块里的文档
      */
-    fun listDocumentByModule(host: String, token: String, moduleId: String): List<DocumentDTO> {
-        val body = doGet("$host/doc/list?moduleId=$moduleId", token)
+    fun listDocumentByModule(token: String, moduleId: String): List<DocumentDTO> {
+        val body = doGet("/doc/list?moduleId=$moduleId", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
@@ -189,12 +189,12 @@ class DocumentService {
     /**
      * 创建目录
      */
-    fun saveFolder(host: String, token: String, moduleId: String, folder: String) {
+    fun saveFolder(token: String, moduleId: String, folder: String) {
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
         val folderAddCmd = FolderAddCmd(moduleId, folder)
-        val body = doPost("$host/doc/folder/add", gson.toJson(folderAddCmd), token)
+        val body = doPost("/doc/folder/add", gson.toJson(folderAddCmd), token)
         val result: Result<*> = gson.fromJson(body, object : TypeToken<Result<*>>() {}.type!!)
         if (result.isError()) {
             throw DocumentException("创建目录失败：${result.msg}")
@@ -204,8 +204,8 @@ class DocumentService {
     /**
      * 文档详情查询
      */
-    fun getDocumentDetail(host: String, token: String, docId: String): DocumentDTO? {
-        val body = doGet("$host/doc/detail?id=$docId", token)
+    fun getDocumentDetail(token: String, docId: String): DocumentDTO? {
+        val body = doGet("/doc/detail?id=$docId", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
@@ -219,26 +219,26 @@ class DocumentService {
     /**
      * 查询文档是否存在
      */
-    fun existDocument(host: String, token: String, docId: String) = getDocumentDetail(host, token, docId) != null
+    fun existDocument(token: String, docId: String) = getDocumentDetail(token, docId) != null
 
     /**
      * 保存文档（可覆盖）
      * 先获取模块下所有文档，然后匹配到本文档，如果匹配到，删除此文档，再新增～～
      */
-    fun saveDocument(host: String, token: String, projectId: String, moduleId: String, folderId: String, api: Api) {
-        val docs = listDocumentByModule(host, token, moduleId)
+    fun saveDocument(token: String, projectId: String, moduleId: String, folderId: String, api: Api) {
+        val docs = listDocumentByModule(token, moduleId)
         val docId = getDocDataId(folderId, moduleId, api.url, api.httpMethod)
         docs.find {
             getDocDataId(it.parentId, moduleId, it.url, it.httpMethod) == docId
         }?.let {
             // 先删除
-            deleteDocument(host, token, it.id)
+            deleteDocument(token, it.id)
         }
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
         val docSaveCmd = apiToCmd(projectId, moduleId, folderId, api)
-        val body = doPost("$host/doc/save", gson.toJson(docSaveCmd), token)
+        val body = doPost("/doc/save", gson.toJson(docSaveCmd), token)
         val result: Result<*> = gson.fromJson(body, object : TypeToken<Result<*>>() {}.type!!)
         if (result.isError()) {
             throw DocumentException("保存文档失败：${result.msg}")
@@ -248,11 +248,11 @@ class DocumentService {
     /**
      * 删除文档
      */
-    fun deleteDocument(host: String, token: String, docId: String) {
+    fun deleteDocument(token: String, docId: String) {
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val body = doPost("$host/doc/delete", gson.toJson(DocIdCmd(docId)), token)
+        val body = doPost("/doc/delete", gson.toJson(DocIdCmd(docId)), token)
         val result: Result<*> = gson.fromJson(body, object : TypeToken<Result<*>>() {}.type!!)
         if (result.isError()) {
             throw DocumentException("删除文档失败：${result.msg}")
@@ -296,6 +296,7 @@ class DocumentService {
             val saveCmd = DocParamSaveCmd(
                 name = it.name,
                 type = it.type.value,
+                example = it.example,
                 required = if (it.required) 1 else 0,
                 maxLength = it.maxLength,
                 description = it.description,

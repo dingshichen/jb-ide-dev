@@ -40,7 +40,6 @@ class DocSetting : PersistentStateComponent<DocSetting.TornaState> {
 
     data class TornaState(
         var domain: String? = null,
-        var url: String? = null,
         var username: String? = null,
         var rememberSpaceBoxId: String? = null,
         var rememberProjectBoxId: String? = null,
@@ -78,10 +77,10 @@ class TornaKeyService {
     /**
      * 获取 token
      */
-    fun getToken(project: Project, url: String, docSetting: DocSetting): String? {
+    fun getToken(project: Project, docSetting: DocSetting): String? {
         val username = docSetting.state.username
         val password = getPassword()
-        if (StringUtil.isAnyEmpty(url, username, password)) {
+        if (StringUtil.isAnyEmpty(username, password)) {
             throw LoginException("获取不到正确的项目配置")
         }
         val properties = PropertiesComponent.getInstance()
@@ -89,7 +88,7 @@ class TornaKeyService {
         if (StringUtil.isEmpty(token)) {
             val loginService = project.getService(UserService::class.java)
             token = try {
-                loginService.login(url, username!!, password!!)
+                loginService.login(username!!, password!!)
             } catch (e: Exception) {
                 throw LoginException("登陆失败：${e.message}")
             }

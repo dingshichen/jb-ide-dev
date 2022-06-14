@@ -7,6 +7,11 @@ import java.net.http.HttpResponse
 import java.time.Duration
 
 /**
+ * 固定 torna 域名
+ */
+const val UNIONDRUG_TORNA_URL = "http://ud-torna.uniondrug.cn"
+
+/**
  * 接口值包装结构
  */
 data class Result<T>(
@@ -21,9 +26,9 @@ data class Result<T>(
 /**
  * GET
  */
-fun doGet(url: String, token: String): String {
+fun doGet(path: String, token: String): String {
     val request = HttpRequest.newBuilder()
-        .uri(URI.create(url))
+        .uri(URI.create("$UNIONDRUG_TORNA_URL$path"))
         .GET()
         .header("Authorization", "Bearer $token")
         .timeout(Duration.ofSeconds(2L))
@@ -39,9 +44,9 @@ fun doGet(url: String, token: String): String {
 /**
  * POST
  */
-fun doPost(url: String, body: String, token: String? = null): String {
+fun doPost(path: String, body: String, token: String? = null): String {
     val builder = HttpRequest.newBuilder()
-        .uri(URI.create(url))
+        .uri(URI.create("$UNIONDRUG_TORNA_URL$path"))
         .header("Content-Type", "application/json")
         .POST(HttpRequest.BodyPublishers.ofString(body))
         .timeout(Duration.ofSeconds(2L))

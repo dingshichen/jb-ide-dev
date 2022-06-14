@@ -19,8 +19,8 @@ class ProjectService {
     /**
      * 获取空间里的项目
      */
-    fun listProjectBySpace(host: String, token: String, spaceId: String): List<ProjectDTO> {
-        val body = doGet("$host/space/project/list?spaceId=$spaceId", token)
+    fun listProjectBySpace(token: String, spaceId: String): List<ProjectDTO> {
+        val body = doGet("/space/project/list?spaceId=$spaceId", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()

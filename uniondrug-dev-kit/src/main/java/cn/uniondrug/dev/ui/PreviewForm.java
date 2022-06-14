@@ -344,7 +344,7 @@ public class PreviewForm {
 
                     DocSetting apiSettings = DocSetting.Companion.getInstance(project);
                     DocSetting.TornaState state = apiSettings.getState();
-                    if (StringUtils.isAnyBlank(state.getUrl(), state.getDomain(), state.getUsername())) {
+                    if (StringUtils.isAnyBlank(state.getDomain(), state.getUsername())) {
                         // 说明没有配置 Torna, 跳转到配置页面
                         notifyError(project, "Torna 未配置，无法完成上传");
                         ShowSettingsUtil.getInstance().showSettingsDialog(e.getProject(), DocSettingConfigurable.class);
@@ -357,8 +357,8 @@ public class PreviewForm {
                         DocumentService service = project.getService(DocumentService.class);
                         TornaKeyService tornaKeyService = TornaKeyService.Companion.getInstance(project);
                         try {
-                            String token = tornaKeyService.getToken(project, state.getUrl(), apiSettings);
-                            service.saveDocument(state.getUrl(), token, dialog.getProjectId(), dialog.getModuleId(), dialog.getFolderId(), api);
+                            String token = tornaKeyService.getToken(project, apiSettings);
+                            service.saveDocument(token, dialog.getProjectId(), dialog.getModuleId(), dialog.getFolderId(), api);
                             notifyInfo(project, "文档上传成功");
                         } catch (Exception ex) {
                             notifyError(project, "文档上传失败：" + ex.getMessage());

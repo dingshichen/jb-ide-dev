@@ -47,7 +47,7 @@ fun getUrl(project: Project, psiClass: PsiClass, psiMethod: PsiMethod): String {
     val pathByMethod = AnnotationUtil.getStringAttributeValue(methodAnnotation, "value")
     val apiSettings = getInstance(project)
     val state = apiSettings.state
-    val domain = state.domain ?: "https://{api_host}"
+    val domain = state.domain?.let { "http://${state.domain}.turboradio.cn" } ?: "http://{api_host}"
     val url = (pathByClass?.let { "/$it/$pathByMethod".replace("//", "/") }
         ?: "/$pathByMethod".replace("//", "/"))
     return domain + url

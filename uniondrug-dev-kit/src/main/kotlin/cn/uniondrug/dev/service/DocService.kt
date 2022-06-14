@@ -32,7 +32,7 @@ class DocService {
      * 构建 Torna API
      */
     fun buildApi(project: Project, psiClass: PsiClass, psiMethod: PsiMethod) = Api(
-        folder = psiClass.name!!,
+        folder = getFolder(psiClass),
         name = getApiName(psiMethod),
         description = getApiDescription(psiMethod),
         author = getApiAuthor(psiClass, psiMethod),

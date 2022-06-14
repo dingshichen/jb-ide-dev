@@ -22,6 +22,8 @@ fun isBaseCollection(type: PsiType): Boolean {
     return false
 }
 
+fun getFolder(psiClass: PsiClass) = psiClass.childrenDocComment()?.find { it.isCommentData() }?.commentText() ?: psiClass.name!!
+
 /**
  * 获取 API 名称
  */
@@ -111,7 +113,7 @@ fun getBody(
     val generics = getGenericsType(psiClass, psiType)
     // 没有给出属性字段，则解析类型里的属性
     val fields = childrenFields ?: psiClass.fields
-    fields?.forEach {
+    fields.forEach {
         if (it.name == "serialVersionUID") {
             // 序列化 ID 字段，跳过
             return@forEach

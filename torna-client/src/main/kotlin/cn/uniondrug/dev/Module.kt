@@ -19,8 +19,8 @@ class ModuleService {
     /**
      * 获取项目里的模块
      */
-    fun listModuleByProject(host: String, token: String, projectId: String): List<ModuleDTO> {
-        val body = doGet("$host/module/list?projectId=$projectId", token)
+    fun listModuleByProject(token: String, projectId: String): List<ModuleDTO> {
+        val body = doGet("/module/list?projectId=$projectId", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()

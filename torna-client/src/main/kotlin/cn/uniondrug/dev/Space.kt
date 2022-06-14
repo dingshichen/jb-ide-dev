@@ -18,8 +18,8 @@ class SpaceService {
     /**
      * 查询我所在的空间
      */
-    fun listMySpace(host: String, token: String): List<SpaceDTO> {
-        val body = doGet("$host/space/list", token)
+    fun listMySpace(token: String): List<SpaceDTO> {
+        val body = doGet("/space/list", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
