@@ -9,6 +9,8 @@ import com.alibaba.fastjson.JSONObject
  * API 接口
  */
 data class Api(
+    /** 文件夹，使用所在 Controller Class Name */
+    val folder: String,
     /** 文档名称  */
     val name: String,
     /** 文档概述  */

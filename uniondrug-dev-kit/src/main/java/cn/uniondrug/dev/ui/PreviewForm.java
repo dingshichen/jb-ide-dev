@@ -352,12 +352,21 @@ public class PreviewForm {
                         return;
                     }
                     // 上传到 torna
-                    TornaIndexDialog dialog = new TornaIndexDialog(project);
+                    TornaIndexDialog dialog = new TornaIndexDialog(project, api);
                     if (dialog.showAndGet()) {
                         DocumentService service = project.getService(DocumentService.class);
                         TornaKeyService tornaKeyService = TornaKeyService.Companion.getInstance(project);
-                        String token = tornaKeyService.getToken(project, state.getUrl(), apiSettings);
-                        service.saveDocument(state.getUrl(), token, dialog.getProjectId(), dialog.getModuleId(), dialog.getFolderId(), api);
+                        try {
+                            String token = tornaKeyService.getToken(project, state.getUrl(), apiSettings);
+                            service.saveDocument(state.getUrl(), token, dialog.getProjectId(), dialog.getModuleId(), dialog.getFolderId(), api);
+                            notifyInfo(project, "文档上传成功");
+                        } catch (Exception ex) {
+                            notifyError(project, "文档上传失败：" + ex.getMessage());
+                        }
+                        // 记住选择
+                        state.setRememberSpaceBoxId(dialog.getSpaceId());
+                        state.setRememberProjectBoxId(dialog.getProjectId());
+                        state.setRememberModuleBoxId(dialog.getModuleId());
                     }
                 }
             });

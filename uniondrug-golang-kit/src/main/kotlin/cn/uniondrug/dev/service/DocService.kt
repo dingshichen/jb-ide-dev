@@ -61,6 +61,7 @@ class DocService {
             }
         }
         return Api(
+            folder = "",    // TODO
             name = goApiStruct.nameComment?.text?.getCommentValue(method.name!!)!!,
             description = goApiStruct.descComment?.text?.getCommentValue("Desc") ?: "",
             author = goApiStruct.authorComment?.text?.getCommentValue("Author") ?: "",

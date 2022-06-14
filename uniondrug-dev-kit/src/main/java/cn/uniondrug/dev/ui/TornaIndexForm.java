@@ -1,5 +1,6 @@
 package cn.uniondrug.dev.ui;
 
+import cn.hutool.core.util.StrUtil;
 import cn.uniondrug.dev.*;
 import cn.uniondrug.dev.config.DocSetting;
 import cn.uniondrug.dev.config.TornaKeyService;
@@ -35,8 +36,11 @@ public class TornaIndexForm {
 
     private TornaKeyService tornaKeyService;
 
-    public TornaIndexForm(Project project) {
+    private Api api;
+
+    public TornaIndexForm(Project project, Api api) {
         this.project = project;
+        this.api = api;
         this.tornaKeyService = TornaKeyService.Companion.getInstance(project);
         initListener();
         initValue();
@@ -44,6 +48,8 @@ public class TornaIndexForm {
 
     private void initListener() {
         DocSetting docSetting = DocSetting.Companion.getInstance(project);
+        String rememberProjectBoxId = docSetting.getState().getRememberProjectBoxId();
+        String rememberModuleBoxId = docSetting.getState().getRememberModuleBoxId();
         String url = docSetting.getState().getUrl();
         String token = tornaKeyService.getToken(project, url, docSetting);
         createFolderButton.addActionListener(e -> {
@@ -69,6 +75,12 @@ public class TornaIndexForm {
                 moduleBox.removeAllItems();
                 folderBox.removeAllItems();
                 projects.forEach(p -> projectBox.addItem(p));
+                if (StrUtil.isNotBlank(rememberProjectBoxId)) {
+                    projects.stream()
+                            .filter(p -> p.getId().equals(rememberProjectBoxId))
+                            .findFirst()
+                            .ifPresent(p -> projectBox.setItem(p));
+                }
             }
         });
         projectBox.addItemListener(p -> {
@@ -78,6 +90,12 @@ public class TornaIndexForm {
                 moduleBox.removeAllItems();
                 folderBox.removeAllItems();
                 modules.forEach(m -> moduleBox.addItem(m));
+                if (StrUtil.isNotBlank(rememberModuleBoxId)) {
+                    modules.stream()
+                            .filter(m -> m.getId().equals(rememberModuleBoxId))
+                            .findFirst()
+                            .ifPresent(m -> moduleBox.setItem(m));
+                }
             }
         });
         moduleBox.addItemListener(m -> {
@@ -86,6 +104,12 @@ public class TornaIndexForm {
                 List<DocumentDTO> docs = documentService.listFolderByModule(url, token, ((ModuleDTO) m.getItem()).getId());
                 folderBox.removeAllItems();
                 docs.forEach(d -> folderBox.addItem(d));
+                if (StrUtil.isNotBlank(api.getFolder())) {
+                    docs.stream()
+                            .filter(d -> d.getName().equals(api.getFolder()))
+                            .findFirst()
+                            .ifPresent(d -> folderBox.setItem(d));
+                }
             }
         });
     }
@@ -98,10 +122,21 @@ public class TornaIndexForm {
         List<SpaceDTO> spaces = spaceService.listMySpace(url, token);
         spaceBox.removeAllItems();
         spaces.forEach(e -> spaceBox.addItem(e));
+        String rememberSpaceBoxId = docSetting.getState().getRememberSpaceBoxId();
+        if (StrUtil.isNotBlank(rememberSpaceBoxId)) {
+            spaces.stream()
+                    .filter(e -> e.getId().equals(rememberSpaceBoxId))
+                    .findFirst()
+                    .ifPresent(e -> spaceBox.setItem(e));
+        }
     }
 
     public JPanel getRootPanel() {
         return rootPanel;
+    }
+
+    public String getSpaceId() {
+        return spaceBox.getItem().getId();
     }
 
     public String getProjectId() {

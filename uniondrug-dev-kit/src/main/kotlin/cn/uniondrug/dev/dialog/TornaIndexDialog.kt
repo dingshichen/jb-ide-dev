@@ -1,5 +1,6 @@
 package cn.uniondrug.dev.dialog
 
+import cn.uniondrug.dev.Api
 import cn.uniondrug.dev.ui.CreateFolderForm
 import cn.uniondrug.dev.ui.TornaIndexForm
 import com.intellij.openapi.project.Project
@@ -13,7 +14,8 @@ import javax.swing.JComponent
  * @date 2022/6/10
  */
 class TornaIndexDialog(
-    val project: Project
+    val project: Project,
+    val api: Api,
 ) : DialogWrapper(true) {
 
     var tornaIndexForm: TornaIndexForm? = null
@@ -24,7 +26,7 @@ class TornaIndexDialog(
     }
 
     override fun createCenterPanel(): JComponent? {
-        tornaIndexForm = TornaIndexForm(project)
+        tornaIndexForm = TornaIndexForm(project, api)
         return tornaIndexForm!!.rootPanel
     }
 
@@ -33,6 +35,8 @@ class TornaIndexDialog(
         setCancelButtonText("取消")
         return arrayOf(okAction, cancelAction)
     }
+
+    fun getSpaceId() = tornaIndexForm!!.spaceId
 
     fun getProjectId() = tornaIndexForm!!.projectId
 

@@ -1,6 +1,7 @@
 /** @author dingshichen */
 package cn.uniondrug.dev.config
 
+import cn.uniondrug.dev.LoginException
 import cn.uniondrug.dev.UserService
 import cn.uniondrug.dev.ui.DocSettingForm
 import cn.uniondrug.dev.util.StringUtil
@@ -41,6 +42,9 @@ class DocSetting : PersistentStateComponent<DocSetting.TornaState> {
         var domain: String? = null,
         var url: String? = null,
         var username: String? = null,
+        var rememberSpaceBoxId: String? = null,
+        var rememberProjectBoxId: String? = null,
+        var rememberModuleBoxId: String? = null,
     )
 
 }
@@ -78,8 +82,7 @@ class TornaKeyService {
         val username = docSetting.state.username
         val password = getPassword()
         if (StringUtil.isAnyEmpty(url, username, password)) {
-            // TODO 需要异常 中断
-            return null
+            throw LoginException("获取不到正确的项目配置")
         }
         val properties = PropertiesComponent.getInstance()
         var token = properties.getValue(TOKEN_KEY)
@@ -88,8 +91,7 @@ class TornaKeyService {
             token = try {
                 loginService.login(url, username!!, password!!)
             } catch (e: Exception) {
-                // TODO 中断
-                return null
+                throw LoginException("登陆失败：${e.message}")
             }
             properties.setValue(TOKEN_KEY, token)
         }
