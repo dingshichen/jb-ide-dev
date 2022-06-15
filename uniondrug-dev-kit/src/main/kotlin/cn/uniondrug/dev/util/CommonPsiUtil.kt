@@ -271,3 +271,13 @@ private fun getChildren(
         getBody(project, psiField, fieldType as PsiClassType, tryGetCollectionGenericsType(fieldType))
     }
 }
+
+/**
+ * 获取参数引用里的常量值
+ */
+fun getLiteralValue(expression: PsiExpression) = when(expression) {
+    is PsiReferenceExpression -> expression.resolve()?.children?.find { it is PsiLiteralExpression }?.text?.replace("\"", "")
+    else -> null
+}
+
+fun isMbsService(psiClass: PsiClass) = psiClass.qualifiedName == MBS_SERVICE_1 || psiClass.qualifiedName == MBS_SERVICE_2

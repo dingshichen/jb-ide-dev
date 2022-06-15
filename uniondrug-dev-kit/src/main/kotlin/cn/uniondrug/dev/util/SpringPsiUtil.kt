@@ -24,6 +24,8 @@ const val EVENT = "org.springframework.context.ApplicationEvent"
 const val EVENT_PUBLISHER = "org.springframework.context.ApplicationEventPublisher"
 const val EVENT_LISTENER = "org.springframework.context.ApplicationListener"
 
+const val FEIGN_CLIENT = "org.springframework.cloud.openfeign.FeignClient"
+
 /**
  * 判断 PSI 方法是否不是 Spring 的方法
  */
@@ -33,6 +35,23 @@ fun isNotSpringMVCMethod(psiMethod: PsiMethod) = !isSpringMVCMethod(psiMethod)
  * 判断 PSI 方法是否是 SpringMVC 的方法
  */
 fun isSpringMVCMethod(psiMethod: PsiMethod) = AnnotationUtil.isAnnotated(psiMethod, MVC_ANNOTATIONS, 0)
+
+/**
+ * 判断是不是 FeignClient
+ */
+fun isFeignClient(psiClass: PsiClass) = psiClass.isInterface && AnnotationUtil.isAnnotated(psiClass, FEIGN_CLIENT, 0)
+
+/**
+ * 获取 feignClient url
+ */
+fun getFeignClientUrl(psiClass: PsiClass) = AnnotationUtil.getStringAttributeValue(psiClass.modifierList?.findAnnotation("org.springframework.cloud.openfeign.FeignClient")!!, "url")
+
+/**
+ * 获取 feignClient 方法上的 path
+ */
+fun getFeignClientMethodPath(psiMethod: PsiMethod) = AnnotationUtil.findAnnotation(psiMethod, MVC_ANNOTATIONS)?.let {
+    AnnotationUtil.getStringAttributeValue(it, "value")
+}
 
 /**
  * 获取 MVC 接口 url

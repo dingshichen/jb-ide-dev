@@ -1,11 +1,9 @@
 package cn.uniondrug.dev.action
 
+import cn.uniondrug.dev.*
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
-import cn.uniondrug.dev.util.EVENT
-import cn.uniondrug.dev.util.EVENT_LISTENER
-import cn.uniondrug.dev.util.EVENT_PUBLISHER
-import cn.uniondrug.dev.util.isSpringMVCMethod
+import cn.uniondrug.dev.util.*
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -15,6 +13,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
+import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.search.searches.ClassInheritorsSearch
@@ -40,7 +39,7 @@ class AnalyzeApiCouplingAction: AnAction() {
                 fileChooserDescriptor.isForcedToUseIdeaFileChooser = true
                 FileChooser.chooseFile(fileChooserDescriptor, project, null) { out ->
                     try {
-                        mutableMapOf<String, Set<String>>().run {
+                        mutableMapOf<String, Set<UniondrugResource>>().run {
                             // 开始分析
                             analyzeApiCoupling(project, virtualFile, this)
                             clearEventListener();
@@ -70,7 +69,7 @@ class AnalyzeApiCouplingAction: AnAction() {
     /**
      * 拼接所有
      */
-    private fun concatAll(analyMap: Map<String, Set<String>>) = buildString {
+    private fun concatAll(analyMap: Map<String, Set<UniondrugResource>>) = buildString {
         analyMap.forEach {(api, trace) ->
             appendLine().append("分析开始 -> $api")
             trace.forEach {
@@ -83,7 +82,7 @@ class AnalyzeApiCouplingAction: AnAction() {
     /**
      * 拼接我们想要的
      */
-    private fun concatWeWant(analyMap: Map<String, Set<String>>) = buildString {
+    private fun concatWeWant(analyMap: Map<String, Set<UniondrugResource>>) = buildString {
         analyMap.forEach {(api, trace) ->
             appendLine().append("分析开始 -> $api")
             trace.filter {
@@ -99,7 +98,7 @@ class AnalyzeApiCouplingAction: AnAction() {
         }
     }
 
-    private fun analyzeApiCoupling(project: Project, virtualFile: VirtualFile, result: MutableMap<String, Set<String>>) {
+    private fun analyzeApiCoupling(project: Project, virtualFile: VirtualFile, result: MutableMap<String, Set<UniondrugResource>>) {
         if (virtualFile.isDirectory) {
             // 如果是目录就递归子集
             virtualFile.children.forEach { child ->
@@ -124,7 +123,7 @@ class AnalyzeApiCouplingAction: AnAction() {
     /**
      * 分析 REST 接口方法
      */
-    private fun analyRestMethod(project: Project, method: PsiMethod, traceNames: MutableSet<String>) {
+    private fun analyRestMethod(project: Project, method: PsiMethod, traceNames: MutableSet<UniondrugResource>) {
         PsiTreeUtil.findChildrenOfType(method, PsiCodeBlock::class.java).forEach { codeBlock ->
             // 从方法解读代码块，只有 PsiStatement 才是程序正确需要运行的元素
             codeBlock.statements.forEach { psiStatement ->
@@ -138,7 +137,7 @@ class AnalyzeApiCouplingAction: AnAction() {
         }
     }
 
-    private fun analyMethodExpression(project: Project, call: PsiMethodCallExpression, traceNames: MutableSet<String>) {
+    private fun analyMethodExpression(project: Project, call: PsiMethodCallExpression, traceNames: MutableSet<UniondrugResource>) {
         val express = call.methodExpression.resolve() ?: return
         if (express !is PsiMethod) {
             return
@@ -156,13 +155,40 @@ class AnalyzeApiCouplingAction: AnAction() {
             )
             query.findAll().run {
                 if (isEmpty()) {
-                    PsiTreeUtil.getParentOfType(express, PsiClass::class.java)?.let {
-                        traceNames.add("${it.qualifiedName}.${express.name}")
+                    PsiTreeUtil.getParentOfType(express, PsiClass::class.java)?.let { psiClass ->
+                        if (isMbsService(psiClass)) {
+                            call.argumentList.expressions.run args@{
+                                if (this.size > 2) {
+                                    traceNames += mbsResource {
+                                        channel {
+                                            ofMbsChannel(psiClass.qualifiedName!!)!!
+                                        }
+                                        topic {
+                                            getLiteralValue(this@args[0])!!
+                                        }
+                                        tag {
+                                            getLiteralValue(this@args[1])!!
+                                        }
+                                    }
+                                }
+                            }
+                        } else if (isFeignClient(psiClass)) {
+                            traceNames += rpcResource {
+                                serverUrlExpress {
+                                    getFeignClientUrl(psiClass)!!
+                                }
+                                path {
+                                    getFeignClientMethodPath(express)!!
+                                }
+                                thirdFlag {
+                                    "0"
+                                }
+                            }
+                        }
                     }
                 } else {
                     forEach {
-                        PsiTreeUtil.getParentOfType(it, PsiClass::class.java)?.let { psiClass ->
-                            traceNames.add("${psiClass.qualifiedName}.${express.name}")
+                        PsiTreeUtil.getParentOfType(it, PsiClass::class.java)?.let { _ ->
                             analyRestMethod(project, it, traceNames);
                         }
                     }
