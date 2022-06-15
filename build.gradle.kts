@@ -10,7 +10,7 @@ plugins {
 }
 group = "cn.uniondrug.dev"
 
-subprojects {
+allprojects {
 
     val lombok = "1.18.20"
     val jdk = JavaVersion.VERSION_11.toString()
