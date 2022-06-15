@@ -12,14 +12,14 @@ interface UniondrugResource
 /**
  * 涉及接口资源
  */
-class RPCResource : UniondrugResource {
-
+data class RPCResource(
     /* 服务地址 spring value 表达式 */
-    lateinit var serverUrlExpress: String
+    var serverUrlExpress: String? = null,
     /* 接口路径 */
-    lateinit var path: String
+    var path: String? = null,
     /* 三方资源标识：0 内部、1 三方 */
-    lateinit var thirdFlag: String
+    var thirdFlag: String? = null,
+) : UniondrugResource {
 
     fun serverUrlExpress(init: RPCResource.() -> String) {
         this.serverUrlExpress = init()
@@ -43,14 +43,14 @@ fun rpcResource(init: RPCResource.() -> Unit): RPCResource {
 /**
  * 涉及 MBS 资源
  */
-class MbsResource : UniondrugResource {
-
+data class MbsResource(
     /* 通道 */
-    lateinit var channel: MbsChannel
+    var channel: MbsChannel? = null,
     /* 主题 */
-    lateinit var topic: String
+    var topic: String? = null,
     /* 标签 */
-    lateinit var tag: String
+    var tag: String? = null,
+) : UniondrugResource {
 
     fun channel(init: MbsResource.() -> MbsChannel) {
         this.channel = init()

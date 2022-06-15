@@ -1,8 +1,11 @@
 package cn.uniondrug.dev.action
 
-import cn.uniondrug.dev.*
+import cn.uniondrug.dev.UniondrugResource
+import cn.uniondrug.dev.mbsResource
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
+import cn.uniondrug.dev.ofMbsChannel
+import cn.uniondrug.dev.rpcResource
 import cn.uniondrug.dev.util.*
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -13,7 +16,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
-import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.search.searches.ClassInheritorsSearch
@@ -46,8 +48,8 @@ class AnalyzeApiCouplingAction: AnAction() {
                             // 输出结果
                             val fileAll = File("${out.path}/AnalyzeApiCoupling-all.txt")
                             FileUtil.writeToFile(fileAll, concatAll(this))
-                            val fileWeWant = File("${out.path}/AnalyzeApiCoupling-simple.txt")
-                            FileUtil.writeToFile(fileWeWant, concatWeWant(this))
+//                            val fileWeWant = File("${out.path}/AnalyzeApiCoupling-simple.txt")
+//                            FileUtil.writeToFile(fileWeWant, concatWeWant(this))
                             notifyInfo(project, "分析接口耦合结果完成")
                         }
                     } catch (e: Exception) {
@@ -79,24 +81,24 @@ class AnalyzeApiCouplingAction: AnAction() {
         }
     }
 
-    /**
-     * 拼接我们想要的
-     */
-    private fun concatWeWant(analyMap: Map<String, Set<UniondrugResource>>) = buildString {
-        analyMap.forEach {(api, trace) ->
-            appendLine().append("分析开始 -> $api")
-            trace.filter {
-                val className = it.substring(0, it.lastIndexOf("."))
-                className.endsWith("Api")
-                        || className.endsWith("RestTemplate")
-                        || className.endsWith("MsgService")
-                        || className.endsWith("Msg2Service")
-            }.forEach {
-                appendLine().append("调用 -> $it")
-            }
-            appendLine().append("分析结束")
-        }
-    }
+//    /**
+//     * 拼接我们想要的
+//     */
+//    private fun concatWeWant(analyMap: Map<String, Set<UniondrugResource>>) = buildString {
+//        analyMap.forEach {(api, trace) ->
+//            appendLine().append("分析开始 -> $api")
+//            trace.filter {
+//                val className = it.substring(0, it.lastIndexOf("."))
+//                className.endsWith("Api")
+//                        || className.endsWith("RestTemplate")
+//                        || className.endsWith("MsgService")
+//                        || className.endsWith("Msg2Service")
+//            }.forEach {
+//                appendLine().append("调用 -> $it")
+//            }
+//            appendLine().append("分析结束")
+//        }
+//    }
 
     private fun analyzeApiCoupling(project: Project, virtualFile: VirtualFile, result: MutableMap<String, Set<UniondrugResource>>) {
         if (virtualFile.isDirectory) {
@@ -110,7 +112,7 @@ class AnalyzeApiCouplingAction: AnAction() {
             PsiTreeUtil.findChildrenOfType(it, PsiClass::class.java).forEach { psiClass ->
                 psiClass.allMethods.forEach { method ->
                     if (isSpringMVCMethod(method)) {
-                        mutableSetOf<String>().apply {
+                        mutableSetOf<UniondrugResource>().apply {
                             result["${psiClass.qualifiedName}.${method.name}"] = this
                             analyRestMethod(project, method, this)
                         }
@@ -212,7 +214,6 @@ class AnalyzeApiCouplingAction: AnAction() {
                             eventMap[it]?.let { listener ->
                                 // 找到对应事件的话，就可以处理了
                                 listener.findMethodsByName("onApplicationEvent", false).first()?.let { onMethod ->
-                                    traceNames.add("${listener.qualifiedName}.onApplicationEvent")
                                     analyRestMethod(project, onMethod, traceNames)
                                 }
                             }
