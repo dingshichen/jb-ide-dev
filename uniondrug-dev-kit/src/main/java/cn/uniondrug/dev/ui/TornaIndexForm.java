@@ -26,10 +26,10 @@ public class TornaIndexForm {
     private JLabel projectLable;
     private JLabel moduleLable;
     private JLabel folderLable;
-    private ComboBox<SpaceDTO> spaceBox;
-    private ComboBox<ProjectDTO> projectBox;
-    private ComboBox<ModuleDTO> moduleBox;
-    private ComboBox<DocumentDTO> folderBox;
+    private ComboBox<TornaSpaceDTO> spaceBox;
+    private ComboBox<TornaProjectDTO> projectBox;
+    private ComboBox<TornaModuleDTO> moduleBox;
+    private ComboBox<TornaDocDTO> folderBox;
     private JButton createFolderButton;
 
     private Project project;
@@ -54,9 +54,9 @@ public class TornaIndexForm {
         createFolderButton.addActionListener(e -> {
             CreateFolderDialog dialog = new CreateFolderDialog(project);
             if (dialog.showAndGet()) {
-                DocumentService documentService = project.getService(DocumentService.class);
-                documentService.saveFolder(token, moduleBox.getItem().getId(), dialog.getFolder());
-                List<DocumentDTO> docs = documentService.listFolderByModule(token, moduleBox.getItem().getId());
+                TornaDocService tornaDocService = project.getService(TornaDocService.class);
+                tornaDocService.saveFolder(token, moduleBox.getItem().getId(), dialog.getFolder());
+                List<TornaDocDTO> docs = tornaDocService.listFolderByModule(token, moduleBox.getItem().getId());
                 docs.stream()
                         .filter(folder -> folder.getName().equals(dialog.getFolder()))
                         .findFirst()
@@ -68,8 +68,8 @@ public class TornaIndexForm {
         });
         spaceBox.addItemListener(s -> {
             if (s.getStateChange() == ItemEvent.SELECTED) {
-                ProjectService projectService = project.getService(ProjectService.class);
-                List<ProjectDTO> projects = projectService.listProjectBySpace(token, ((SpaceDTO) s.getItem()).getId());
+                TornaProjectService tornaProjectService = project.getService(TornaProjectService.class);
+                List<TornaProjectDTO> projects = tornaProjectService.listProjectBySpace(token, ((TornaSpaceDTO) s.getItem()).getId());
                 projectBox.removeAllItems();
                 moduleBox.removeAllItems();
                 folderBox.removeAllItems();
@@ -84,8 +84,8 @@ public class TornaIndexForm {
         });
         projectBox.addItemListener(p -> {
             if (p.getStateChange() == ItemEvent.SELECTED) {
-                ModuleService moduleService = project.getService(ModuleService.class);
-                List<ModuleDTO> modules = moduleService.listModuleByProject(token, ((ProjectDTO) p.getItem()).getId());
+                TornaModuleService tornaModuleService = project.getService(TornaModuleService.class);
+                List<TornaModuleDTO> modules = tornaModuleService.listModuleByProject(token, ((TornaProjectDTO) p.getItem()).getId());
                 moduleBox.removeAllItems();
                 folderBox.removeAllItems();
                 modules.forEach(m -> moduleBox.addItem(m));
@@ -99,8 +99,8 @@ public class TornaIndexForm {
         });
         moduleBox.addItemListener(m -> {
             if (m.getStateChange() == ItemEvent.SELECTED) {
-                DocumentService documentService = project.getService(DocumentService.class);
-                List<DocumentDTO> docs = documentService.listFolderByModule(token, ((ModuleDTO) m.getItem()).getId());
+                TornaDocService tornaDocService = project.getService(TornaDocService.class);
+                List<TornaDocDTO> docs = tornaDocService.listFolderByModule(token, ((TornaModuleDTO) m.getItem()).getId());
                 folderBox.removeAllItems();
                 docs.forEach(d -> folderBox.addItem(d));
                 if (StrUtil.isNotBlank(api.getFolder())) {
@@ -116,8 +116,8 @@ public class TornaIndexForm {
     private void initValue() {
         DocSetting docSetting = DocSetting.Companion.getInstance(project);
         String token = tornaKeyService.getToken(project, docSetting);
-        SpaceService spaceService = project.getService(SpaceService.class);
-        List<SpaceDTO> spaces = spaceService.listMySpace(token);
+        TornaSpaceService tornaSpaceService = project.getService(TornaSpaceService.class);
+        List<TornaSpaceDTO> spaces = tornaSpaceService.listMySpace(token);
         spaceBox.removeAllItems();
         spaces.forEach(e -> spaceBox.addItem(e));
         String rememberSpaceBoxId = docSetting.getState().getRememberSpaceBoxId();

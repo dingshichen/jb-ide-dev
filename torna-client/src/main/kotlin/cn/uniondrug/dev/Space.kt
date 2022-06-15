@@ -6,28 +6,28 @@ import com.google.gson.reflect.TypeToken
 /**
  * 空间
  */
-data class SpaceDTO(
+data class TornaSpaceDTO(
     val id: String,
     val name: String,
 ) {
     override fun toString() = name
 }
 
-class SpaceService {
+class TornaSpaceService {
 
     /**
      * 查询我所在的空间
      */
-    fun listMySpace(token: String): List<SpaceDTO> {
-        val body = doGet("/space/list", token)
+    fun listMySpace(token: String): List<TornaSpaceDTO> {
+        val body = doGetTorna("/space/list", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val result: Result<List<SpaceDTO>> = gson.fromJson(body, object : TypeToken<Result<List<SpaceDTO>>>() {}.type!!)
-        if (result.isError()) {
-            throw SpaceException("查询空间失败：${result.msg}")
+        val tornaResult: TornaResult<List<TornaSpaceDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaSpaceDTO>>>() {}.type!!)
+        if (tornaResult.isError()) {
+            throw SpaceException("查询空间失败：${tornaResult.msg}")
         }
-        return result.data!!
+        return tornaResult.data!!
     }
 
 }

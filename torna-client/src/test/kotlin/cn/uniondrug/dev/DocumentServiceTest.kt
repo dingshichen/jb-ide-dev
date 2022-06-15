@@ -8,10 +8,10 @@ class DocumentServiceTest {
 
 //    @Test
     fun deleteDocument() {
-        val documentService = DocumentService()
-        documentService.listDocumentByModule(token, moduleId).forEach {
+        val tornaDocService = TornaDocService()
+        tornaDocService.listDocumentByModule(token, moduleId).forEach {
             // 连目录一起删除了
-            documentService.deleteDocument(token, it.id)
+            tornaDocService.deleteDoc(token, it.id)
         }
     }
 

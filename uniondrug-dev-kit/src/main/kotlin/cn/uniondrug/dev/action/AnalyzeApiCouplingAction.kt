@@ -1,11 +1,8 @@
 package cn.uniondrug.dev.action
 
-import cn.uniondrug.dev.UniondrugResource
-import cn.uniondrug.dev.mbsResource
+import cn.uniondrug.dev.mss.*
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
-import cn.uniondrug.dev.ofMbsChannel
-import cn.uniondrug.dev.rpcResource
 import cn.uniondrug.dev.util.*
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -41,15 +38,13 @@ class AnalyzeApiCouplingAction: AnAction() {
                 fileChooserDescriptor.isForcedToUseIdeaFileChooser = true
                 FileChooser.chooseFile(fileChooserDescriptor, project, null) { out ->
                     try {
-                        mutableMapOf<String, Set<UniondrugResource>>().run {
+                        mutableMapOf<UniondrugResource, Set<UniondrugResource>>().run {
                             // 开始分析
                             analyzeApiCoupling(project, virtualFile, this)
                             clearEventListener();
                             // 输出结果
                             val fileAll = File("${out.path}/AnalyzeApiCoupling-all.txt")
                             FileUtil.writeToFile(fileAll, concatAll(this))
-//                            val fileWeWant = File("${out.path}/AnalyzeApiCoupling-simple.txt")
-//                            FileUtil.writeToFile(fileWeWant, concatWeWant(this))
                             notifyInfo(project, "分析接口耦合结果完成")
                         }
                     } catch (e: Exception) {
@@ -71,7 +66,7 @@ class AnalyzeApiCouplingAction: AnAction() {
     /**
      * 拼接所有
      */
-    private fun concatAll(analyMap: Map<String, Set<UniondrugResource>>) = buildString {
+    private fun concatAll(analyMap: Map<UniondrugResource, Set<UniondrugResource>>) = buildString {
         analyMap.forEach {(api, trace) ->
             appendLine().append("分析开始 -> $api")
             trace.forEach {
@@ -81,26 +76,7 @@ class AnalyzeApiCouplingAction: AnAction() {
         }
     }
 
-//    /**
-//     * 拼接我们想要的
-//     */
-//    private fun concatWeWant(analyMap: Map<String, Set<UniondrugResource>>) = buildString {
-//        analyMap.forEach {(api, trace) ->
-//            appendLine().append("分析开始 -> $api")
-//            trace.filter {
-//                val className = it.substring(0, it.lastIndexOf("."))
-//                className.endsWith("Api")
-//                        || className.endsWith("RestTemplate")
-//                        || className.endsWith("MsgService")
-//                        || className.endsWith("Msg2Service")
-//            }.forEach {
-//                appendLine().append("调用 -> $it")
-//            }
-//            appendLine().append("分析结束")
-//        }
-//    }
-
-    private fun analyzeApiCoupling(project: Project, virtualFile: VirtualFile, result: MutableMap<String, Set<UniondrugResource>>) {
+    private fun analyzeApiCoupling(project: Project, virtualFile: VirtualFile, result: MutableMap<UniondrugResource, Set<UniondrugResource>>) {
         if (virtualFile.isDirectory) {
             // 如果是目录就递归子集
             virtualFile.children.forEach { child ->
@@ -113,7 +89,15 @@ class AnalyzeApiCouplingAction: AnAction() {
                 psiClass.allMethods.forEach { method ->
                     if (isSpringMVCMethod(method)) {
                         mutableSetOf<UniondrugResource>().apply {
-                            result["${psiClass.qualifiedName}.${method.name}"] = this
+                            val ownResource = ownResource {
+                                name {
+                                    method.name
+                                }
+                                path {
+                                    getUrl(project, psiClass, method).substringAfter("turboradio.cn")
+                                }
+                            }
+                            result[ownResource] = this
                             analyRestMethod(project, method, this)
                         }
                     }

@@ -1,5 +1,5 @@
 /** @author dingshichen */
-package cn.uniondrug.dev
+package cn.uniondrug.dev.mss
 
 const val MBS_SERVICE_1 = "cn.uniondrug.mbs.service.MsgService"
 const val MBS_SERVICE_2 = "cn.uniondrug.mbs.service.Msg2Service"
@@ -8,6 +8,26 @@ const val MBS_SERVICE_2 = "cn.uniondrug.mbs.service.Msg2Service"
  * 药联资源标识
  */
 interface UniondrugResource
+
+/**
+ * 自己的接口资源
+ */
+data class OwnResource(
+    /* 接口名称 */
+    var name: String? = null,
+    /* 路径 */
+    var path: String? = null,
+) : UniondrugResource {
+
+    fun name(init: OwnResource.() -> String) {
+        this.name = init()
+    }
+
+    fun path(init: OwnResource.() -> String) {
+        this.path = init()
+    }
+
+}
 
 /**
  * 涉及接口资源
@@ -32,12 +52,6 @@ data class RPCResource(
     fun thirdFlag(init: RPCResource.() -> String) {
         this.thirdFlag = init()
     }
-}
-
-fun rpcResource(init: RPCResource.() -> Unit): RPCResource {
-    val rpcResource = RPCResource()
-    rpcResource.init()
-    return rpcResource
 }
 
 /**
@@ -65,12 +79,6 @@ data class MbsResource(
     }
 }
 
-fun mbsResource(init: MbsResource.() -> Unit): MbsResource {
-    val mbsResource = MbsResource()
-    mbsResource.init()
-    return mbsResource
-}
-
 /**
  * MBS 通道
  */
@@ -80,6 +88,24 @@ enum class MbsChannel(
     JAVA_MBS_1("JAVA_MBS1"),
     JAVA_MBS_2("JAVA_MBS2"),
     PHP_MBS("PHP_MBS"),
+}
+
+fun ownResource(init: OwnResource.() -> Unit): OwnResource {
+    val ownResource = OwnResource()
+    ownResource.init()
+    return ownResource
+}
+
+fun rpcResource(init: RPCResource.() -> Unit): RPCResource {
+    val rpcResource = RPCResource()
+    rpcResource.init()
+    return rpcResource
+}
+
+fun mbsResource(init: MbsResource.() -> Unit): MbsResource {
+    val mbsResource = MbsResource()
+    mbsResource.init()
+    return mbsResource
 }
 
 /**

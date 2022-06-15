@@ -9,7 +9,7 @@ import java.nio.charset.Charset
 /**
  * 文档
  */
-data class DocumentDTO(
+data class TornaDocDTO(
     val id: String,
     val name: String,
     /**
@@ -22,7 +22,6 @@ data class DocumentDTO(
     val httpMethod: String,
     val contentType: String,
     val deprecated: String,
-
     val parentId: String,
     val moduleId: String,
     val projectId: String,
@@ -154,36 +153,36 @@ data class DocIdCmd(
     val id: String
 )
 
-class DocumentService {
+class TornaDocService {
 
     /**
      * 查询模块里的文件夹
      */
-    fun listFolderByModule(token: String, moduleId: String): List<DocumentDTO> {
-        val body = doGet("/doc/folder/list?moduleId=$moduleId", token)
+    fun listFolderByModule(token: String, moduleId: String): List<TornaDocDTO> {
+        val body = doGetTorna("/doc/folder/list?moduleId=$moduleId", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val result: Result<List<DocumentDTO>> = gson.fromJson(body, object : TypeToken<Result<List<DocumentDTO>>>() {}.type!!)
-        if (result.isError()) {
-            throw DocumentException("查询文档失败：${result.msg}")
+        val tornaResult: TornaResult<List<TornaDocDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaDocDTO>>>() {}.type!!)
+        if (tornaResult.isError()) {
+            throw DocumentException("查询文档失败：${tornaResult.msg}")
         }
-        return result.data!!
+        return tornaResult.data!!
     }
 
     /**
      * 查询模块里的文档
      */
-    fun listDocumentByModule(token: String, moduleId: String): List<DocumentDTO> {
-        val body = doGet("/doc/list?moduleId=$moduleId", token)
+    fun listDocumentByModule(token: String, moduleId: String): List<TornaDocDTO> {
+        val body = doGetTorna("/doc/list?moduleId=$moduleId", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val result: Result<List<DocumentDTO>> = gson.fromJson(body, object : TypeToken<Result<List<DocumentDTO>>>() {}.type!!)
-        if (result.isError()) {
-            throw DocumentException("查询文档失败：${result.msg}")
+        val tornaResult: TornaResult<List<TornaDocDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaDocDTO>>>() {}.type!!)
+        if (tornaResult.isError()) {
+            throw DocumentException("查询文档失败：${tornaResult.msg}")
         }
-        return result.data!!
+        return tornaResult.data!!
     }
 
     /**
@@ -194,68 +193,68 @@ class DocumentService {
             .setDateFormat("yyyy-MM-dd")
             .create()
         val folderAddCmd = FolderAddCmd(moduleId, folder)
-        val body = doPost("/doc/folder/add", gson.toJson(folderAddCmd), token)
-        val result: Result<*> = gson.fromJson(body, object : TypeToken<Result<*>>() {}.type!!)
-        if (result.isError()) {
-            throw DocumentException("创建目录失败：${result.msg}")
+        val body = doPostTorna("/doc/folder/add", gson.toJson(folderAddCmd), token)
+        val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type!!)
+        if (tornaResult.isError()) {
+            throw DocumentException("创建目录失败：${tornaResult.msg}")
         }
     }
 
     /**
      * 文档详情查询
      */
-    fun getDocumentDetail(token: String, docId: String): DocumentDTO? {
-        val body = doGet("/doc/detail?id=$docId", token)
+    fun getDocDetail(token: String, docId: String): TornaDocDTO? {
+        val body = doGetTorna("/doc/detail?id=$docId", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val result: Result<DocumentDTO> = gson.fromJson(body, object : TypeToken<Result<DocumentDTO>>() {}.type!!)
-        if (result.isError()) {
-            throw DocumentException("查询文档失败：${result.msg}")
+        val tornaResult: TornaResult<TornaDocDTO> = gson.fromJson(body, object : TypeToken<TornaResult<TornaDocDTO>>() {}.type!!)
+        if (tornaResult.isError()) {
+            throw DocumentException("查询文档失败：${tornaResult.msg}")
         }
-        return result.data
+        return tornaResult.data
     }
 
     /**
      * 查询文档是否存在
      */
-    fun existDocument(token: String, docId: String) = getDocumentDetail(token, docId) != null
+    fun existDoc(token: String, docId: String) = getDocDetail(token, docId) != null
 
     /**
      * 保存文档（可覆盖）
      * 先获取模块下所有文档，然后匹配到本文档，如果匹配到，删除此文档，再新增～～
      */
-    fun saveDocument(token: String, projectId: String, moduleId: String, folderId: String, api: Api) {
+    fun saveDoc(token: String, projectId: String, moduleId: String, folderId: String, api: Api) {
         val docs = listDocumentByModule(token, moduleId)
         val docId = getDocDataId(folderId, moduleId, api.url, api.httpMethod)
         docs.find {
             getDocDataId(it.parentId, moduleId, it.url, it.httpMethod) == docId
         }?.let {
             // 先删除
-            deleteDocument(token, it.id)
+            deleteDoc(token, it.id)
         }
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
         val docSaveCmd = apiToCmd(projectId, moduleId, folderId, api)
-        val body = doPost("/doc/save", gson.toJson(docSaveCmd), token)
-        val result: Result<*> = gson.fromJson(body, object : TypeToken<Result<*>>() {}.type!!)
-        if (result.isError()) {
-            throw DocumentException("保存文档失败：${result.msg}")
+        val body = doPostTorna("/doc/save", gson.toJson(docSaveCmd), token)
+        val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type!!)
+        if (tornaResult.isError()) {
+            throw DocumentException("保存文档失败：${tornaResult.msg}")
         }
     }
 
     /**
      * 删除文档
      */
-    fun deleteDocument(token: String, docId: String) {
+    fun deleteDoc(token: String, docId: String) {
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val body = doPost("/doc/delete", gson.toJson(DocIdCmd(docId)), token)
-        val result: Result<*> = gson.fromJson(body, object : TypeToken<Result<*>>() {}.type!!)
-        if (result.isError()) {
-            throw DocumentException("删除文档失败：${result.msg}")
+        val body = doPostTorna("/doc/delete", gson.toJson(DocIdCmd(docId)), token)
+        val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type!!)
+        if (tornaResult.isError()) {
+            throw DocumentException("删除文档失败：${tornaResult.msg}")
         }
     }
 

@@ -1,7 +1,7 @@
 package cn.uniondrug.dev.ui;
 
 import cn.uniondrug.dev.Api;
-import cn.uniondrug.dev.DocumentService;
+import cn.uniondrug.dev.TornaDocService;
 import cn.uniondrug.dev.MbsEvent;
 import cn.uniondrug.dev.config.DocSetting;
 import cn.uniondrug.dev.config.DocSettingConfigurable;
@@ -354,11 +354,11 @@ public class PreviewForm {
                     // 上传到 torna
                     TornaIndexDialog dialog = new TornaIndexDialog(project, api);
                     if (dialog.showAndGet()) {
-                        DocumentService service = project.getService(DocumentService.class);
+                        TornaDocService service = project.getService(TornaDocService.class);
                         TornaKeyService tornaKeyService = TornaKeyService.Companion.getInstance(project);
                         try {
                             String token = tornaKeyService.getToken(project, apiSettings);
-                            service.saveDocument(token, dialog.getProjectId(), dialog.getModuleId(), dialog.getFolderId(), api);
+                            service.saveDoc(token, dialog.getProjectId(), dialog.getModuleId(), dialog.getFolderId(), api);
                             notifyInfo(project, "文档上传成功");
                         } catch (Exception ex) {
                             notifyError(project, "文档上传失败：" + ex.getMessage());

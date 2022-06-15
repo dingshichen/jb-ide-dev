@@ -6,7 +6,7 @@ import com.google.gson.reflect.TypeToken
 /**
  * 项目
  */
-data class ProjectDTO(
+data class TornaProjectDTO(
     val id: String,
     val name: String,
     val spaceId: String,
@@ -14,20 +14,20 @@ data class ProjectDTO(
     override fun toString() = name
 }
 
-class ProjectService {
+class TornaProjectService {
 
     /**
      * 获取空间里的项目
      */
-    fun listProjectBySpace(token: String, spaceId: String): List<ProjectDTO> {
-        val body = doGet("/space/project/list?spaceId=$spaceId", token)
+    fun listProjectBySpace(token: String, spaceId: String): List<TornaProjectDTO> {
+        val body = doGetTorna("/space/project/list?spaceId=$spaceId", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val result: Result<List<ProjectDTO>> = gson.fromJson(body, object : TypeToken<Result<List<ProjectDTO>>>() {}.type!!)
-        if (result.isError()) {
-            throw ProjectException("查询项目失败：${result.msg}")
+        val tornaResult: TornaResult<List<TornaProjectDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaProjectDTO>>>() {}.type!!)
+        if (tornaResult.isError()) {
+            throw ProjectException("查询项目失败：${tornaResult.msg}")
         }
-        return result.data!!
+        return tornaResult.data!!
     }
 }

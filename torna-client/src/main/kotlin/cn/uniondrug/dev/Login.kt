@@ -6,7 +6,7 @@ import com.google.gson.reflect.TypeToken
 /**
  * 登录接口入参
  */
-data class UserLogin(
+data class TornaUserLogin(
     val username: String,
     val password: String
 ) {
@@ -22,7 +22,7 @@ data class LoginResult(
     val status: Int,
 )
 
-class UserService {
+class TornaUserService {
 
     /**
      * 登录
@@ -31,13 +31,13 @@ class UserService {
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val userLogin = UserLogin(username, password)
-        val body = doPost("/system/login", gson.toJson(userLogin))
-        val result: Result<LoginResult> = gson.fromJson(body, object : TypeToken<Result<LoginResult>>() {}.type!!)
-        if (result.isError()) {
-            throw LoginException("登录失败：${result.msg}")
+        val tornaUserLogin = TornaUserLogin(username, password)
+        val body = doPostTorna("/system/login", gson.toJson(tornaUserLogin))
+        val tornaResult: TornaResult<LoginResult> = gson.fromJson(body, object : TypeToken<TornaResult<LoginResult>>() {}.type!!)
+        if (tornaResult.isError()) {
+            throw LoginException("登录失败：${tornaResult.msg}")
         }
-        return result.data!!.token
+        return tornaResult.data!!.token
     }
 
 }

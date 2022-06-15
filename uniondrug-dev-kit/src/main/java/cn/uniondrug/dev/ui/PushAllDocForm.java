@@ -19,9 +19,9 @@ import java.util.List;
 public class PushAllDocForm {
 
     private JLabel spaceLable;
-    private ComboBox<SpaceDTO> spaceBox;
-    private ComboBox<ProjectDTO> projectBox;
-    private ComboBox<ModuleDTO> moduleBox;
+    private ComboBox<TornaSpaceDTO> spaceBox;
+    private ComboBox<TornaProjectDTO> projectBox;
+    private ComboBox<TornaModuleDTO> moduleBox;
     private JLabel projectLable;
     private JLabel moduleLable;
     private JPanel rootPanel;
@@ -44,8 +44,8 @@ public class PushAllDocForm {
         String token = tornaKeyService.getToken(project, docSetting);
         spaceBox.addItemListener(s -> {
             if (s.getStateChange() == ItemEvent.SELECTED) {
-                ProjectService projectService = project.getService(ProjectService.class);
-                List<ProjectDTO> projects = projectService.listProjectBySpace(token, ((SpaceDTO) s.getItem()).getId());
+                TornaProjectService tornaProjectService = project.getService(TornaProjectService.class);
+                List<TornaProjectDTO> projects = tornaProjectService.listProjectBySpace(token, ((TornaSpaceDTO) s.getItem()).getId());
                 projectBox.removeAllItems();
                 moduleBox.removeAllItems();
                 projects.forEach(p -> projectBox.addItem(p));
@@ -59,8 +59,8 @@ public class PushAllDocForm {
         });
         projectBox.addItemListener(p -> {
             if (p.getStateChange() == ItemEvent.SELECTED) {
-                ModuleService moduleService = project.getService(ModuleService.class);
-                List<ModuleDTO> modules = moduleService.listModuleByProject(token, ((ProjectDTO) p.getItem()).getId());
+                TornaModuleService tornaModuleService = project.getService(TornaModuleService.class);
+                List<TornaModuleDTO> modules = tornaModuleService.listModuleByProject(token, ((TornaProjectDTO) p.getItem()).getId());
                 moduleBox.removeAllItems();
                 modules.forEach(m -> moduleBox.addItem(m));
                 if (StrUtil.isNotBlank(rememberModuleBoxId)) {
@@ -76,8 +76,8 @@ public class PushAllDocForm {
     private void initValue() {
         DocSetting docSetting = DocSetting.Companion.getInstance(project);
         String token = tornaKeyService.getToken(project, docSetting);
-        SpaceService spaceService = project.getService(SpaceService.class);
-        List<SpaceDTO> spaces = spaceService.listMySpace(token);
+        TornaSpaceService tornaSpaceService = project.getService(TornaSpaceService.class);
+        List<TornaSpaceDTO> spaces = tornaSpaceService.listMySpace(token);
         spaceBox.removeAllItems();
         spaces.forEach(e -> spaceBox.addItem(e));
     }

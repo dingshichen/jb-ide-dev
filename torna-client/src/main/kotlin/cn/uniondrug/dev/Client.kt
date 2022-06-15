@@ -14,7 +14,7 @@ const val UNIONDRUG_TORNA_URL = "http://ud-torna.uniondrug.cn"
 /**
  * 接口值包装结构
  */
-data class Result<T>(
+data class TornaResult<T>(
     val code: String,
     val msg: String,
     var data: T? = null,
@@ -26,7 +26,7 @@ data class Result<T>(
 /**
  * GET
  */
-fun doGet(path: String, token: String): String {
+fun doGetTorna(path: String, token: String): String {
     val request = HttpRequest.newBuilder()
         .uri(URI.create("$UNIONDRUG_TORNA_URL$path"))
         .GET()
@@ -44,7 +44,7 @@ fun doGet(path: String, token: String): String {
 /**
  * POST
  */
-fun doPost(path: String, body: String, token: String? = null): String {
+fun doPostTorna(path: String, body: String, token: String? = null): String {
     val builder = HttpRequest.newBuilder()
         .uri(URI.create("$UNIONDRUG_TORNA_URL$path"))
         .header("Content-Type", "application/json")

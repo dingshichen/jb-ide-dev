@@ -7,6 +7,7 @@ version = "0.10"
 dependencies {
     implementation(project(":common"))
     implementation(project(":torna-client"))
+    implementation(project(":mss-client"))
     implementation(project(":mock"))
     testImplementation(kotlin("test-junit"))
 }

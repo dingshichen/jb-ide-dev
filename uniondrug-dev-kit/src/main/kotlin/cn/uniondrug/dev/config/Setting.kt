@@ -2,7 +2,7 @@
 package cn.uniondrug.dev.config
 
 import cn.uniondrug.dev.LoginException
-import cn.uniondrug.dev.UserService
+import cn.uniondrug.dev.TornaUserService
 import cn.uniondrug.dev.ui.DocSettingForm
 import cn.uniondrug.dev.util.StringUtil
 import com.intellij.credentialStore.CredentialAttributes
@@ -86,7 +86,7 @@ class TornaKeyService {
         val properties = PropertiesComponent.getInstance()
         var token = properties.getValue(TOKEN_KEY)
         if (token.isNullOrBlank()) {
-            val loginService = project.getService(UserService::class.java)
+            val loginService = project.getService(TornaUserService::class.java)
             token = try {
                 loginService.login(username!!, password!!)
             } catch (e: Exception) {

@@ -1,6 +1,6 @@
 package cn.uniondrug.dev.action
 
-import cn.uniondrug.dev.DocumentService
+import cn.uniondrug.dev.TornaDocService
 import cn.uniondrug.dev.config.DocSetting
 import cn.uniondrug.dev.config.TornaKeyService
 import cn.uniondrug.dev.dialog.PushAllDocDialog
@@ -83,19 +83,19 @@ class PushAllDocAnAction : AnAction() {
             notifyWarn(project, "有文档解析异常，跳过此接口 ${psiClass.name}#${psiMethod.name} ，错误信息：${ex.message}")
             return
         }
-        val documentService = project.getService(DocumentService::class.java)
+        val tornaDocService = project.getService(TornaDocService::class.java)
         val tornaKeyService = TornaKeyService.getInstance(project)
         try {
             val token = tornaKeyService.getToken(project, apiSettings)
             val projectId = pushAllDocDialog.projectId()
             val moduleId = pushAllDocDialog.moduleId()
-            val folders = documentService.listFolderByModule(token, moduleId)
+            val folders = tornaDocService.listFolderByModule(token, moduleId)
             if (folders.none { f -> f.name == api.folder }) {
-                documentService.saveFolder(token, moduleId, api.folder)
+                tornaDocService.saveFolder(token, moduleId, api.folder)
             }
-            documentService.listFolderByModule(token, moduleId)
+            tornaDocService.listFolderByModule(token, moduleId)
                 .find { f -> f.name == api.folder }
-                ?.let { f -> documentService.saveDocument(token, projectId, moduleId, f.id, api) }
+                ?.let { f -> tornaDocService.saveDoc(token, projectId, moduleId, f.id, api) }
             notifyInfo(project, "文档 ${api.name} 上传成功")
         } catch (ex: Exception) {
             notifyError(project, "有文档上传失败，批量上传异常终止：${ex.message}")
