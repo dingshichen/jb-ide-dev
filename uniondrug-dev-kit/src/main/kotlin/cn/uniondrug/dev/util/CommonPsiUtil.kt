@@ -298,8 +298,22 @@ fun getLiteralValue(expression: PsiExpression): String? {
                             }
                         }
                     }
+                    return expression.resolve()?.children?.find { it.text == "=" }?.let {
+                        // 获取下一个表达式
+                        fun findPsiReferenceExpression(psiElement: PsiElement): PsiReferenceExpression? {
+                            return when (val next = psiElement.nextSibling) {
+                                null -> null
+                                is PsiReferenceExpression -> next
+                                else -> findPsiReferenceExpression(next)
+                            }
+                        }
+                        findPsiReferenceExpression(it)?.let { reference ->
+                            getLiteralValue(reference)
+                        }
+                    }
+                } else {
+                    return null
                 }
-                return null
             } else {
                 return literal.text?.replace("\"", "")
             }
