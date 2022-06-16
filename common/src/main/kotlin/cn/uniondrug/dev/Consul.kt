@@ -33,6 +33,11 @@ interface ConsulService {
      */
     fun getStringValue(key: String): String?
 
+    /**
+     * 获取公共配置
+     */
+    fun getApplicationData(): Properties
+
 }
 
 /**
@@ -44,7 +49,7 @@ class ConsulJavaService : ConsulService {
         getProperty(key)?.replace("\${api_host}", "uniondrug.cn")
     }
 
-    fun getApplicationData(): Properties {
+    override fun getApplicationData(): Properties {
         val request = HttpRequest.newBuilder()
             .uri(URI.create("$TEST_CONSUL/v1/kv/config/application/data"))
             .GET()
@@ -56,7 +61,7 @@ class ConsulJavaService : ConsulService {
             .build()
         val gson = GsonBuilder().create()
         return client.send(request, HttpResponse.BodyHandlers.ofString()).run {
-            val result = gson.fromJson<List<ConsulKVResult>>(body(), object : TypeToken<List<ConsulKVResult>>() {}.type!!)
+            val result = gson.fromJson<List<ConsulKVResult>>(body(), object : TypeToken<List<ConsulKVResult>>() {}.type)
             val text = String(Base64.getDecoder().decode(result[0].Value))
             Properties().apply {
                 load(text.byteInputStream(Charset.defaultCharset()))

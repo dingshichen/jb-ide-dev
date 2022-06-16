@@ -1,5 +1,8 @@
 package cn.uniondrug.dev.action
 
+import cn.uniondrug.dev.ConsulService
+import cn.uniondrug.dev.config.DocSetting
+import cn.uniondrug.dev.dialog.MssAnalyzeDialog
 import cn.uniondrug.dev.mss.*
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
@@ -7,10 +10,8 @@ import cn.uniondrug.dev.util.*
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.fileChooser.FileChooser
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
 import com.intellij.psi.search.GlobalSearchScope
@@ -19,12 +20,11 @@ import com.intellij.psi.search.searches.ClassInheritorsSearch
 import com.intellij.psi.search.searches.OverridingMethodsSearch
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtil
-import java.io.File
 
 /**
  * 分析接口的耦合
  */
-class AnalyzeApiCouplingAction: AnAction() {
+class AnalyzeApiCouplingAction : AnAction() {
 
     private var listenerInterface: PsiClass? = null
 
@@ -33,22 +33,54 @@ class AnalyzeApiCouplingAction: AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         e.getData(CommonDataKeys.PROJECT)?.let { project ->
             e.getData(CommonDataKeys.VIRTUAL_FILE)?.let { virtualFile ->
-                // 先调起路径选择器控件
-                val fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor()
-                fileChooserDescriptor.isForcedToUseIdeaFileChooser = true
-                FileChooser.chooseFile(fileChooserDescriptor, project, null) { out ->
-                    try {
-                        mutableMapOf<UniondrugResource, Set<UniondrugResource>>().run {
-                            // 开始分析
-                            analyzeApiCoupling(project, virtualFile, this)
-                            clearEventListener();
-                            // 输出结果
-                            val fileAll = File("${out.path}/AnalyzeApiCoupling-all.txt")
-                            FileUtil.writeToFile(fileAll, concatAll(this))
-                            notifyInfo(project, "分析接口耦合结果完成")
+                val consulService = project.getService(ConsulService::class.java)
+                val consul = try {
+                    consulService.getApplicationData()
+                } catch (ex: Exception) {
+                    notifyError(project, "请确认网络环境是否正确，无法获取到测试环境 consul 配置：${ex.message}")
+                    return
+                }
+                MssAnalyzeDialog(project).apply {
+                    if (showAndGet()) {
+                        // 记住我的选择
+                        val docSetting = DocSetting.getInstance(project)
+                        with(docSetting.state) {
+                            mssWorker = getWorker()
+                            mssProjectCode = getProjectCode()
+                            mssToken = getToken()
                         }
-                    } catch (e: Exception) {
-                        notifyError(project, "分析接口耦合结果完成失败")
+                        mutableMapOf<OwnResource, Set<UniondrugResource>>().run {
+                            // 开始分析
+                            try {
+                                analyzeApiCoupling(project, virtualFile, this)
+                            } catch (ex: Exception) {
+                                notifyError(project, "分析接口失败：${ex.message}")
+                                return@apply
+                            } finally {
+                                clearEventListener()
+                            }
+                            notifyInfo(project, "已完成接口耦合分析，正在进行 MSS 数据上报...")
+                            val mssProjectService = project.getService(MssProjectService::class.java)
+                            val mssApiService = project.getService(MssApiService::class.java)
+                            val mssService = project.getService(MssService::class.java)
+                            // 上传
+                            ApplicationManager.getApplication().executeOnPooledThread {
+                                try {
+                                    mssService.upload(
+                                        mssProjectService,
+                                        mssApiService,
+                                        consul,
+                                        getWorker(),
+                                        getProjectCode(),
+                                        getToken(),
+                                        this
+                                    )
+                                    notifyInfo(project, "MSS 数据上报完成")
+                                } catch (ex: Exception) {
+                                    notifyError(project, "MSS 数据上报失败：${ex.message}")
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -67,7 +99,7 @@ class AnalyzeApiCouplingAction: AnAction() {
      * 拼接所有
      */
     private fun concatAll(analyMap: Map<UniondrugResource, Set<UniondrugResource>>) = buildString {
-        analyMap.forEach {(api, trace) ->
+        analyMap.forEach { (api, trace) ->
             appendLine().append("分析开始 -> $api")
             trace.forEach {
                 appendLine().append("调用 -> $it")
@@ -76,7 +108,11 @@ class AnalyzeApiCouplingAction: AnAction() {
         }
     }
 
-    private fun analyzeApiCoupling(project: Project, virtualFile: VirtualFile, result: MutableMap<UniondrugResource, Set<UniondrugResource>>) {
+    private fun analyzeApiCoupling(
+        project: Project,
+        virtualFile: VirtualFile,
+        result: MutableMap<OwnResource, Set<UniondrugResource>>
+    ) {
         if (virtualFile.isDirectory) {
             // 如果是目录就递归子集
             virtualFile.children.forEach { child ->
@@ -123,7 +159,11 @@ class AnalyzeApiCouplingAction: AnAction() {
         }
     }
 
-    private fun analyMethodExpression(project: Project, call: PsiMethodCallExpression, traceNames: MutableSet<UniondrugResource>) {
+    private fun analyMethodExpression(
+        project: Project,
+        call: PsiMethodCallExpression,
+        traceNames: MutableSet<UniondrugResource>
+    ) {
         val express = call.methodExpression.resolve() ?: return
         if (express !is PsiMethod) {
             return
@@ -133,7 +173,8 @@ class AnalyzeApiCouplingAction: AnAction() {
             return
         }
         if (express.containingClass?.qualifiedName == "org.springframework.web.client.RestTemplate"
-            || file.packageName.startsWith("cn.uniondrug")) {
+            || file.packageName.startsWith("cn.uniondrug")
+        ) {
             val query = OverridingMethodsSearch.search(
                 express,
                 ProjectScope.getProjectScope(project),
@@ -170,12 +211,14 @@ class AnalyzeApiCouplingAction: AnAction() {
                                     "0"
                                 }
                             }
+                        } else if (!psiClass.isInterface) {
+                            analyRestMethod(project, express, traceNames)
                         }
                     }
                 } else {
                     forEach {
                         PsiTreeUtil.getParentOfType(it, PsiClass::class.java)?.let { _ ->
-                            analyRestMethod(project, it, traceNames);
+                            analyRestMethod(project, it, traceNames)
                         }
                     }
                 }

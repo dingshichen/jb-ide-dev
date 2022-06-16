@@ -5,7 +5,9 @@ data class Result<T>(
     val error: String,
     val dataType: String,
     val data: T,
-)
+) {
+    fun isFail() = errno != 0
+}
 
 data class Paging(
     val first: Int,

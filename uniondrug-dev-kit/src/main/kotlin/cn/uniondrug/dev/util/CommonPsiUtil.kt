@@ -2,6 +2,8 @@
 package cn.uniondrug.dev.util
 
 import cn.uniondrug.dev.*
+import cn.uniondrug.dev.mss.MBS_SERVICE_1
+import cn.uniondrug.dev.mss.MBS_SERVICE_2
 import com.intellij.codeInsight.AnnotationUtil
 import com.intellij.openapi.project.Project
 import com.intellij.psi.*
@@ -275,9 +277,35 @@ private fun getChildren(
 /**
  * 获取参数引用里的常量值
  */
-fun getLiteralValue(expression: PsiExpression) = when(expression) {
-    is PsiReferenceExpression -> expression.resolve()?.children?.find { it is PsiLiteralExpression }?.text?.replace("\"", "")
-    else -> null
+fun getLiteralValue(expression: PsiExpression): String? {
+    when(expression) {
+        is PsiReferenceExpression -> {
+            val literal = expression.resolve()?.children?.find { it is PsiLiteralExpression }
+            if (literal == null) {
+                // 这里特殊处理下使用枚举定义 topic tag 的一种场景
+                val child = expression.children[0]
+                if (child is PsiReferenceExpression) {
+                    val enumConstant = child.resolve()
+                    if (enumConstant is PsiEnumConstant) {
+                        val constructorMap = mutableMapOf<String, String>()
+                        // 构造函数形参
+                        enumConstant.resolveConstructor()?.parameterList?.parameters?.let {
+                            enumConstant.argumentList?.expressions?.forEachIndexed { idx, psiExpression ->
+                                constructorMap[it[idx].name] = psiExpression.text
+                            }
+                            expression.children.find { it is PsiIdentifier }?.let {
+                                return constructorMap[it.text]?.replace("\"", "")
+                            }
+                        }
+                    }
+                }
+                return null
+            } else {
+                return literal.text?.replace("\"", "")
+            }
+        }
+        else -> return null
+    }
 }
 
 fun isMbsService(psiClass: PsiClass) = psiClass.qualifiedName == MBS_SERVICE_1 || psiClass.qualifiedName == MBS_SERVICE_2

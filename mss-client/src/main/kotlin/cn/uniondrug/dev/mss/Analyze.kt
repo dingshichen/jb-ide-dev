@@ -1,6 +1,8 @@
 /** @author dingshichen */
 package cn.uniondrug.dev.mss
 
+import java.util.*
+
 const val MBS_SERVICE_1 = "cn.uniondrug.mbs.service.MsgService"
 const val MBS_SERVICE_2 = "cn.uniondrug.mbs.service.Msg2Service"
 
@@ -52,6 +54,44 @@ data class RPCResource(
     fun thirdFlag(init: RPCResource.() -> String) {
         this.thirdFlag = init()
     }
+    
+    fun replaceValue(properties: Properties) {
+        var realServerUrl = ""
+        val a = serverUrlExpress!!.indexOf("\${")
+        val b = serverUrlExpress!!.lastIndexOf("}")
+        realServerUrl = if (a != -1 && b != -1) {
+            val value = properties.getProperty(serverUrlExpress!!.substring(a + 2, b)).replaceHost()
+            if (a == 0 && b == serverUrlExpress!!.length - 1) {
+                value
+            } else if (a == 0 && b < serverUrlExpress!!.length - 1) {
+                value + serverUrlExpress!!.substring(b + 1)
+            } else if (a > 0 && b < serverUrlExpress!!.length - 1) {
+                serverUrlExpress!!.substring(0, a) + value + serverUrlExpress!!.substring(b + 1)
+            } else {
+                serverUrlExpress!!.substring(0, a) + value
+            }
+        } else {
+            serverUrlExpress!!.replaceHost()
+        }
+        if (!realServerUrl.endsWith("uniondrug.cn") && !realServerUrl.endsWith("uniondrug.cn/")) {
+            val c = realServerUrl.indexOf("uniondrug.cn")
+            serverUrlExpress = realServerUrl.substring(0, c + 12)
+            path = "/${realServerUrl.substring(c + 13)}/$path"
+                .replace("///", "/")
+                .replace("//", "/")
+                .removeHttp()
+        } else {
+            serverUrlExpress = realServerUrl.replace("uniondrug.cn/", "uniondrug.cn")
+            path = "/$path"
+                .replace("///", "/")
+                .replace("//", "/")
+                .removeHttp()
+        }
+    }
+
+    private fun String.replaceHost() = replace("\${api_host}", "uniondrug.cn").replace("turboradio.cn", "uniondrug.cn")
+
+    private fun String.removeHttp() = replace("http://", "").replace("https://", "")
 }
 
 /**

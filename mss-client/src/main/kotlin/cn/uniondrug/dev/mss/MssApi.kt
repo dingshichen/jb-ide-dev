@@ -43,6 +43,7 @@ data class ApiMbsDTO(
 )
 
 data class AddMbsCmd(
+    val projectId: Int,
     val projectApiId: Int,
     val topic: String,
     val tag: String,
@@ -66,7 +67,8 @@ class MssApiService {
         val gson = GsonBuilder().create()
         val cmd = PageApiCmd(projectId)
         val body = doPostMSS("/api/page", gson.toJson(cmd), token)
-        val result: Result<PagingBody<MssApiDTO>> = gson.fromJson(body, object : TypeToken<Result<PagingBody<MssApiDTO>>>() {}.type!!)
+        val result: Result<PagingBody<MssApiDTO>> = gson.fromJson(body, object : TypeToken<Result<PagingBody<MssApiDTO>>>() {}.type)
+        if (result.isFail()) throw MssException("查询项目 API 失败：${result.error}")
         return result.data.body
     }
 
@@ -77,7 +79,8 @@ class MssApiService {
         val gson = GsonBuilder().create()
         val cmd = PageByApiCmd(projectId, projectApiId)
         val body = doPostMSS("/projectCallApi/paging", gson.toJson(cmd), token)
-        val result: Result<PagingBody<ApiCallDTO>> = gson.fromJson(body, object : TypeToken<Result<PagingBody<ApiCallDTO>>>() {}.type!!)
+        val result: Result<PagingBody<ApiCallDTO>> = gson.fromJson(body, object : TypeToken<Result<PagingBody<ApiCallDTO>>>() {}.type)
+        if (result.isFail()) throw MssException("查询被 API 调用的接口列表失败：${result.error}")
         return result.data.body
     }
 
@@ -88,7 +91,8 @@ class MssApiService {
         val gson = GsonBuilder().create()
         val cmd = PageByApiCmd(projectId, projectApiId)
         val body = doPostMSS("/projectApiMessage/paging", gson.toJson(cmd), token)
-        val result: Result<PagingBody<ApiMbsDTO>> = gson.fromJson(body, object : TypeToken<Result<PagingBody<ApiMbsDTO>>>() {}.type!!)
+        val result: Result<PagingBody<ApiMbsDTO>> = gson.fromJson(body, object : TypeToken<Result<PagingBody<ApiMbsDTO>>>() {}.type)
+        if (result.isFail()) throw MssException("查询 API 发送的 MBS 失败：${result.error}")
         return result.data.body
     }
 
@@ -98,15 +102,19 @@ class MssApiService {
     fun addCall(token: String, projectId: Int, projectApiId: Int, domain: String, url: String, thirdFlag: String) {
         val gson = GsonBuilder().create()
         val cmd = AddCallCmd(projectId, projectApiId, domain, url, thirdFlag)
-        doPostMSS("/projectCallApi/create", gson.toJson(cmd), token)
+        val body = doPostMSS("/projectCallApi/create", gson.toJson(cmd), token)
+        val result: Result<*> = gson.fromJson(body, object : TypeToken<Result<*>>() {}.type)
+        if (result.isFail()) throw MssException("新增被此 API 调用的接口失败：${result.error}")
     }
 
     /**
      * 新增此 API 发送的MBS
      */
-    fun addMbs(token: String, projectApiId: Int, topic: String, tag: String, mType: String) {
+    fun addMbs(token: String, projectId: Int, projectApiId: Int, topic: String, tag: String, mType: String) {
         val gson = GsonBuilder().create()
-        val cmd = AddMbsCmd(projectApiId, topic, tag, mType)
-        doPostMSS("/projectApiMessage/create", gson.toJson(cmd), token)
+        val cmd = AddMbsCmd(projectId, projectApiId, topic, tag, mType)
+        val body = doPostMSS("/projectApiMessage/create", gson.toJson(cmd), token)
+        val result: Result<*> = gson.fromJson(body, object : TypeToken<Result<*>>() {}.type)
+        if (result.isFail()) throw MssException("新增此 API 发送的 MBS 失败：${result.error}")
     }
 }

@@ -24,7 +24,7 @@ class TornaModuleService {
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val tornaResult: TornaResult<List<TornaModuleDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaModuleDTO>>>() {}.type!!)
+        val tornaResult: TornaResult<List<TornaModuleDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaModuleDTO>>>() {}.type)
         if (tornaResult.isError()) {
             throw ProjectException("查询项目失败：${tornaResult.msg}")
         }

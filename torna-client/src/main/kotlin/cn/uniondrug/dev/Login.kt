@@ -33,7 +33,7 @@ class TornaUserService {
             .create()
         val tornaUserLogin = TornaUserLogin(username, password)
         val body = doPostTorna("/system/login", gson.toJson(tornaUserLogin))
-        val tornaResult: TornaResult<LoginResult> = gson.fromJson(body, object : TypeToken<TornaResult<LoginResult>>() {}.type!!)
+        val tornaResult: TornaResult<LoginResult> = gson.fromJson(body, object : TypeToken<TornaResult<LoginResult>>() {}.type)
         if (tornaResult.isError()) {
             throw LoginException("登录失败：${tornaResult.msg}")
         }

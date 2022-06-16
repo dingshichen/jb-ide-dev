@@ -23,7 +23,7 @@ class TornaSpaceService {
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val tornaResult: TornaResult<List<TornaSpaceDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaSpaceDTO>>>() {}.type!!)
+        val tornaResult: TornaResult<List<TornaSpaceDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaSpaceDTO>>>() {}.type)
         if (tornaResult.isError()) {
             throw SpaceException("查询空间失败：${tornaResult.msg}")
         }

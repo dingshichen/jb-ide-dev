@@ -2,6 +2,18 @@
 package cn.uniondrug.dev
 
 /**
+ * 截取
+ */
+fun String.substring(startString: String, endString: String): String {
+    val a = indexOf(startString)
+    val b = lastIndexOf(endString)
+    if (a == -1 || b == -1) {
+        return ""
+    }
+    return substring(a + startString.length, b)
+}
+
+/**
  * 是否是带泛型的集合
  */
 fun String.isJavaGenericArray() = this.startsWith("List<")
@@ -11,7 +23,7 @@ fun String.isJavaGenericArray() = this.startsWith("List<")
 /**
  * 截出 JAVA 泛型
  */
-fun String.subJavaGeneric() = this.substring(this.indexOf("<") + 1, this.lastIndexOf(">"))
+fun String.subJavaGeneric() = substring("<", ">")
 
 /**
  * 是否是 GO 集合

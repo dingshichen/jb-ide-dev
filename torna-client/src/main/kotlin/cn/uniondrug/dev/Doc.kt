@@ -163,7 +163,7 @@ class TornaDocService {
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val tornaResult: TornaResult<List<TornaDocDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaDocDTO>>>() {}.type!!)
+        val tornaResult: TornaResult<List<TornaDocDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaDocDTO>>>() {}.type)
         if (tornaResult.isError()) {
             throw DocumentException("查询文档失败：${tornaResult.msg}")
         }
@@ -178,7 +178,7 @@ class TornaDocService {
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val tornaResult: TornaResult<List<TornaDocDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaDocDTO>>>() {}.type!!)
+        val tornaResult: TornaResult<List<TornaDocDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaDocDTO>>>() {}.type)
         if (tornaResult.isError()) {
             throw DocumentException("查询文档失败：${tornaResult.msg}")
         }
@@ -194,7 +194,7 @@ class TornaDocService {
             .create()
         val folderAddCmd = FolderAddCmd(moduleId, folder)
         val body = doPostTorna("/doc/folder/add", gson.toJson(folderAddCmd), token)
-        val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type!!)
+        val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type)
         if (tornaResult.isError()) {
             throw DocumentException("创建目录失败：${tornaResult.msg}")
         }
@@ -208,7 +208,7 @@ class TornaDocService {
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val tornaResult: TornaResult<TornaDocDTO> = gson.fromJson(body, object : TypeToken<TornaResult<TornaDocDTO>>() {}.type!!)
+        val tornaResult: TornaResult<TornaDocDTO> = gson.fromJson(body, object : TypeToken<TornaResult<TornaDocDTO>>() {}.type)
         if (tornaResult.isError()) {
             throw DocumentException("查询文档失败：${tornaResult.msg}")
         }
@@ -238,7 +238,7 @@ class TornaDocService {
             .create()
         val docSaveCmd = apiToCmd(projectId, moduleId, folderId, api)
         val body = doPostTorna("/doc/save", gson.toJson(docSaveCmd), token)
-        val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type!!)
+        val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type)
         if (tornaResult.isError()) {
             throw DocumentException("保存文档失败：${tornaResult.msg}")
         }
@@ -252,7 +252,7 @@ class TornaDocService {
             .setDateFormat("yyyy-MM-dd")
             .create()
         val body = doPostTorna("/doc/delete", gson.toJson(DocIdCmd(docId)), token)
-        val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type!!)
+        val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type)
         if (tornaResult.isError()) {
             throw DocumentException("删除文档失败：${tornaResult.msg}")
         }

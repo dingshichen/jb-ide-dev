@@ -31,8 +31,12 @@
         <projectService serviceImplementation="cn.uniondrug.dev.TornaProjectService" />
         <projectService serviceImplementation="cn.uniondrug.dev.TornaModuleService" />
         <projectService serviceImplementation="cn.uniondrug.dev.TornaDocService" />
+
         <projectService serviceInterface="cn.uniondrug.dev.ConsulService"
                         serviceImplementation="cn.uniondrug.dev.ConsulJavaService" />
+        <projectService serviceImplementation="cn.uniondrug.dev.mss.MssProjectService" />
+        <projectService serviceImplementation="cn.uniondrug.dev.mss.MssApiService" />
+        <projectService serviceImplementation="cn.uniondrug.dev.mss.MssService" />
 
         <codeInsight.lineMarkerProvider language="JAVA"
                                         implementationClass="cn.uniondrug.dev.provider.DocLineMarkerProvider" />
