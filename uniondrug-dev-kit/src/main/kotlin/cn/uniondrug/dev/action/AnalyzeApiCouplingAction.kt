@@ -95,19 +95,6 @@ class AnalyzeApiCouplingAction : AnAction() {
         eventMap.clear()
     }
 
-    /**
-     * 拼接所有
-     */
-    private fun concatAll(analyMap: Map<UniondrugResource, Set<UniondrugResource>>) = buildString {
-        analyMap.forEach { (api, trace) ->
-            appendLine().append("分析开始 -> $api")
-            trace.forEach {
-                appendLine().append("调用 -> $it")
-            }
-            appendLine().append("分析结束")
-        }
-    }
-
     private fun analyzeApiCoupling(
         project: Project,
         virtualFile: VirtualFile,
@@ -134,7 +121,7 @@ class AnalyzeApiCouplingAction : AnAction() {
                                 }
                             }
                             result[ownResource] = this
-                            analyRestMethod(project, method, this)
+                            analyRestMethod(project, method, this, mutableSetOf<TraceMethod>())
                         }
                     }
                 }
@@ -145,14 +132,19 @@ class AnalyzeApiCouplingAction : AnAction() {
     /**
      * 分析 REST 接口方法
      */
-    private fun analyRestMethod(project: Project, method: PsiMethod, traceNames: MutableSet<UniondrugResource>) {
+    private fun analyRestMethod(
+        project: Project,
+        method: PsiMethod,
+        traceNames: MutableSet<UniondrugResource>,
+        traceMethods: MutableSet<TraceMethod>
+    ) {
         PsiTreeUtil.findChildrenOfType(method, PsiCodeBlock::class.java).forEach { codeBlock ->
             // 从方法解读代码块，只有 PsiStatement 才是程序正确需要运行的元素
             codeBlock.statements.forEach { psiStatement ->
                 mutableListOf<PsiMethodCallExpression>().run {
-                    addAllMethodCalls(psiStatement, this)
+                    addAllMethodCalls(psiStatement, this, traceMethods)
                     forEach {
-                        analyMethodExpression(project, it, traceNames)
+                        analyMethodExpression(project, it, traceNames, traceMethods)
                     }
                 }
             }
@@ -162,7 +154,8 @@ class AnalyzeApiCouplingAction : AnAction() {
     private fun analyMethodExpression(
         project: Project,
         call: PsiMethodCallExpression,
-        traceNames: MutableSet<UniondrugResource>
+        traceNames: MutableSet<UniondrugResource>,
+        traceMethods: MutableSet<TraceMethod>
     ) {
         val express = call.methodExpression.resolve() ?: return
         if (express !is PsiMethod) {
@@ -191,10 +184,10 @@ class AnalyzeApiCouplingAction : AnAction() {
                                             ofMbsChannel(psiClass.qualifiedName!!)!!
                                         }
                                         topic {
-                                            getLiteralValue(this@args[0])!!
+                                            getLiteralValue(this@args[0]) ?: "unknown"
                                         }
                                         tag {
-                                            getLiteralValue(this@args[1])!!
+                                            getLiteralValue(this@args[1]) ?: "unknown"
                                         }
                                     }
                                 }
@@ -212,13 +205,13 @@ class AnalyzeApiCouplingAction : AnAction() {
                                 }
                             }
                         } else if (!psiClass.isInterface) {
-                            analyRestMethod(project, express, traceNames)
+                            analyRestMethod(project, express, traceNames, traceMethods)
                         }
                     }
                 } else {
                     forEach {
                         PsiTreeUtil.getParentOfType(it, PsiClass::class.java)?.let { _ ->
-                            analyRestMethod(project, it, traceNames)
+                            analyRestMethod(project, it, traceNames, traceMethods)
                         }
                     }
                 }
@@ -241,7 +234,7 @@ class AnalyzeApiCouplingAction : AnAction() {
                             eventMap[it]?.let { listener ->
                                 // 找到对应事件的话，就可以处理了
                                 listener.findMethodsByName("onApplicationEvent", false).first()?.let { onMethod ->
-                                    analyRestMethod(project, onMethod, traceNames)
+                                    analyRestMethod(project, onMethod, traceNames, traceMethods)
                                 }
                             }
                         }
@@ -291,18 +284,47 @@ class AnalyzeApiCouplingAction : AnAction() {
     /**
      * 递归寻找所有 PsiMethodCallExpression
      */
-    private fun addAllMethodCalls(psiElement: PsiElement, list: MutableList<PsiMethodCallExpression>) {
+    private fun addAllMethodCalls(
+        psiElement: PsiElement,
+        list: MutableList<PsiMethodCallExpression>,
+        traceMethods: MutableSet<TraceMethod>
+    ) {
         psiElement.acceptChildren(object : PsiElementVisitor() {
 
             override fun visitElement(element: PsiElement) {
                 if (element is PsiMethodCallExpression) {
-                    list += element
+                    val psiMethod = element.methodExpression.resolve() ?: return
+                    if (psiMethod !is PsiMethod) {
+                        return
+                    }
+                    val psiClass = psiMethod.containingClass ?: return
+                    val traceMethod = TraceMethod(psiClass, psiMethod)
+                    if (traceMethod !in traceMethods) {
+                        list += element
+                        traceMethods += traceMethod
+                    }
                 } else {
-                    addAllMethodCalls(element, list)
+                    addAllMethodCalls(element, list, traceMethods)
                 }
             }
 
         })
+    }
+
+    data class TraceMethod(
+        val psiClass: PsiClass,
+        val psiMethod: PsiMethod,
+    ) {
+        override fun hashCode() = toString().hashCode()
+
+        override fun equals(other: Any?): Boolean {
+            if (other == null || other !is TraceMethod) {
+                return false
+            }
+            return toString() == other.toString()
+        }
+
+        override fun toString() = "${psiClass.qualifiedName}#${psiMethod.name}"
     }
 
 }

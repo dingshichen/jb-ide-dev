@@ -6,6 +6,7 @@ import com.intellij.codeInsight.AnnotationUtil
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiField
+import com.intellij.psi.PsiLiteralExpression
 import com.intellij.psi.PsiMethod
 
 const val REQUEST_MAPPING = "org.springframework.web.bind.annotation.RequestMapping"
@@ -49,8 +50,14 @@ fun getFeignClientUrl(psiClass: PsiClass) = AnnotationUtil.getStringAttributeVal
 /**
  * 获取 feignClient 方法上的 path
  */
-fun getFeignClientMethodPath(psiMethod: PsiMethod) = AnnotationUtil.findAnnotation(psiMethod, MVC_ANNOTATIONS)?.let {
-    AnnotationUtil.getStringAttributeValue(it, "value")
+fun getFeignClientMethodPath(psiMethod: PsiMethod): String? = AnnotationUtil.findAnnotation(psiMethod, MVC_ANNOTATIONS)?.let {
+    val value = AnnotationUtil.getStringAttributeValue(it, "value")
+    if (value != null) {
+        return value
+    }
+    return it.findAttributeValue("value")?.let { memberValue ->
+        (memberValue.children[0] as PsiLiteralExpression).value as String
+    }
 }
 
 /**
