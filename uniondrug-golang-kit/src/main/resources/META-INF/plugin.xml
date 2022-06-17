@@ -20,11 +20,28 @@
         <!-- Add your extensions here -->
         <applicationService serviceImplementation="cn.uniondrug.dev.service.DocService" />
 
+        <projectService serviceImplementation="cn.uniondrug.dev.config.DocSetting" />
+
+        <projectService serviceImplementation="cn.uniondrug.dev.config.TornaKeyService" />
+
         <projectService serviceInterface="cn.uniondrug.dev.CommonTypeConvertor"
                             serviceImplementation="cn.uniondrug.dev.GoTypeConvertor" />
 
+        <projectService serviceImplementation="cn.uniondrug.dev.TornaSpaceService" />
+        <projectService serviceImplementation="cn.uniondrug.dev.TornaUserService" />
+        <projectService serviceImplementation="cn.uniondrug.dev.TornaProjectService" />
+        <projectService serviceImplementation="cn.uniondrug.dev.TornaModuleService" />
+        <projectService serviceImplementation="cn.uniondrug.dev.TornaDocService" />
+
+
         <codeInsight.lineMarkerProvider language="go"
                                         implementationClass="cn.uniondrug.dev.provider.DocLineMarkerProvider" />
+
+        <projectConfigurable instance="cn.uniondrug.dev.config.DocSettingConfigurable"
+                             id="uniondrug.dev.kit.DocSettingConfigurable"
+                             displayName="Doc Settings"
+                             groupId="uniondrug.dev.kit.SettingsConfigurable"
+                             nonDefaultProject="true" />
 
         <notificationGroup id="Uniondrug.Notification.Group"
                            displayType="BALLOON"/>
@@ -35,6 +52,10 @@
         <action id="cn.uniondrug.dev.action.CopyJsonAnAction" class="cn.uniondrug.dev.action.CopyJsonAnAction"
                 text="Copy As Json Text" description="Copy as json text">
             <add-to-group group-id="Copy.Paste.Special" anchor="last"/>
+        </action>
+        <action id="cn.uniondrug.dev.action.PushAllDocAnAction" class="cn.uniondrug.dev.action.PushAllDocAnAction"
+                text="Push All Api to Torna">
+            <add-to-group group-id="GoTools" anchor="last"/>
         </action>
     </actions>
 </idea-plugin>
