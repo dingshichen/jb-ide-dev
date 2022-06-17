@@ -26,6 +26,15 @@ class DocSetting : PersistentStateComponent<DocSetting.TornaState> {
         this.state = state
     }
 
+    /**
+     * 记住 MSS 功能的输入
+     */
+    fun saveMssState(mssWorker: String, mssProjectCode: String, mssToken: String) {
+        this.state.mssWorker = mssWorker
+        this.state.mssProjectCode = mssProjectCode
+        this.state.mssToken = mssToken
+    }
+
     data class TornaState(
         var domain: String? = null,
         var username: String? = null,

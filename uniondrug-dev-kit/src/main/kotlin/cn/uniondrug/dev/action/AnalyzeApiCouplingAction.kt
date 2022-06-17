@@ -1,7 +1,10 @@
 package cn.uniondrug.dev.action
 
+import cn.hutool.core.util.StrUtil
 import cn.uniondrug.dev.ConsulService
+import cn.uniondrug.dev.UNIONDRUG_PACKAGE
 import cn.uniondrug.dev.config.DocSetting
+import cn.uniondrug.dev.config.DocSettingConfigurable
 import cn.uniondrug.dev.dialog.MssAnalyzeDialog
 import cn.uniondrug.dev.mss.*
 import cn.uniondrug.dev.notifier.notifyError
@@ -11,6 +14,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
@@ -31,7 +35,7 @@ class AnalyzeApiCouplingAction : AnAction() {
     private var eventMap: MutableMap</* 事件 */ PsiClass, /* 监听 */PsiClass> = mutableMapOf()
 
     override fun actionPerformed(e: AnActionEvent) {
-        e.getData(CommonDataKeys.PROJECT)?.let { project ->
+        e.project?.let { project ->
             e.getData(CommonDataKeys.VIRTUAL_FILE)?.let { virtualFile ->
                 val consulService = project.getService(ConsulService::class.java)
                 val consul = try {
@@ -40,15 +44,16 @@ class AnalyzeApiCouplingAction : AnAction() {
                     notifyError(project, "请确认网络环境是否正确，无法获取到测试环境 consul 配置：${ex.message}")
                     return
                 }
+                val docSetting = DocSetting.getInstance(project)
+                if (StrUtil.isEmpty(docSetting.state.domain)) {
+                    notifyError(project, "请先在 DocSetting 中将项目域名配置完成")
+                    ShowSettingsUtil.getInstance().showSettingsDialog(project, DocSettingConfigurable::class.java)
+                    return
+                }
                 MssAnalyzeDialog(project).apply {
                     if (showAndGet()) {
                         // 记住我的选择
-                        val docSetting = DocSetting.getInstance(project)
-                        with(docSetting.state) {
-                            mssWorker = getWorker()
-                            mssProjectCode = getProjectCode()
-                            mssToken = getToken()
-                        }
+                        docSetting.saveMssState(getWorker(), getProjectCode(), getToken())
                         mutableMapOf<OwnResource, Set<UniondrugResource>>().run {
                             // 开始分析
                             try {
@@ -165,8 +170,8 @@ class AnalyzeApiCouplingAction : AnAction() {
         if (file !is PsiJavaFile) {
             return
         }
-        if (express.containingClass?.qualifiedName == "org.springframework.web.client.RestTemplate"
-            || file.packageName.startsWith("cn.uniondrug")
+        if (express.containingClass?.qualifiedName == SPRING_REST_TEMPLATE
+            || file.packageName.startsWith(UNIONDRUG_PACKAGE)
         ) {
             val query = OverridingMethodsSearch.search(
                 express,
@@ -201,7 +206,7 @@ class AnalyzeApiCouplingAction : AnAction() {
                                     getFeignClientMethodPath(express)!!
                                 }
                                 thirdFlag {
-                                    "0"
+                                    "0" // TODO V1 全部解读为内部接口
                                 }
                             }
                         } else if (!psiClass.isInterface) {
@@ -255,7 +260,7 @@ class AnalyzeApiCouplingAction : AnAction() {
         listenerInterface?.let { l ->
             ClassInheritorsSearch.search(l).filter { listener ->
                 val qualifiedName = listener.qualifiedName ?: return@filter false
-                return@filter qualifiedName.startsWith("cn.uniondrug")
+                return@filter qualifiedName.startsWith(UNIONDRUG_PACKAGE)
             }.forEach { listener ->
                 if (listener.implementsListTypes.size == 1) {
                     val parameters = listener.implementsListTypes[0].parameters
@@ -311,6 +316,9 @@ class AnalyzeApiCouplingAction : AnAction() {
         })
     }
 
+    /**
+     * 控制无限递归的标识
+     */
     data class TraceMethod(
         val psiClass: PsiClass,
         val psiMethod: PsiMethod,

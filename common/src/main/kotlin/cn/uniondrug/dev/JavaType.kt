@@ -66,6 +66,8 @@ val FULL_BASE_LIST = arrayOf(
 )
 
 // 药联框架通用类型
+const val UNIONDRUG_PACKAGE = "cn.uniondrug"
+
 const val RESULT = "cn.uniondrug.cloud.common.dto.res.Result"
 const val RESULT_ERRNO = "errno"
 const val RESULT_ERROR = "error"

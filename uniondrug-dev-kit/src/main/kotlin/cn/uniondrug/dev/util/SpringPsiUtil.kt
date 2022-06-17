@@ -27,6 +27,8 @@ const val EVENT_LISTENER = "org.springframework.context.ApplicationListener"
 
 const val FEIGN_CLIENT = "org.springframework.cloud.openfeign.FeignClient"
 
+const val SPRING_REST_TEMPLATE = "org.springframework.web.client.RestTemplate"
+
 /**
  * 判断 PSI 方法是否不是 Spring 的方法
  */

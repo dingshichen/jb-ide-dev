@@ -40,6 +40,18 @@ public class MssAnalyzeForm {
         return rootPanel;
     }
 
+    public JTextField getWorkerField() {
+        return workerField;
+    }
+
+    public JTextField getProjectField() {
+        return projectField;
+    }
+
+    public JTextField getAuthField() {
+        return authField;
+    }
+
     public String getWorker() {
         return workerField.getText();
     }
