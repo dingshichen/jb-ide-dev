@@ -2,6 +2,11 @@ package cn.uniondrug.dev.ui;
 
 import cn.uniondrug.dev.Api;
 import cn.uniondrug.dev.MbsEvent;
+import cn.uniondrug.dev.TornaDocService;
+import cn.uniondrug.dev.config.DocSetting;
+import cn.uniondrug.dev.config.DocSettingConfigurable;
+import cn.uniondrug.dev.config.TornaKeyService;
+import cn.uniondrug.dev.dialog.TornaIndexDialog;
 import cn.uniondrug.dev.service.DocService;
 import com.intellij.find.editorHeaderActions.Utils;
 import com.intellij.icons.AllIcons;
@@ -19,6 +24,7 @@ import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.editor.highlighter.EditorHighlighter;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
+import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
@@ -31,6 +37,7 @@ import com.intellij.ui.jcef.JBCefApp;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.intellij.plugins.markdown.settings.MarkdownApplicationSettings;
 import org.intellij.plugins.markdown.ui.preview.MarkdownHtmlPanel;
 import org.intellij.plugins.markdown.ui.preview.MarkdownHtmlPanelProvider;
@@ -45,6 +52,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static cn.uniondrug.dev.notifier.CommonNotifierKt.notifyError;
 import static cn.uniondrug.dev.notifier.CommonNotifierKt.notifyInfo;
 
 /**
@@ -154,10 +162,10 @@ public class PreviewForm {
                 .setCancelOnMouseOutCallback(event -> event.getID() == MouseEvent.MOUSE_PRESSED && !myIsPinned.get())
 
                 // 单击外部时取消弹窗
-                .setCancelOnClickOutside(false)
+                .setCancelOnClickOutside(true)
                 // 在其他窗口打开时取消
-                .setCancelOnOtherWindowOpen(false)
-                .setCancelOnWindowDeactivation(false)
+                .setCancelOnOtherWindowOpen(true)
+                .setCancelOnWindowDeactivation(true)
                 .createPopup();
         popup.showCenteredInCurrentWindow(project);
     }
@@ -328,27 +336,41 @@ public class PreviewForm {
     private void initPreviewRightToolbar() {
         DefaultActionGroup rightGroup = new DefaultActionGroup();
 
-//        rightGroup.add(new AnAction("Upload", "Upload To Torna", AllIcons.Actions.Upload) {
-//            @Override
-//            public void actionPerformed(@NotNull AnActionEvent e) {
-//
-//                DocSetting apiSettings = DocSetting.getInstance(project);
-//                DocSetting.TornaState state = apiSettings.state();
-//                if (StringUtils.isAnyBlank(state.url, state.domain, state.token)) {
-//                    // 说明没有配置 Torna, 跳转到配置页面
-//                    CommonNotifier.notifyError(project, "Torna 未配置，无法完成上传");
-//                    ShowSettingsUtil.getInstance().showSettingsDialog(e.getProject(), DocSettingConfigurable.class);
-//                    popup.cancel();
-//                    return;
-//                }
-//                // 上传到 torna
-//                DocService service = ApplicationManager.getApplication().getService(DocService.class);
-//                service.upload(project, currentDocView);
-//            }
-//        });
-//
-//
-//        rightGroup.addSeparator();
+        rightGroup.add(new AnAction("Upload", "Upload To Torna", AllIcons.Actions.Upload) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+
+                DocSetting apiSettings = DocSetting.Companion.getInstance(project);
+                DocSetting.TornaState state = apiSettings.getState();
+                if (StringUtils.isAnyBlank(state.getDomain(), state.getUsername())) {
+                    // 说明没有配置 Torna, 跳转到配置页面
+                    notifyError(project, "Torna 未配置，无法完成上传");
+                    ShowSettingsUtil.getInstance().showSettingsDialog(e.getProject(), DocSettingConfigurable.class);
+                    popup.cancel();
+                    return;
+                }
+                // 上传到 torna
+                TornaIndexDialog dialog = new TornaIndexDialog(project, api);
+                if (dialog.showAndGet()) {
+                    TornaDocService service = project.getService(TornaDocService.class);
+                    TornaKeyService tornaKeyService = TornaKeyService.Companion.getInstance(project);
+                    try {
+                        String token = tornaKeyService.getToken(project, apiSettings);
+                        service.saveDoc(token, dialog.getProjectId(), dialog.getModuleId(), dialog.getFolderId(), api);
+                        notifyInfo(project, "文档上传成功");
+                    } catch (Exception ex) {
+                        notifyError(project, "文档上传失败：" + ex.getMessage());
+                    }
+                    // 记住选择
+                    state.setRememberSpaceBoxId(dialog.getSpaceId());
+                    state.setRememberProjectBoxId(dialog.getProjectId());
+                    state.setRememberModuleBoxId(dialog.getModuleId());
+                }
+            }
+        });
+
+
+        rightGroup.addSeparator();
 
         rightGroup.add(new AnAction("Export", "Export markdown", AllIcons.ToolbarDecorator.Export) {
             @Override

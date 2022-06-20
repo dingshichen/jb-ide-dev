@@ -3,6 +3,7 @@ package cn.uniondrug.dev.service
 import cn.uniondrug.dev.Api
 import cn.uniondrug.dev.DocBuildFailException
 import cn.uniondrug.dev.MbsEvent
+import cn.uniondrug.dev.config.DocSetting
 import cn.uniondrug.dev.dto.GoApiStruct
 import cn.uniondrug.dev.dto.GoMbsStruct
 import cn.uniondrug.dev.notifier.notifyError
@@ -38,30 +39,32 @@ class DocService {
      * 构建 API DTO
      */
     fun buildApiDoc(project: Project, method: GoMethodDeclaration, goApiStruct: GoApiStruct): Api {
+        val docSetting = DocSetting.getInstance(project)
+        val domain = docSetting.state.domain?.let { "http://${docSetting.state.domain}.turboradio.cn" } ?: "http://{api_host}"
         var url = ""
         var httpMethod = ""
         var contentType = ""
         goApiStruct.getComment?.let {
-            url = it.text.getCommentValue("Get")
+            url = domain + it.text.getCommentValue("Get")
             httpMethod = "GET"
             contentType = "application/x-www-form-urlencoded"
         } ?: goApiStruct.postComment?.let {
-            url = it.text.getCommentValue("Post")
+            url = domain + it.text.getCommentValue("Post")
             httpMethod = "POST"
             contentType = "application/json"
         } ?: goApiStruct.nameComment?.let {
             if (it.text.startsWith("// Get")) {
-                url = it.text.substring(6).humpToPath()
+                url = domain + it.text.substring(6).humpToPath()
                 httpMethod = "Get"
                 contentType = "application/x-www-form-urlencoded"
             } else if (it.text.startsWith("// Post")) {
-                url = it.text.substring(7).humpToPath()
+                url = domain + it.text.substring(7).humpToPath()
                 httpMethod = "POST"
                 contentType = "application/json"
             }
         }
         return Api(
-            folder = "",    // TODO
+            folder = method.receiverType?.presentationText?.replace("*", "") ?: "",
             name = goApiStruct.nameComment?.text?.getCommentValue(method.name!!)!!,
             description = goApiStruct.descComment?.text?.getCommentValue("Desc") ?: "",
             author = goApiStruct.authorComment?.text?.getCommentValue("Author") ?: "",
