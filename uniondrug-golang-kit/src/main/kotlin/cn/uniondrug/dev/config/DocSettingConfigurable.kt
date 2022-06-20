@@ -4,8 +4,6 @@ import cn.uniondrug.dev.ui.DocSettingForm
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.project.Project
-import org.jetbrains.annotations.Nls
-import org.jetbrains.annotations.NonNls
 import javax.swing.JComponent
 
 /**
@@ -18,11 +16,11 @@ class DocSettingConfigurable(
 
     private lateinit var docSettingForm: DocSettingForm
 
-    override fun getId(): @NonNls String {
+    override fun getId(): String {
         return "uniondrug.dev.kit.DocSettingConfigurable"
     }
 
-    override fun getDisplayName(): @Nls(capitalization = Nls.Capitalization.Title) String {
+    override fun getDisplayName(): String {
         return "Doc Settings"
     }
 
