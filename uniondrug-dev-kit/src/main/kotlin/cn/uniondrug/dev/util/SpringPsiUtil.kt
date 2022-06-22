@@ -21,6 +21,8 @@ const val BODY = "org.springframework.web.bind.annotation.RequestBody"
 
 const val LENGTH = "org.hibernate.validator.constraints.Length"
 
+const val JSON_ALIAS = "com.fasterxml.jackson.annotation.JsonProperty"
+
 const val EVENT = "org.springframework.context.ApplicationEvent"
 const val EVENT_PUBLISHER = "org.springframework.context.ApplicationEventPublisher"
 const val EVENT_LISTENER = "org.springframework.context.ApplicationListener"

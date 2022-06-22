@@ -18,12 +18,18 @@ class TornaSpaceService {
     /**
      * 查询我所在的空间
      */
-    fun listMySpace(token: String): List<TornaSpaceDTO> {
+    fun listMySpace(token: String, loginFailBack: (() -> String)? = null): List<TornaSpaceDTO> {
         val body = doGetTorna("/space/list", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
         val tornaResult: TornaResult<List<TornaSpaceDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaSpaceDTO>>>() {}.type)
+        if (tornaResult.isLoginError()) {
+            loginFailBack?.let {
+                return listMySpace(loginFailBack())
+            }
+            throw LoginException(tornaResult.msg)
+        }
         if (tornaResult.isError()) {
             throw SpaceException("查询空间失败：${tornaResult.msg}")
         }

@@ -75,17 +75,17 @@ data class RPCResource(
         }
         if (!realServerUrl.endsWith("uniondrug.cn") && !realServerUrl.endsWith("uniondrug.cn/")) {
             val c = realServerUrl.indexOf("uniondrug.cn")
-            serverUrlExpress = realServerUrl.substring(0, c + 12)
+            serverUrlExpress = realServerUrl.substring(0, c + 12).removeHttp()
             path = "/${realServerUrl.substring(c + 13)}/$path"
+                .removeHttp()
                 .replace("///", "/")
                 .replace("//", "/")
-                .removeHttp()
         } else {
-            serverUrlExpress = realServerUrl.replace("uniondrug.cn/", "uniondrug.cn")
+            serverUrlExpress = realServerUrl.replace("uniondrug.cn/", "uniondrug.cn").removeHttp()
             path = "/$path"
+                .removeHttp()
                 .replace("///", "/")
                 .replace("//", "/")
-                .removeHttp()
         }
     }
 

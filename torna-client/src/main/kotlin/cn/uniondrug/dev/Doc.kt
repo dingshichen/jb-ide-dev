@@ -158,12 +158,18 @@ class TornaDocService {
     /**
      * 查询模块里的文件夹
      */
-    fun listFolderByModule(token: String, moduleId: String): List<TornaDocDTO> {
+    fun listFolderByModule(token: String, moduleId: String, loginFailBack: (() -> String)? = null): List<TornaDocDTO> {
         val body = doGetTorna("/doc/folder/list?moduleId=$moduleId", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
         val tornaResult: TornaResult<List<TornaDocDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaDocDTO>>>() {}.type)
+        if (tornaResult.isLoginError()) {
+            loginFailBack?.let {
+                return listFolderByModule(loginFailBack(), moduleId)
+            }
+            throw LoginException(tornaResult.msg)
+        }
         if (tornaResult.isError()) {
             throw DocumentException("查询文档失败：${tornaResult.msg}")
         }
@@ -173,12 +179,18 @@ class TornaDocService {
     /**
      * 查询模块里的文档
      */
-    fun listDocumentByModule(token: String, moduleId: String): List<TornaDocDTO> {
+    fun listDocumentByModule(token: String, moduleId: String, loginFailBack: (() -> String)? = null): List<TornaDocDTO> {
         val body = doGetTorna("/doc/list?moduleId=$moduleId", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
         val tornaResult: TornaResult<List<TornaDocDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaDocDTO>>>() {}.type)
+        if (tornaResult.isLoginError()) {
+            loginFailBack?.let {
+                listDocumentByModule(loginFailBack(), moduleId)
+            }
+            throw LoginException(tornaResult.msg)
+        }
         if (tornaResult.isError()) {
             throw DocumentException("查询文档失败：${tornaResult.msg}")
         }
@@ -188,13 +200,19 @@ class TornaDocService {
     /**
      * 创建目录
      */
-    fun saveFolder(token: String, moduleId: String, folder: String) {
+    fun saveFolder(token: String, moduleId: String, folder: String, loginFailBack: (() -> String)? = null) {
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
         val folderAddCmd = FolderAddCmd(moduleId, folder)
         val body = doPostTorna("/doc/folder/add", gson.toJson(folderAddCmd), token)
         val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type)
+        if (tornaResult.isLoginError()) {
+            loginFailBack?.let {
+                saveFolder(loginFailBack(), moduleId, folder)
+            }
+            throw LoginException(tornaResult.msg)
+        }
         if (tornaResult.isError()) {
             throw DocumentException("创建目录失败：${tornaResult.msg}")
         }
@@ -203,12 +221,18 @@ class TornaDocService {
     /**
      * 文档详情查询
      */
-    fun getDocDetail(token: String, docId: String): TornaDocDTO? {
+    fun getDocDetail(token: String, docId: String, loginFailBack: (() -> String)? = null): TornaDocDTO? {
         val body = doGetTorna("/doc/detail?id=$docId", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
         val tornaResult: TornaResult<TornaDocDTO> = gson.fromJson(body, object : TypeToken<TornaResult<TornaDocDTO>>() {}.type)
+        if (tornaResult.isLoginError()) {
+            loginFailBack?.let {
+                getDocDetail(loginFailBack(), docId)
+            }
+            throw LoginException(tornaResult.msg)
+        }
         if (tornaResult.isError()) {
             throw DocumentException("查询文档失败：${tornaResult.msg}")
         }
@@ -216,15 +240,10 @@ class TornaDocService {
     }
 
     /**
-     * 查询文档是否存在
-     */
-    fun existDoc(token: String, docId: String) = getDocDetail(token, docId) != null
-
-    /**
      * 保存文档（可覆盖）
      * 先获取模块下所有文档，然后匹配到本文档，如果匹配到，删除此文档，再新增～～
      */
-    fun saveDoc(token: String, projectId: String, moduleId: String, folderId: String, api: Api) {
+    fun saveDoc(token: String, projectId: String, moduleId: String, folderId: String, api: Api, loginFailBack: (() -> String)? = null) {
         val docs = listDocumentByModule(token, moduleId)
         val docId = getDocDataId(folderId, moduleId, api.url, api.httpMethod)
         docs.find {
@@ -239,6 +258,12 @@ class TornaDocService {
         val docSaveCmd = apiToCmd(projectId, moduleId, folderId, api)
         val body = doPostTorna("/doc/save", gson.toJson(docSaveCmd), token)
         val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type)
+        if (tornaResult.isLoginError()) {
+            loginFailBack?.let {
+                saveDoc(loginFailBack(), projectId, moduleId, folderId, api)
+            }
+            throw LoginException(tornaResult.msg)
+        }
         if (tornaResult.isError()) {
             throw DocumentException("保存文档失败：${tornaResult.msg}")
         }
@@ -247,12 +272,18 @@ class TornaDocService {
     /**
      * 删除文档
      */
-    fun deleteDoc(token: String, docId: String) {
+    fun deleteDoc(token: String, docId: String, loginFailBack: (() -> String)? = null) {
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
         val body = doPostTorna("/doc/delete", gson.toJson(DocIdCmd(docId)), token)
         val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type)
+        if (tornaResult.isLoginError()) {
+            loginFailBack?.let {
+                deleteDoc(loginFailBack(), docId)
+            }
+            throw LoginException(tornaResult.msg)
+        }
         if (tornaResult.isError()) {
             throw DocumentException("删除文档失败：${tornaResult.msg}")
         }

@@ -77,6 +77,15 @@ fun isDeprecated(psiClass: PsiClass, psiMethod: PsiMethod) =
             || AnnotationUtil.isAnnotated(psiMethod, DEPRECATED, 0)
 
 /**
+ * 获取属性名
+ */
+fun getFieldName(psiField: PsiField): String {
+    return AnnotationUtil.findAnnotation(psiField, JSON_ALIAS)?.let {
+        AnnotationUtil.getStringAttributeValue(it, "value")
+    } ?: psiField.name
+}
+
+/**
  * 从参数中获取类型
  */
 fun getRequestBody(project: Project, parameter: PsiParameter) = getBody(project, psiType = parameter.type as PsiClassType)
@@ -133,7 +142,7 @@ fun getBody(
         }
         val commonTypeConvertor = project.getService(CommonTypeConvertor::class.java)
         params += ApiParam(
-            name = it.name,
+            name = getFieldName(it),
             type = commonTypeConvertor.convert(fieldType.presentableText),
             required = AnnotationUtil.isAnnotated(it, REQUIRED, 0),
             maxLength = getMaxLength(it),

@@ -21,6 +21,8 @@ data class TornaResult<T>(
 ) {
 
     fun isError() = code != "0"
+
+    fun isLoginError() = code == "1000"
 }
 
 /**

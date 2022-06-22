@@ -6,6 +6,7 @@ import cn.uniondrug.dev.config.DocSetting;
 import cn.uniondrug.dev.config.TornaKeyService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
+import kotlin.jvm.functions.Function0;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;
@@ -30,22 +31,26 @@ public class PushAllDocForm {
 
     private TornaKeyService tornaKeyService;
 
+    private DocSetting docSetting;
+
+    private final Function0<String> refreshToken = () -> tornaKeyService.refreshToken(project, docSetting);
+
     public PushAllDocForm(Project project) {
         this.project = project;
         this.tornaKeyService = TornaKeyService.Companion.getInstance(project);
+        this.docSetting = DocSetting.Companion.getInstance(project);
         initListener();
         initValue();
     }
 
     private void initListener() {
-        DocSetting docSetting = DocSetting.Companion.getInstance(project);
         String rememberProjectBoxId = docSetting.getState().getRememberProjectBoxId();
         String rememberModuleBoxId = docSetting.getState().getRememberModuleBoxId();
         String token = tornaKeyService.getToken(project, docSetting);
         spaceBox.addItemListener(s -> {
             if (s.getStateChange() == ItemEvent.SELECTED) {
                 TornaProjectService tornaProjectService = project.getService(TornaProjectService.class);
-                List<TornaProjectDTO> projects = tornaProjectService.listProjectBySpace(token, ((TornaSpaceDTO) s.getItem()).getId());
+                List<TornaProjectDTO> projects = tornaProjectService.listProjectBySpace(token, ((TornaSpaceDTO) s.getItem()).getId(), refreshToken);
                 projectBox.removeAllItems();
                 moduleBox.removeAllItems();
                 projects.forEach(p -> projectBox.addItem(p));
@@ -60,7 +65,7 @@ public class PushAllDocForm {
         projectBox.addItemListener(p -> {
             if (p.getStateChange() == ItemEvent.SELECTED) {
                 TornaModuleService tornaModuleService = project.getService(TornaModuleService.class);
-                List<TornaModuleDTO> modules = tornaModuleService.listModuleByProject(token, ((TornaProjectDTO) p.getItem()).getId());
+                List<TornaModuleDTO> modules = tornaModuleService.listModuleByProject(token, ((TornaProjectDTO) p.getItem()).getId(), refreshToken);
                 moduleBox.removeAllItems();
                 modules.forEach(m -> moduleBox.addItem(m));
                 if (StrUtil.isNotBlank(rememberModuleBoxId)) {
@@ -74,10 +79,9 @@ public class PushAllDocForm {
     }
 
     private void initValue() {
-        DocSetting docSetting = DocSetting.Companion.getInstance(project);
         String token = tornaKeyService.getToken(project, docSetting);
         TornaSpaceService tornaSpaceService = project.getService(TornaSpaceService.class);
-        List<TornaSpaceDTO> spaces = tornaSpaceService.listMySpace(token);
+        List<TornaSpaceDTO> spaces = tornaSpaceService.listMySpace(token, refreshToken);
         spaceBox.removeAllItems();
         spaces.forEach(e -> spaceBox.addItem(e));
     }
