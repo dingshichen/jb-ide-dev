@@ -36,7 +36,6 @@ class DocSetting : PersistentStateComponent<DocSetting.TornaState> {
     }
 
     data class TornaState(
-        var domain: String? = null,
         var username: String? = null,
         var rememberSpaceBoxId: String? = null,
         var rememberProjectBoxId: String? = null,

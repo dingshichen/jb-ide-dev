@@ -1,7 +1,6 @@
 /** @author dingshichen */
 package cn.uniondrug.dev.util
 
-import cn.uniondrug.dev.config.DocSetting.Companion.getInstance
 import com.intellij.codeInsight.AnnotationUtil
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiClass
@@ -75,12 +74,9 @@ fun getUrl(project: Project, psiClass: PsiClass, psiMethod: PsiMethod): String {
     val methodAnnotation = AnnotationUtil.findAnnotation(psiMethod, MVC_ANNOTATIONS)
     methodAnnotation ?: throw RuntimeException("获取 API 路径失败")
     val pathByMethod = AnnotationUtil.getStringAttributeValue(methodAnnotation, "value")
-    val apiSettings = getInstance(project)
-    val state = apiSettings.state
-    val domain = state.domain?.let { "http://${state.domain}.turboradio.cn" } ?: "http://{api_host}"
-    val url = (pathByClass?.let { "/$it/$pathByMethod".replace("//", "/") }
-        ?: "/$pathByMethod".replace("//", "/"))
-    return domain + url
+    return pathByClass?.let {
+        "/$it/$pathByMethod".replace("//", "/")
+    } ?: "/$pathByMethod".replace("//", "/")
 }
 
 /**

@@ -1,10 +1,8 @@
 package cn.uniondrug.dev.action
 
-import cn.hutool.core.util.StrUtil
 import cn.uniondrug.dev.ConsulService
 import cn.uniondrug.dev.UNIONDRUG_PACKAGE
 import cn.uniondrug.dev.config.DocSetting
-import cn.uniondrug.dev.config.DocSettingConfigurable
 import cn.uniondrug.dev.dialog.MssAnalyzeDialog
 import cn.uniondrug.dev.mss.*
 import cn.uniondrug.dev.notifier.notifyError
@@ -14,7 +12,6 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
@@ -45,11 +42,6 @@ class AnalyzeApiCouplingAction : AnAction() {
                     return
                 }
                 val docSetting = DocSetting.getInstance(project)
-                if (StrUtil.isEmpty(docSetting.state.domain)) {
-                    notifyError(project, "请先在 DocSetting 中将项目域名配置完成")
-                    ShowSettingsUtil.getInstance().showSettingsDialog(project, DocSettingConfigurable::class.java)
-                    return
-                }
                 MssAnalyzeDialog(project).apply {
                     if (showAndGet()) {
                         // 记住我的选择

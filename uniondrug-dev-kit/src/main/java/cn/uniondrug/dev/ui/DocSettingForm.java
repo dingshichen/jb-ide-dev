@@ -14,15 +14,11 @@ import javax.swing.*;
  */
 public class DocSettingForm {
 
-    private JLabel domainLabel;
-    private JTextField domainText;
     private JLabel tornaUsernameLabel;
     private JTextField tornaUsernameText;
     private JPanel rootPanel;
     private JLabel tornaPasswordLabel;
     private JPasswordField tornaPasswordField;
-    private JLabel baseDomainLabel;
-    private JLabel httpDomainLabel;
 
     private Project project;
 
@@ -37,9 +33,6 @@ public class DocSettingForm {
     public boolean isModified() {
         DocSetting docSetting = DocSetting.Companion.getInstance(project);
         DocSetting.TornaState state = docSetting.getState();
-        if (!StringUtils.equals(state.getDomain(), domainText.getText())) {
-            return true;
-        }
         if (!StringUtils.equals(state.getUsername(), tornaUsernameText.getText())) {
             return true;
         }
@@ -53,7 +46,6 @@ public class DocSettingForm {
     public void apply() {
         DocSetting docSetting = DocSetting.Companion.getInstance(project);
         DocSetting.TornaState state = docSetting.getState();
-        state.setDomain(domainText.getText());
         state.setUsername(tornaUsernameText.getText());
 
         TornaKeyService tornaKeyService = TornaKeyService.Companion.getInstance(project);
@@ -63,7 +55,6 @@ public class DocSettingForm {
     public void reset() {
         DocSetting docSetting = DocSetting.Companion.getInstance(project);
         DocSetting.TornaState state = docSetting.getState();
-        domainText.setText(state.getDomain());
         tornaUsernameText.setText(state.getUsername());
 
         TornaKeyService tornaKeyService = TornaKeyService.Companion.getInstance(project);
