@@ -33,6 +33,7 @@
         <projectService serviceImplementation="cn.uniondrug.dev.TornaModuleService" />
         <projectService serviceImplementation="cn.uniondrug.dev.TornaDocService" />
 
+        <postStartupActivity implementation="cn.uniondrug.dev.notifier.StartupNotifier" />
 
         <codeInsight.lineMarkerProvider language="go"
                                         implementationClass="cn.uniondrug.dev.provider.DocLineMarkerProvider" />
