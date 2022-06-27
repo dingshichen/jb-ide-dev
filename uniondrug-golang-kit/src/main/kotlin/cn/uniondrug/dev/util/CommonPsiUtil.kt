@@ -151,7 +151,7 @@ object CommonPsiUtil {
                 val param = ApiParam(
                     name = GolangPsiUtil.getFieldJsonName(field) ?: throw DocBuildFailException("获取参数属性 json 名称失败"),
                     // 从背后真实的类型转换
-                    type = commonTypeConvertor.convert(it.contextlessUnderlyingType.presentationText),
+                    type = commonTypeConvertor.convert(GolangPsiUtil.getRealTypeOrSelf(it).contextlessUnderlyingType.presentationText),
                     required = GolangPsiUtil.isRequired(tag),
                     maxLength = GolangPsiUtil.getMaxLength(tag),
                     parentId = parent,
@@ -175,7 +175,7 @@ object CommonPsiUtil {
 
     private fun findChildrenFieldDeclaration(param: ApiParam, goType: GoType, context: PsiElement?) {
         val children = arrayListOf<ApiParam>()
-        val typeSpec = GoTypeUtil.findTypeSpec(goType, context)
+        val typeSpec = GoTypeUtil.findTypeSpec(GolangPsiUtil.getRealTypeOrSelf(goType), context)
         when (val struct = typeSpec.specType.type) {
             is GoStructType -> {
                 struct.fieldDeclarationList.forEach { buildDocParam(param.name, it, children) }

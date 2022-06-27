@@ -46,6 +46,14 @@ object GolangPsiUtil {
         return children
     }
 
+    /**
+     * 获取 GoType 类型或者从指针类型中获取
+     */
+    fun getRealTypeOrSelf(goType: GoType): GoType = when (goType) {
+        is GoPointerType -> goType.type!!
+        else -> goType
+    }
+
     private fun addNextSibling(psiElement: PsiElement?, list: MutableList<PsiElement>) {
         if (psiElement != null) {
             list += psiElement
