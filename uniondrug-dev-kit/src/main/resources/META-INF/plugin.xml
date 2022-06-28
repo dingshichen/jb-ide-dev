@@ -41,6 +41,8 @@
         <codeInsight.lineMarkerProvider language="JAVA"
                                         implementationClass="cn.uniondrug.dev.provider.DocLineMarkerProvider" />
 
+        <postStartupActivity implementation="cn.uniondrug.dev.notifier.StartupNotifier" />
+
         <projectConfigurable instance="cn.uniondrug.dev.config.DocSettingConfigurable"
                              id="uniondrug.dev.kit.DocSettingConfigurable"
                              displayName="Doc Settings"
