@@ -8,7 +8,7 @@ object DevKitPlugin {
 
     const val NAME = "Uniondrug Dev Kit"
 
-    const val ID = "cn.uniondrug.uniondrug-golang-kit"
+    const val ID = "cn.uniondrug.dev-kit"
 
 }
 
