@@ -27,7 +27,7 @@ class TornaModuleService {
         val tornaResult: TornaResult<List<TornaModuleDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaModuleDTO>>>() {}.type)
         if (tornaResult.isLoginError()) {
             loginFailBack?.let {
-                return listModuleByProject(loginFailBack(), projectId)
+                return listModuleByProject(it(), projectId)
             }
             throw LoginException(tornaResult.msg)
         }

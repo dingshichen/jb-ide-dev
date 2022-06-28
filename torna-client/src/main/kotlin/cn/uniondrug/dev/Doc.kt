@@ -27,7 +27,8 @@ data class TornaDocDTO(
     val projectId: String,
     val creatorName: String,
     val modifierName: String,
-
+    val requestParams: MutableList<DocParamSaveCmd>,
+    val responseParams: MutableList<DocParamSaveCmd>,
 ) {
 
     /**
@@ -56,7 +57,7 @@ data class FolderAddCmd(
 /**
  * 字段保存入参数
  */
-data class DocParamSaveCmd (
+data class DocParamSaveCmd(
     /** 字段名称, 数据库字段：name  */
     val name: String,
     /** 字段类型, 数据库字段：type  */
@@ -75,27 +76,51 @@ data class DocParamSaveCmd (
     val parentId: String? = null,
     /** 0：header, 1：请求参数，2：返回参数，3：错误码, 数据库字段：style  */
     val style: Byte,
-    var children: List<DocParamSaveCmd>? = null,
+    var children: MutableList<DocParamSaveCmd>? = null,
 ) {
     var id: String? = null
     val enumId: String = ""
+
     /** 新增操作方式，0：人工操作，1：开放平台推送, 数据库字段：create_mode  */
     val createMode: Byte = 1
+
     /** 修改操作方式，0：人工操作，1：开放平台推送, 数据库字段：modify_mode  */
     val modifyMode: Byte = 1
+
     /** 创建人  */
     val creatorName: String? = null
+
     /** 修改人  */
     val modifierName: String? = null
+
     /** 排序  */
-    val orderIndex: Int? = null
-    val isDeleted: Byte = 0
+    var orderIndex: Int? = null
+    var isDeleted: Byte = 0
+
+    /**
+     * 认为是同一个
+     */
+    infix fun same(docParamSaveCmd: DocParamSaveCmd) = this.name == docParamSaveCmd.name
+
+    /**
+     * 重写 equals 便于比较
+     */
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other !is DocParamSaveCmd) {
+            return false
+        }
+        return this same other
+    }
+
+    override fun hashCode(): Int {
+        return this.name.hashCode()
+    }
 }
 
 /**
  * 新增文档入参
  */
-data class DocInfoSaveCmd (
+data class DocInfoSaveCmd(
     val name: String,
     /** 文档概述, 数据库字段：description  */
     val description: String,
@@ -113,31 +138,41 @@ data class DocInfoSaveCmd (
     val moduleId: String,
     /** 项目id  */
     val projectId: String,
-    val requestParams: List<DocParamSaveCmd>? = null,
-    val responseParams: List<DocParamSaveCmd>? = null,
+    val requestParams: MutableList<DocParamSaveCmd>,
+    val responseParams: MutableList<DocParamSaveCmd>,
 ) {
     var id: String? = null
     val type = 0
+
     /** 是否是分类，0：不是，1：是, 数据库字段：is_folder  */
     val isFolder = 0
     val isShow = 1
     val remark = ""
+
     /** 是否使用全局请求参数, 数据库字段：is_use_global_headers  */
     val isUseGlobalHeaders = 0
+
     /** 是否使用全局请求参数, 数据库字段：is_use_global_params  */
     val isUseGlobalParams = 0
+
     /** 是否使用全局返回参数, 数据库字段：is_use_global_returns  */
     val isUseGlobalReturns = 0
+
     /** 是否请求数组, 数据库字段：is_request_array  */
     val isRequestArray = 0
+
     /** 是否返回数组, 数据库字段：is_response_array  */
     val isResponseArray = 0
+
     /** 请求数组时元素类型, 数据库字段：request_array_type  */
     val requestArrayType = 0
+
     /** 返回数组时元素类型, 数据库字段：response_array_type  */
     val responseArrayType = 0
+
     /** 创建人  */
     val creatorName = ""
+
     /** 修改人  */
     val modifierName = ""
     val pathParams: List<DocParamSaveCmd>? = null
@@ -163,10 +198,11 @@ class TornaDocService {
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val tornaResult: TornaResult<List<TornaDocDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaDocDTO>>>() {}.type)
+        val tornaResult: TornaResult<List<TornaDocDTO>> =
+            gson.fromJson(body, object : TypeToken<TornaResult<List<TornaDocDTO>>>() {}.type)
         if (tornaResult.isLoginError()) {
             loginFailBack?.let {
-                return listFolderByModule(loginFailBack(), moduleId)
+                return listFolderByModule(it(), moduleId)
             }
             throw LoginException(tornaResult.msg)
         }
@@ -179,15 +215,20 @@ class TornaDocService {
     /**
      * 查询模块里的文档
      */
-    fun listDocumentByModule(token: String, moduleId: String, loginFailBack: (() -> String)? = null): List<TornaDocDTO> {
+    fun listDocumentByModule(
+        token: String,
+        moduleId: String,
+        loginFailBack: (() -> String)? = null
+    ): List<TornaDocDTO> {
         val body = doGetTorna("/doc/list?moduleId=$moduleId", token)
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val tornaResult: TornaResult<List<TornaDocDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaDocDTO>>>() {}.type)
+        val tornaResult: TornaResult<List<TornaDocDTO>> =
+            gson.fromJson(body, object : TypeToken<TornaResult<List<TornaDocDTO>>>() {}.type)
         if (tornaResult.isLoginError()) {
             loginFailBack?.let {
-                listDocumentByModule(loginFailBack(), moduleId)
+                listDocumentByModule(it(), moduleId)
             }
             throw LoginException(tornaResult.msg)
         }
@@ -209,7 +250,7 @@ class TornaDocService {
         val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type)
         if (tornaResult.isLoginError()) {
             loginFailBack?.let {
-                saveFolder(loginFailBack(), moduleId, folder)
+                saveFolder(it(), moduleId, folder)
             }
             throw LoginException(tornaResult.msg)
         }
@@ -226,10 +267,11 @@ class TornaDocService {
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val tornaResult: TornaResult<TornaDocDTO> = gson.fromJson(body, object : TypeToken<TornaResult<TornaDocDTO>>() {}.type)
+        val tornaResult: TornaResult<TornaDocDTO> =
+            gson.fromJson(body, object : TypeToken<TornaResult<TornaDocDTO>>() {}.type)
         if (tornaResult.isLoginError()) {
             loginFailBack?.let {
-                getDocDetail(loginFailBack(), docId)
+                getDocDetail(it(), docId)
             }
             throw LoginException(tornaResult.msg)
         }
@@ -240,32 +282,91 @@ class TornaDocService {
     }
 
     /**
-     * 保存文档（可覆盖）
-     * 先获取模块下所有文档，然后匹配到本文档，如果匹配到，删除此文档，再新增～～
+     * 保存文档
      */
-    fun saveDoc(token: String, projectId: String, moduleId: String, folderId: String, api: Api, loginFailBack: (() -> String)? = null) {
+    fun saveDoc(
+        token: String,
+        projectId: String,
+        moduleId: String,
+        folderId: String,
+        api: Api,
+        loginFailBack: (() -> String)? = null
+    ) {
+        // 初步组装参数
+        val docSaveCmd = apiToCmd(projectId, moduleId, folderId, api)
+        // 查询模块下所有文档
         val docs = listDocumentByModule(token, moduleId)
+        // 计算 docDataId
         val docId = getDocDataId(folderId, moduleId, api.url, api.httpMethod)
+        // 获取到 docDataId 一致的就更新、否则直接新增即可
         docs.find {
             getDocDataId(it.parentId, moduleId, it.url, it.httpMethod) == docId
-        }?.let {
-            // 先删除
-            deleteDoc(token, it.id)
+        }?.let { tornaDoc ->
+            // 将匹配到的文档 ID 赋值于自己才能在 Torna 那边去通过 ID 更新
+            docSaveCmd.id = tornaDoc.id
+            // 查询详情，获取到其所有的字段
+            getDocDetail(token, tornaDoc.id, loginFailBack)?.let {
+                // 递归填充参数
+                recursiveFillParamCmd(
+                    docSaveCmd.requestParams,
+                    it.requestParams.filter { param -> param.parentId.isNullOrBlank() },    // parentId 为空的，就是第一级参数
+                    it.requestParams
+                )
+                recursiveFillParamCmd(
+                    docSaveCmd.responseParams,
+                    it.responseParams.filter { param -> param.parentId.isNullOrBlank() },
+                    it.responseParams
+                )
+            }
         }
+        // 保存
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val docSaveCmd = apiToCmd(projectId, moduleId, folderId, api)
         val body = doPostTorna("/doc/save", gson.toJson(docSaveCmd), token)
         val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type)
         if (tornaResult.isLoginError()) {
             loginFailBack?.let {
-                saveDoc(loginFailBack(), projectId, moduleId, folderId, api)
+                saveDoc(it(), projectId, moduleId, folderId, api)
             }
             throw LoginException(tornaResult.msg)
         }
         if (tornaResult.isError()) {
             throw DocumentException("保存文档失败：${tornaResult.msg}")
+        }
+    }
+
+    /**
+     * 递归填充参数
+     * @param saveParams 保存的入参
+     * @param tornaParams 从 Torna 查询到的文档里匹配到对应同级的参数
+     * @param tornaAllParams 从 Torna 查询到的所有字段，Torna 文档接口里的字段格式是平级的，只是靠 parentId 建立关系
+     */
+    private fun recursiveFillParamCmd(
+        saveParams: MutableList<DocParamSaveCmd>,
+        tornaParams: List<DocParamSaveCmd>?,
+        tornaAllParams: List<DocParamSaveCmd>?
+    ) {
+        saveParams.forEachIndexed { idx, paramCmd ->
+            tornaParams?.find { it == paramCmd }?.let {
+                paramCmd.id = it.id
+                paramCmd.children?.let { children ->
+                    recursiveFillParamCmd(
+                        children,
+                        tornaAllParams?.filter { tornaParam -> tornaParam.parentId == it.id },
+                        tornaAllParams
+                    )
+                }
+            }
+            // 以解析到的字段顺序为 Torna 的字段顺序
+            paramCmd.orderIndex = idx
+        }
+        // 如果 Torna 上有我们这里没有的字段，那么设置其为 deleted
+        tornaParams?.forEach { tornaParam ->
+            if (tornaParam !in saveParams) {
+                tornaParam.isDeleted = 1
+                saveParams += tornaParam
+            }
         }
     }
 
@@ -280,7 +381,7 @@ class TornaDocService {
         val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type)
         if (tornaResult.isLoginError()) {
             loginFailBack?.let {
-                deleteDoc(loginFailBack(), docId)
+                deleteDoc(it(), docId)
             }
             throw LoginException(tornaResult.msg)
         }
@@ -317,9 +418,9 @@ class TornaDocService {
         params: List<ApiParam>? = null,
         parentId: String? = null,
         style: Byte
-    ): List<DocParamSaveCmd>? {
+    ): MutableList<DocParamSaveCmd> {
         if (params == null) {
-            return null
+            return mutableListOf()
         }
         val saveParamCmds = mutableListOf<DocParamSaveCmd>()
         params.forEach {
@@ -335,7 +436,7 @@ class TornaDocService {
                 style = style,
             )
             it.children?.let { children ->
-                saveCmd.children = apiParamToDocParamSaveCmd(docId, children, "getParamId()", style)
+                saveCmd.children = apiParamToDocParamSaveCmd(docId, children, style = style)
             }
             saveParamCmds += saveCmd
         }

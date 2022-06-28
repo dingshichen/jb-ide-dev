@@ -26,7 +26,7 @@ class TornaSpaceService {
         val tornaResult: TornaResult<List<TornaSpaceDTO>> = gson.fromJson(body, object : TypeToken<TornaResult<List<TornaSpaceDTO>>>() {}.type)
         if (tornaResult.isLoginError()) {
             loginFailBack?.let {
-                return listMySpace(loginFailBack())
+                return listMySpace(it())
             }
             throw LoginException(tornaResult.msg)
         }
