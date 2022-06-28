@@ -32,51 +32,49 @@ class AnalyzeApiCouplingAction : AnAction() {
     private var eventMap: MutableMap</* 事件 */ PsiClass, /* 监听 */PsiClass> = mutableMapOf()
 
     override fun actionPerformed(e: AnActionEvent) {
-        e.project?.let { project ->
-            e.getData(CommonDataKeys.VIRTUAL_FILE)?.let { virtualFile ->
-                val consulService = project.getService(ConsulService::class.java)
-                val consul = try {
-                    consulService.getApplicationData()
-                } catch (ex: Exception) {
-                    notifyError(project, "请确认网络环境是否正确，无法获取到测试环境 consul 配置：${ex.message}")
-                    return
-                }
-                val docSetting = DocSetting.getInstance(project)
-                MssAnalyzeDialog(project).apply {
-                    if (showAndGet()) {
-                        // 记住我的选择
-                        docSetting.saveMssState(getWorker(), getProjectCode(), getToken())
-                        mutableMapOf<OwnResource, Set<UniondrugResource>>().run {
-                            // 开始分析
-                            try {
-                                analyzeApiCoupling(project, virtualFile, this)
-                            } catch (ex: Exception) {
-                                notifyError(project, "分析接口失败：${ex.message}")
-                                return@apply
-                            } finally {
-                                clearEventListener()
-                            }
-                            notifyInfo(project, "已完成接口耦合分析，正在进行 MSS 数据上报...")
-                            val mssProjectService = project.getService(MssProjectService::class.java)
-                            val mssApiService = project.getService(MssApiService::class.java)
-                            val mssService = project.getService(MssService::class.java)
-                            // 上传
-                            ApplicationManager.getApplication().executeOnPooledThread {
-                                try {
-                                    mssService.upload(
-                                        mssProjectService,
-                                        mssApiService,
-                                        consul,
-                                        getWorker(),
-                                        getProjectCode(),
-                                        getToken(),
-                                        this
-                                    )
-                                    notifyInfo(project, "MSS 数据上报完成")
-                                } catch (ex: Exception) {
-                                    notifyError(project, "MSS 数据上报失败：${ex.message}")
-                                }
-                            }
+        val project = e.project ?: return
+        val virtualFile = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
+        val consulService = project.getService(ConsulService::class.java)
+        val consul = try {
+            consulService.getApplicationData()
+        } catch (ex: Exception) {
+            notifyError(project, "请确认网络环境是否正确，无法连接测试环境 consul：${ex.message}")
+            return
+        }
+        val docSetting = DocSetting.getInstance(project)
+        MssAnalyzeDialog(project).apply {
+            if (showAndGet()) {
+                // 记住我的选择
+                docSetting.saveMssState(getWorker(), getProjectCode(), getToken())
+                mutableMapOf<OwnResource, Set<UniondrugResource>>().run {
+                    // 开始分析
+                    try {
+                        analyzeApiCoupling(project, virtualFile, this)
+                    } catch (ex: Exception) {
+                        notifyError(project, "分析接口失败：${ex.message}")
+                        return@apply
+                    } finally {
+                        clearEventListener()
+                    }
+                    notifyInfo(project, "已完成接口耦合分析，正在进行 MSS 数据上报...")
+                    val mssProjectService = project.getService(MssProjectService::class.java)
+                    val mssApiService = project.getService(MssApiService::class.java)
+                    val mssService = project.getService(MssService::class.java)
+                    // 上传
+                    ApplicationManager.getApplication().executeOnPooledThread {
+                        try {
+                            mssService.upload(
+                                mssProjectService,
+                                mssApiService,
+                                consul,
+                                getWorker(),
+                                getProjectCode(),
+                                getToken(),
+                                this
+                            )
+                            notifyInfo(project, "MSS 数据上报完成")
+                        } catch (ex: Exception) {
+                            notifyError(project, "MSS 数据上报失败：${ex.message}")
                         }
                     }
                 }
@@ -118,7 +116,7 @@ class AnalyzeApiCouplingAction : AnAction() {
                                 }
                             }
                             result[ownResource] = this
-                            analyRestMethod(project, method, this, mutableSetOf<TraceMethod>())
+                            analyRestMethod(project, method, this, mutableSetOf())
                         }
                     }
                 }

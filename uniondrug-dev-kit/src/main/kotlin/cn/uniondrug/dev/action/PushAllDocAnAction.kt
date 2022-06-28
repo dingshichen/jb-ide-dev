@@ -26,38 +26,36 @@ import com.intellij.psi.util.PsiTreeUtil
 class PushAllDocAnAction : AnAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
-        e.getData(CommonDataKeys.PROJECT)?.let { project ->
-            e.getData(CommonDataKeys.VIRTUAL_FILE)?.let { virtualFile ->
-                mutableListOf<VirtualFile>().apply {
-                    findAllFiles(virtualFile, this)
-                    if (isNotEmpty()) {
-                        PushAllDocDialog(project).run {
-                            if (showAndGet()) {
-                                val apis = mutableListOf<Api>()
-                                this@apply.forEach { childFile ->
-                                    PsiManager.getInstance(project).findFile(childFile)?.let {
-                                        PsiTreeUtil.findChildrenOfType(it, PsiClass::class.java).forEach { psiClass ->
-                                            psiClass.methods
-                                                .filter { it -> isSpringMVCMethod(it) }
-                                                .forEach { psiMethod ->
-                                                    apis += try {
-                                                        DocService.getInstance().buildApi(project, psiClass, psiMethod)
-                                                    } catch (ex: Exception) {
-                                                        notifyWarn(project, "有文档解析异常，跳过此接口 ${psiClass.name}#${psiMethod.name} ，错误信息：${ex.message}")
-                                                        return
-                                                    }
-                                                }
+        val project = e.getData(CommonDataKeys.PROJECT) ?: return
+        val virtualFile = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
+        mutableListOf<VirtualFile>().apply {
+            findAllFiles(virtualFile, this)
+            if (isNotEmpty()) {
+                PushAllDocDialog(project).run {
+                    if (showAndGet()) {
+                        val apis = mutableListOf<Api>()
+                        this@apply.forEach { childFile ->
+                            PsiManager.getInstance(project).findFile(childFile)?.let {
+                                PsiTreeUtil.findChildrenOfType(it, PsiClass::class.java).forEach { psiClass ->
+                                    psiClass.methods
+                                        .filter { it -> isSpringMVCMethod(it) }
+                                        .forEach { psiMethod ->
+                                            apis += try {
+                                                DocService.getInstance().buildApi(project, psiClass, psiMethod)
+                                            } catch (ex: Exception) {
+                                                notifyWarn(project, "有文档解析异常，跳过此接口 ${psiClass.name}#${psiMethod.name} ，错误信息：${ex.message}")
+                                                return
+                                            }
                                         }
-                                    }
                                 }
-                                notifyInfo(project, "文档解析完成，开始上传......")
-                                // 批量上传
-                                ApplicationManager.getApplication().executeOnPooledThread {
-                                    batchUpload(project, apis, this)
-                                }
-                                notifyInfo(project, "批量上传任务执行完毕")
                             }
                         }
+                        notifyInfo(project, "文档解析完成，开始上传......")
+                        // 批量上传
+                        ApplicationManager.getApplication().executeOnPooledThread {
+                            batchUpload(project, apis, this)
+                        }
+                        notifyInfo(project, "批量上传任务执行完毕")
                     }
                 }
             }
