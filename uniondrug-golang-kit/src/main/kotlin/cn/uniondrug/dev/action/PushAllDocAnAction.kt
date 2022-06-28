@@ -26,40 +26,38 @@ import com.intellij.psi.util.PsiTreeUtil
 class PushAllDocAnAction : AnAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
-        e.getData(CommonDataKeys.PROJECT)?.let { project ->
-            e.getData(CommonDataKeys.VIRTUAL_FILE)?.let { virtualFile ->
-                mutableListOf<VirtualFile>().apply {
-                    findAllFiles(virtualFile, this)
-                    if (isNotEmpty()) {
-                        PushAllDocDialog(project).run {
-                            if (showAndGet()) {
-                                val apis = mutableListOf<Api>()
-                                this@apply.forEach { childFile ->
-                                    PsiManager.getInstance(project).findFile(childFile)?.let { goFile ->
-                                        PsiTreeUtil.findChildrenOfType(goFile, GoMethodDeclaration::class.java).forEach { method ->
-                                            GolangPsiUtil.resulveFuncComment(method, goFile.children)?.let api@{
-                                                apis += try {
-                                                    DocService.getInstance().buildApiDoc(project, method, it)
-                                                } catch (ex: Exception) {
-                                                    notifyWarn(project, "有文档解析异常，跳过此接口 ${goFile.name}#${method.name} ，错误信息：${ex.message}")
-                                                    return@api
-                                                }
-                                            }
+        val project = e.getData(CommonDataKeys.PROJECT) ?: return
+        val virtualFile = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
+        mutableListOf<VirtualFile>().apply {
+            findAllFiles(virtualFile, this)
+            if (isNotEmpty()) {
+                PushAllDocDialog(project).run {
+                    if (showAndGet()) {
+                        val apis = mutableListOf<Api>()
+                        this@apply.forEach { childFile ->
+                            PsiManager.getInstance(project).findFile(childFile)?.let { goFile ->
+                                PsiTreeUtil.findChildrenOfType(goFile, GoMethodDeclaration::class.java).forEach { method ->
+                                    GolangPsiUtil.resulveFuncComment(method, goFile.children)?.let api@{
+                                        apis += try {
+                                            DocService.getInstance().buildApiDoc(project, method, it)
+                                        } catch (ex: Exception) {
+                                            notifyWarn(project, "有文档解析异常，跳过此接口 ${goFile.name}#${method.name} ，错误信息：${ex.message}")
+                                            return@api
                                         }
                                     }
                                 }
-                                if (apis.isEmpty()) {
-                                    notifyInfo(project, "解析不到可用的文档，任务结束")
-                                    return
-                                }
-                                notifyInfo(project, "文档解析完成，开始上传......")
-                                // 批量上传
-                                ApplicationManager.getApplication().executeOnPooledThread {
-                                    batchUpload(project, apis, this)
-                                }
-                                notifyInfo(project, "批量上传任务执行完毕")
                             }
                         }
+                        if (apis.isEmpty()) {
+                            notifyInfo(project, "解析不到可用的文档，任务结束")
+                            return
+                        }
+                        notifyInfo(project, "文档解析完成，开始上传......")
+                        // 批量上传
+                        ApplicationManager.getApplication().executeOnPooledThread {
+                            batchUpload(project, apis, this)
+                        }
+                        notifyInfo(project, "批量上传任务执行完毕")
                     }
                 }
             }

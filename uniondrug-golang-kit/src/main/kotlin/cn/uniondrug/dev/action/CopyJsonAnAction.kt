@@ -18,19 +18,18 @@ import java.awt.datatransfer.StringSelection
 class CopyJsonAnAction : AnAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
-        e.getData(CommonDataKeys.PROJECT)?.let { project ->
-            val psiElement = e.getData(CommonDataKeys.PSI_ELEMENT)
-            if (psiElement is GoTypeSpec) {
-                CommonPsiUtil.getMessageBody(psiElement).let { params ->
-                    buildJsonString {
-                        params.forEach { param ->
-                            putParamExample(param)
-                        }
-                    }.also { copy ->
-                        CopyPasteManager.getInstance().setContents(StringSelection(copy))
-                        WindowManager.getInstance().getStatusBar(project)?.let { statusBar ->
-                            statusBar.info = "Json text has been copied"
-                        }
+        val project = e.getData(CommonDataKeys.PROJECT) ?: return
+        val psiElement = e.getData(CommonDataKeys.PSI_ELEMENT)
+        if (psiElement is GoTypeSpec) {
+            CommonPsiUtil.getMessageBody(psiElement).let { params ->
+                buildJsonString {
+                    params.forEach { param ->
+                        putParamExample(param)
+                    }
+                }.also { copy ->
+                    CopyPasteManager.getInstance().setContents(StringSelection(copy))
+                    WindowManager.getInstance().getStatusBar(project)?.let { statusBar ->
+                        statusBar.info = "Json text has been copied"
                     }
                 }
             }

@@ -81,7 +81,7 @@ class DocService {
         val typeSpec = when(type) {
             is GoTypeDeclaration -> type.typeSpecList[0]
             is GoTypeSpec -> type
-            else -> throw DocBuildFailException("")
+            else -> throw DocBuildFailException("构建 MBS 文档失败，解析不到对应元素的类型")
         }
         return MbsEvent(
             name = goMbsStruct.nameComment?.text?.getCommentValue(typeSpec.name!!)!!,
