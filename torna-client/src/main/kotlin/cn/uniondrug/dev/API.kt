@@ -32,9 +32,7 @@ data class Api(
 ) {
 
     val fileName: String by lazy {
-        url.substring(8).run {
-            substring(indexOf("/") + 1).splitToSmallHump("/")
-        }
+        url.splitToSmallHump("/")
     }
 
     val requestBody: String by lazy {
