@@ -35,7 +35,7 @@ fun getFolder(psiClass: PsiClass) = psiClass.childrenDocComment()?.find {
  * 获取 API 名称
  */
 fun getApiName(psiMethod: PsiMethod) = psiMethod.childrenDocComment()?.find {
-    it.isCommentData()
+    it.isCommentData() && it.commentText().isNotBlank()
 }?.commentText() ?: throw DocBuildFailException("获取 API 名称失败，请检查方法注释是否存在")
 
 /**
