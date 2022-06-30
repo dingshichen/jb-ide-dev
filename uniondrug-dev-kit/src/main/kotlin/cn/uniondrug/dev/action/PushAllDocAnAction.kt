@@ -39,12 +39,12 @@ class PushAllDocAnAction : AnAction() {
                                 PsiTreeUtil.findChildrenOfType(it, PsiClass::class.java).forEach { psiClass ->
                                     psiClass.methods
                                         .filter { it -> isSpringMVCMethod(it) }
-                                        .forEach { psiMethod ->
+                                        .forEach apiForEach@{ psiMethod ->
                                             apis += try {
                                                 DocService.getInstance().buildApi(project, psiClass, psiMethod)
                                             } catch (ex: Exception) {
                                                 notifyWarn(project, "有文档解析异常，跳过此接口 ${psiClass.name}#${psiMethod.name} ，错误信息：${ex.message}")
-                                                return
+                                                return@apiForEach
                                             }
                                         }
                                 }
