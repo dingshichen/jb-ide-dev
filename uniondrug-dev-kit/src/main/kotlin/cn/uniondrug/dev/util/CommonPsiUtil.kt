@@ -24,7 +24,12 @@ fun isBaseCollection(type: PsiType): Boolean {
     return false
 }
 
-fun getFolder(psiClass: PsiClass) = psiClass.childrenDocComment()?.find { it.isCommentData() }?.commentText() ?: psiClass.name!!
+/**
+ * 获取目录的名称，先获取注释内容，没有描述的注释就获取 className
+ */
+fun getFolder(psiClass: PsiClass) = psiClass.childrenDocComment()?.find {
+    it.isCommentData() && it.commentText().isNotBlank()
+}?.commentText() ?: psiClass.name!!
 
 /**
  * 获取 API 名称
