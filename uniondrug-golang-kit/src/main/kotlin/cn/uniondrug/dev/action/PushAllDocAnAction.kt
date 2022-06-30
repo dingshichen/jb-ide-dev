@@ -40,7 +40,7 @@ class PushAllDocAnAction : AnAction() {
                                     GolangPsiUtil.resulveFuncComment(method, goFile.children)?.let api@{
                                         apis += try {
                                             DocService.getInstance().buildApiDoc(project, method, it)
-                                        } catch (ex: Exception) {
+                                        } catch (ex: Throwable) {
                                             notifyWarn(project, "有文档解析异常，跳过此接口 ${goFile.name}#${method.name} ，错误信息：${ex.message}")
                                             return@api
                                         }

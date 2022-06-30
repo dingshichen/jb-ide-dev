@@ -42,7 +42,7 @@ class PushAllDocAnAction : AnAction() {
                                         .forEach apiForEach@{ psiMethod ->
                                             apis += try {
                                                 DocService.getInstance().buildApi(project, psiClass, psiMethod)
-                                            } catch (ex: Exception) {
+                                            } catch (ex: Throwable) {
                                                 notifyWarn(project, "有文档解析异常，跳过此接口 ${psiClass.name}#${psiMethod.name} ，错误信息：${ex.message}")
                                                 return@apiForEach
                                             }
