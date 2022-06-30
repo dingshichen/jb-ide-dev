@@ -19,6 +19,8 @@ fun String.substring(startString: String, endString: String): String {
 fun String.isJavaGenericArray() = this.startsWith("List<")
         || this.startsWith("ArrayList<")
         || this.startsWith("LinkedList<")
+        || this.startsWith("Set<")
+        || this.startsWith("HashSet<")
 
 /**
  * 截出 JAVA 泛型

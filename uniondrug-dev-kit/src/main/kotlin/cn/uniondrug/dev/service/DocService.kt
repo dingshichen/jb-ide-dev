@@ -47,14 +47,18 @@ class DocService {
     /**
      * 构建 MBS 文档
      */
-    fun buildMbs(project: Project, psiClass: PsiClass, mbs: String, topic: String, tag: String, author: String?) = MbsEvent (
-        name = getMbsName(psiClass),
-        mbs = mbs,
-        topic = topic,
-        tag = tag,
-        author = author,
-        messageParams = getBody(project, psiType = PsiElementFactory.getInstance(project).createType(psiClass))
-    )
+    fun buildMbs(project: Project, psiClass: PsiClass, mbs: String, topic: String, tag: String, author: String?): MbsEvent {
+        return PsiElementFactory.getInstance(project).createType(psiClass).run {
+            MbsEvent (
+                name = getMbsName(psiClass),
+                mbs = mbs,
+                topic = topic,
+                tag = tag,
+                author = author,
+                messageParams = getBody(project, psiType = this, fieldNode = newFiledNode(this))
+            )
+        }
+    }
 
     /**
      * 导出

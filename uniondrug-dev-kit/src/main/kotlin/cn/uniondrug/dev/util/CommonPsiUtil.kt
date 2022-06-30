@@ -49,7 +49,7 @@ fun getMbsName(psiClass: PsiClass) = psiClass.childrenDocComment()?.find {
  * 获取 API 描述
  */
 fun getApiDescription(psiMethod: PsiMethod) = psiMethod.childrenDocComment()?.let {
-    val comments =  it.filter { e -> e.isCommentData() }
+    val comments = it.filter { e -> e.isCommentData() }
     if (comments.size > 1) {
         return comments[1].commentText()
     } else {
@@ -93,12 +93,20 @@ fun getFieldName(psiField: PsiField): String {
 /**
  * 从参数中获取类型
  */
-fun getRequestBody(project: Project, parameter: PsiParameter) = getBody(project, psiType = parameter.type as PsiClassType)
+fun getRequestBody(project: Project, parameter: PsiParameter) = getBody(
+    project = project,
+    psiType = parameter.type as PsiClassType,
+    fieldNode = newFiledNode(parameter.type)
+)
 
 /**
  * 从返回值解析获取返回结构体
  */
-fun getResponseBody(project: Project, returnElement: PsiTypeElement) = getBody(project, psiType = returnElement.type as PsiClassType)
+fun getResponseBody(project: Project, returnElement: PsiTypeElement) = getBody(
+    project = project,
+    psiType = returnElement.type as PsiClassType,
+    fieldNode = newFiledNode(returnElement.type)
+)
 
 /**
  * 解析 body 参数
@@ -110,7 +118,8 @@ fun getBody(
     project: Project,
     parentField: PsiField? = null,
     psiType: PsiClassType,
-    childrenFields: Array<PsiField>? = null
+    childrenFields: Array<PsiField>? = null,
+    fieldNode: FieldNode,
 ): MutableList<ApiParam> {
     val params = mutableListOf<ApiParam>()
     // 递归获取父类字段
@@ -122,7 +131,7 @@ fun getBody(
         ) {
             return@forEach
         }
-        params += getBody(project, parentField, it as PsiClassType)
+        params += getBody(project, parentField, it as PsiClassType, fieldNode = fieldNode)
     }
     val psiClass = PsiUtil.resolveClassInClassTypeOnly(psiType) ?: throw DocBuildFailException("获取请求体参数类型失败")
     // 泛型对应真实类型关系 K: 泛型 V: 真实类型的 PsiType
@@ -146,6 +155,13 @@ fun getBody(
             fieldType = paramType
         }
         val commonTypeConvertor = project.getService(CommonTypeConvertor::class.java)
+        val chirldNode = newFiledNode(fieldType)
+        if (chirldNode.existFromDownToUp(fieldNode)) {
+            // 防止无限递归
+            return@forEach
+        }
+        chirldNode.parentNode = fieldNode
+        fieldNode += chirldNode
         params += ApiParam(
             name = getFieldName(it),
             type = commonTypeConvertor.convert(fieldType.presentableText),
@@ -153,7 +169,7 @@ fun getBody(
             maxLength = getMaxLength(it),
             description = it.getFieldDescription() ?: getUniondrugFieldDescription(it, psiType),
             parentId = parentField?.name ?: "",
-            children = getChildren(project, it, fieldType, generics),
+            children = getChildren(project, it, fieldType, generics, chirldNode),
         )
     }
     return params
@@ -270,7 +286,8 @@ private fun getChildren(
     project: Project,
     psiField: PsiField,
     fieldType: PsiType,
-    generics: Map<String, PsiType>
+    generics: Map<String, PsiType>,
+    parentNode: FieldNode
 ): List<ApiParam>? {
     return if (isBaseType(fieldType) || isBaseCollection(fieldType)) {
         null
@@ -279,12 +296,12 @@ private fun getChildren(
             if (fieldType.hasParameters()) {
                 generics[fieldType.parameters[0].presentableText]?.let {
                     PsiUtil.resolveClassInClassTypeOnly(it)?.fields.let { fields ->
-                        return getBody(project, psiField, fieldType, fields)
+                        return getBody(project, psiField, fieldType, fields, parentNode)
                     }
                 }
             }
         }
-        getBody(project, psiField, fieldType as PsiClassType, tryGetCollectionGenericsType(fieldType))
+        getBody(project, psiField, fieldType as PsiClassType, tryGetCollectionGenericsType(fieldType), parentNode)
     }
 }
 
@@ -292,7 +309,7 @@ private fun getChildren(
  * 获取参数引用里的常量值
  */
 fun getLiteralValue(expression: PsiExpression): String? {
-    when(expression) {
+    when (expression) {
         is PsiReferenceExpression -> {
             val literal = expression.resolve()?.children?.find { it is PsiLiteralExpression }
             if (literal == null) {
@@ -336,4 +353,10 @@ fun getLiteralValue(expression: PsiExpression): String? {
     }
 }
 
-fun isMbsService(psiClass: PsiClass) = psiClass.qualifiedName == MBS_SERVICE_1 || psiClass.qualifiedName == MBS_SERVICE_2
+fun isMbsService(psiClass: PsiClass) =
+    psiClass.qualifiedName == MBS_SERVICE_1 || psiClass.qualifiedName == MBS_SERVICE_2
+
+fun newFiledNode(psiType: PsiType) = psiType.presentableText.run {
+    val type = if (isJavaGenericArray()) subJavaGeneric() else this
+    FieldNode(type)
+}
