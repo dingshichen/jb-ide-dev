@@ -159,14 +159,13 @@ fun getBody(
         }
         var fieldType = it.type
         // 如果能获取到对应的真实类型，说明是范型
-        val paramType = generics[fieldType.presentableText]
-        paramType?.let {
-            if ("?" == paramType.presentableText) {
+        generics[fieldType.presentableText]?.let { pt ->
+            if ("?" == pt.presentableText) {
                 // 如果是通配符，说明没有此范型所在字段是没有定义的，跳过
                 return@forEach
             }
             // 替换成真实类型
-            fieldType = paramType
+            fieldType = pt
         }
         val commonTypeConvertor = project.getService(CommonTypeConvertor::class.java)
         val chirldNode = newFiledNode(fieldType)
@@ -192,13 +191,14 @@ fun getBody(
 /**
  * 如果类型是 List<T> Set<T>
  */
-private fun tryGetCollectionGenericsType(psiType: PsiType): Array<PsiField>? {
-    if (psiType.presentableText.startsWith("List<")
-        || psiType.presentableText.startsWith("Set<")
-    ) {
+private fun tryGetCollectionGenericsType(psiType: PsiType, ignores: MutableList<String>): Array<PsiField>? {
+    if (psiType.presentableText.isJavaGenericArray()) {
         if (psiType is PsiClassType) {
             psiType.parameters.first {
-                return PsiUtil.resolveClassInClassTypeOnly(it)?.allFields
+                return PsiUtil.resolveClassInClassTypeOnly(it)?.let { psiClass ->
+                    ignores += psiClass.getAnnotationValues(ANNOTATION_JSON_IGNORE_PROPERTIES)
+                    psiClass.allFields
+                }
             }
         }
     }
@@ -287,8 +287,12 @@ private fun getGenericsType(psiClass: PsiClass, psiType: PsiClassType): Map<Stri
     val generics: MutableMap<String, PsiType> = mutableMapOf()
     val typeParameters = psiClass.typeParameters
     val parameters = psiType.parameters
-    for (i in typeParameters.indices) {
-        generics[typeParameters[i].name!!] = parameters[i]
+    typeParameters.forEachIndexed { i, psiTypeParameter ->
+        if (parameters.size - 1 >= i) {
+            psiTypeParameter.name?.let {
+                generics[it] = parameters[i]
+            }
+        }
     }
     return generics
 }
@@ -318,7 +322,8 @@ private fun getChildren(
                 }
             }
         }
-        getBody(project, psiField, fieldType as PsiClassType, tryGetCollectionGenericsType(fieldType), parentNode, ignores)
+        val childrenFields = tryGetCollectionGenericsType(fieldType, ignores)
+        getBody(project, psiField, fieldType as PsiClassType, childrenFields, parentNode, ignores)
     }
 }
 
