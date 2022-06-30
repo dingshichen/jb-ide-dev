@@ -57,7 +57,6 @@ class PushAllDocAnAction : AnAction() {
                         ApplicationManager.getApplication().executeOnPooledThread {
                             batchUpload(project, apis, this)
                         }
-                        notifyInfo(project, "批量上传任务执行完毕")
                     }
                 }
             }
@@ -101,6 +100,7 @@ class PushAllDocAnAction : AnAction() {
                     ?.let { f -> tornaDocService.saveDoc(token, projectId, moduleId, f.id, api) }
                 notifyInfo(project, "文档 ${api.name} 上传成功")
             }
+            notifyInfo(project, "批量上传任务执行完毕")
         } catch (ex: Exception) {
             notifyError(project, "有文档上传失败，批量上传异常终止：${ex.message}")
             throw ex
