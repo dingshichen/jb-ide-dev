@@ -4,6 +4,7 @@ package cn.uniondrug.dev.util
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiJavaDocumentedElement
+import com.intellij.psi.PsiJvmModifiersOwner
 
 /**
  * 元素是否是注释内容
@@ -24,3 +25,18 @@ fun PsiJavaDocumentedElement.childrenDocComment(): Array<PsiElement>? = docComme
  * 获取属性的描述
  */
 fun PsiField.getFieldDescription() = childrenDocComment()?.filter { it.isCommentData() }?.joinToString("<br>") { it.commentText() }
+
+/**
+ * 获取注释值
+ */
+fun PsiJvmModifiersOwner.getAnnotationValues(annotation: String): List<String> {
+    return getAnnotation(annotation)?.findAttributeValue("value")?.run {
+        text.replace("\n", "")
+            .replace("\t", "")
+            .replace("{", "")
+            .replace("}", "")
+            .replace("\"", "")
+            .replace(" ", "")
+            .split(",")
+    } ?: emptyList()
+}

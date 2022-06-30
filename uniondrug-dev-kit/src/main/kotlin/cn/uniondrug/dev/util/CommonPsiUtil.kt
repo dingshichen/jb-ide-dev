@@ -93,26 +93,32 @@ fun getFieldName(psiField: PsiField): String {
 /**
  * 从参数中获取类型
  */
-fun getRequestBody(project: Project, parameter: PsiParameter) = getBody(
-    project = project,
-    psiType = parameter.type as PsiClassType,
-    fieldNode = newFiledNode(parameter.type)
-)
+fun getRequestBody(project: Project, parameter: PsiParameter) = parameter.type.run {
+    getBody(
+        project = project,
+        psiType = this as PsiClassType,
+        fieldNode = newFiledNode(this),
+    )
+}
 
 /**
  * 从返回值解析获取返回结构体
  */
-fun getResponseBody(project: Project, returnElement: PsiTypeElement) = getBody(
-    project = project,
-    psiType = returnElement.type as PsiClassType,
-    fieldNode = newFiledNode(returnElement.type)
-)
+fun getResponseBody(project: Project, returnElement: PsiTypeElement) = returnElement.type.run {
+    getBody(
+        project = project,
+        psiType = this as PsiClassType,
+        fieldNode = newFiledNode(this),
+    )
+}
 
 /**
  * 解析 body 参数
  * @param parentField 父节点属性名
  * @param psiType 当前属性类型
  * @param childrenFields 指定子节点名
+ * @param fieldNode 父级节点
+ * @param ignoreFieldNames 忽略的字段名集合
  */
 fun getBody(
     project: Project,
@@ -120,18 +126,26 @@ fun getBody(
     psiType: PsiClassType,
     childrenFields: Array<PsiField>? = null,
     fieldNode: FieldNode,
+    ignoreFieldNames: MutableList<String> = mutableListOf(),
 ): MutableList<ApiParam> {
+    // 获取到类上的忽略序列化注解
+    psiType.resolve()?.getAnnotationValues(ANNOTATION_JSON_IGNORE_PROPERTIES)?.let {
+        ignoreFieldNames += it
+    }
     val params = mutableListOf<ApiParam>()
     // 递归获取父类字段
     psiType.superTypes.forEach {
-        if (it.canonicalText == "java.lang.Object"
-            || it.canonicalText == "java.io.Serializable"
-            || it.canonicalText.startsWith("java.util.Collection")
-            || it.canonicalText.startsWith("java.lang.Iterable")
-        ) {
-            return@forEach
+        if (it is PsiClassType) {
+            if (it.canonicalText == "java.lang.Object"
+                || it.canonicalText == "java.io.Serializable"
+                || it.canonicalText.startsWith("java.util.Collection")
+                || it.canonicalText.startsWith("java.lang.Iterable")
+            ) {
+                return@forEach
+            }
+            // 将父类的忽略字段一起加入
+            params += getBody(project, parentField, it, fieldNode = fieldNode, ignoreFieldNames = ignoreFieldNames)
         }
-        params += getBody(project, parentField, it as PsiClassType, fieldNode = fieldNode)
     }
     val psiClass = PsiUtil.resolveClassInClassTypeOnly(psiType) ?: throw DocBuildFailException("获取请求体参数类型失败")
     // 泛型对应真实类型关系 K: 泛型 V: 真实类型的 PsiType
@@ -139,8 +153,8 @@ fun getBody(
     // 没有给出属性字段，则解析类型里的属性
     val fields = childrenFields ?: psiClass.fields
     fields.forEach {
-        if (it.name == "serialVersionUID") {
-            // 序列化 ID 字段，跳过
+        if (it.name == "serialVersionUID" || it.name in ignoreFieldNames) {
+            // 序列化 ID || 忽略序列化
             return@forEach
         }
         var fieldType = it.type
@@ -287,21 +301,24 @@ private fun getChildren(
     psiField: PsiField,
     fieldType: PsiType,
     generics: Map<String, PsiType>,
-    parentNode: FieldNode
+    parentNode: FieldNode,
 ): List<ApiParam>? {
     return if (isBaseType(fieldType) || isBaseCollection(fieldType)) {
         null
     } else {
+        // 属性上可能有忽略注解
+        val ignores = mutableListOf<String>()
+        ignores += psiField.getAnnotationValues(ANNOTATION_JSON_IGNORE_PROPERTIES)
         if (fieldType is PsiClassType) {
             if (fieldType.hasParameters()) {
                 generics[fieldType.parameters[0].presentableText]?.let {
                     PsiUtil.resolveClassInClassTypeOnly(it)?.fields.let { fields ->
-                        return getBody(project, psiField, fieldType, fields, parentNode)
+                        return getBody(project, psiField, fieldType, fields, parentNode, ignores)
                     }
                 }
             }
         }
-        getBody(project, psiField, fieldType as PsiClassType, tryGetCollectionGenericsType(fieldType), parentNode)
+        getBody(project, psiField, fieldType as PsiClassType, tryGetCollectionGenericsType(fieldType), parentNode, ignores)
     }
 }
 

@@ -187,16 +187,10 @@ fun getExample(param: ApiParam): Any {
             val end = param.type.value.indexOf("]")
             val sampleType = param.type.value.substring(begin + 1, end)
             arrayJsonOf(
-                BaseDataTypeMockUtil.getValByTypeAndFieldName(sampleType, param.name),
                 BaseDataTypeMockUtil.getValByTypeAndFieldName(sampleType, param.name)
             )
         }
         CommonType.ARRAY_OBJECT -> arrayJsonOf(
-            jsonObject {
-                param.children?.forEach {
-                    this[it.name] = getExample(it)
-                }
-            },
             jsonObject {
                 param.children?.forEach {
                     this[it.name] = getExample(it)

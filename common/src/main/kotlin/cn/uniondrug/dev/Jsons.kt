@@ -5,6 +5,9 @@ import com.alibaba.fastjson.JSONArray
 import com.alibaba.fastjson.JSONObject
 import com.alibaba.fastjson.serializer.SerializerFeature
 
+// 忽略序列化 JSON 注解
+const val ANNOTATION_JSON_IGNORE_PROPERTIES = "com.fasterxml.jackson.annotation.JsonIgnoreProperties"
+
 /**
  * 构建一个 JSONArray
  */
