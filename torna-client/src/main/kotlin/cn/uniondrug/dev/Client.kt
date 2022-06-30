@@ -51,13 +51,13 @@ fun doPostTorna(path: String, body: String, token: String? = null): String {
         .uri(URI.create("$UNIONDRUG_TORNA_URL$path"))
         .header("Content-Type", "application/json")
         .POST(HttpRequest.BodyPublishers.ofString(body))
-        .timeout(Duration.ofSeconds(2L))
+        .timeout(Duration.ofSeconds(8L))
     token?.let {
         builder.header("Authorization", "Bearer $token")
     }
     val client = HttpClient.newBuilder()
         .version(HttpClient.Version.HTTP_1_1)
-        .connectTimeout(Duration.ofSeconds(2L))
+        .connectTimeout(Duration.ofSeconds(8L))
         .build()
     val response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString())
     return response.body()
