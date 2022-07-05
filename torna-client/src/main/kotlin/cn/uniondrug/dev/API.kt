@@ -107,6 +107,11 @@ data class ApiParam(
         get() {
             return if (type.isBaseType) getExample(this).toString() else ""
         }
+
+    val requiredText: String
+        get() {
+            return if (required) "true" else ""
+        }
 }
 
 /**
@@ -201,7 +206,7 @@ fun getExample(param: ApiParam): Any {
 }
 
 private fun StringBuilder.requestAppend(prefix: String, param: ApiParam) {
-    append("| $prefix${param.name} | ${param.type.value} | ${param.required} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
+    append("| $prefix${param.name} | ${param.type.value} | ${param.requiredText} | ${param.maxLength ?: ""} | ${param.description ?: ""} | \n")
     param.children?.forEach {
         requestAppend(if (prefix == "") "└─" else "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$prefix",
             it
