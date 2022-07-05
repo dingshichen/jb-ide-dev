@@ -21,7 +21,7 @@ fun String.getCommentValue(commentKey: String): String {
  * 驼峰转路径
  */
 fun String.humpToPath() = buildString {
-    for (char in this) {
+    for (char in this@humpToPath) {
         if (char.isUpperCase()) {
             append("/").append(char.lowercaseChar())
         } else {

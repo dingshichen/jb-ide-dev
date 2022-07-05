@@ -3,6 +3,7 @@ package cn.uniondrug.dev.service
 import cn.uniondrug.dev.Api
 import cn.uniondrug.dev.DocBuildFailException
 import cn.uniondrug.dev.MbsEvent
+import cn.uniondrug.dev.dto.ApiBaseAccess
 import cn.uniondrug.dev.dto.GoApiStruct
 import cn.uniondrug.dev.dto.GoMbsStruct
 import cn.uniondrug.dev.notifier.notifyError
@@ -115,9 +116,4 @@ class DocService {
         fun getInstance(): DocService = ApplicationManager.getApplication().getService(DocService::class.java)
     }
 
-    data class ApiBaseAccess(
-        val url: String,
-        val httpMethod: String,
-        val contentType: String,
-    )
 }

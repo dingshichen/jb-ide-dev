@@ -50,3 +50,12 @@ data class GoMbsStruct(
             && tagComment != null
 
 }
+
+/**
+ * 接口基本协议
+ */
+data class ApiBaseAccess(
+    val url: String,
+    val httpMethod: String,
+    val contentType: String,
+)
