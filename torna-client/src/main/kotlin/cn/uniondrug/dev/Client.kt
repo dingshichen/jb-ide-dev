@@ -7,9 +7,14 @@ import java.net.http.HttpResponse
 import java.time.Duration
 
 /**
- * 固定 torna 域名
+ * 固定 torna Web 域名
  */
-const val UNIONDRUG_TORNA_URL = "https://ud-torna.uniondrug.cn"
+const val TORNA_WEB = "https://torna.uniondrug.cn"
+
+/**
+ * 固定 torna 服务端域名
+ */
+const val TORNA_SERVER = "https://ud-torna.uniondrug.cn"
 
 /**
  * 接口值包装结构
@@ -30,7 +35,7 @@ data class TornaResult<T>(
  */
 fun doGetTorna(path: String, token: String): String {
     val request = HttpRequest.newBuilder()
-        .uri(URI.create("$UNIONDRUG_TORNA_URL$path"))
+        .uri(URI.create("$TORNA_SERVER$path"))
         .GET()
         .header("Authorization", "Bearer $token")
         .timeout(Duration.ofSeconds(2L))
@@ -48,7 +53,7 @@ fun doGetTorna(path: String, token: String): String {
  */
 fun doPostTorna(path: String, body: String, token: String? = null): String {
     val builder = HttpRequest.newBuilder()
-        .uri(URI.create("$UNIONDRUG_TORNA_URL$path"))
+        .uri(URI.create("$TORNA_SERVER$path"))
         .header("Content-Type", "application/json")
         .POST(HttpRequest.BodyPublishers.ofString(body))
         .timeout(Duration.ofSeconds(8L))

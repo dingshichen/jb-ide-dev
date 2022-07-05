@@ -472,6 +472,6 @@ class TornaDocService {
     /**
      * 获取文档视图 URL
      */
-    fun getDocViewUrl(docId: String) = "$UNIONDRUG_TORNA_URL/#/view/$docId"
+    fun getDocViewUrl(docId: String) = "$TORNA_WEB/#/view/$docId"
 
 }
