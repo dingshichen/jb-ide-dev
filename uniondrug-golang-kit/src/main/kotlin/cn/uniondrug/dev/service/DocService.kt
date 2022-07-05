@@ -50,13 +50,13 @@ class DocService {
         } ?: goApiStruct.nameComment?.let {
             if (it.text.startsWith("// Get")) {
                 ApiBaseAccess(
-                    url = it.text.substring(6).humpToPath(),
+                    url = it.text.substring(6).split(" ")[0].humpToPath(),
                     httpMethod = "Get",
                     contentType = "application/x-www-form-urlencoded",
                 )
             } else if (it.text.startsWith("// Post")) {
                 ApiBaseAccess(
-                    url = it.text.substring(7).humpToPath(),
+                    url = it.text.substring(7).split(" ")[0].humpToPath(),
                     httpMethod = "POST",
                     contentType = "application/json",
                 )
@@ -65,7 +65,7 @@ class DocService {
         return Api(
             folder = method.receiverType?.presentationText?.replace("*", "") ?: "",
             name = goApiStruct.nameComment?.text?.getCommentValue(methodName) ?: throw DocBuildFailException("分析接口名称失败，请检查接口定义"),
-            description = goApiStruct.descComment.joinToString { it.text.replace("// ", "") },
+            description = goApiStruct.descComment.reversed().joinToString("") { it.text.replace("// ", "") },
             author = goApiStruct.authorComment?.text?.getCommentValue("Author") ?: "",
             deprecated = goApiStruct.deprecatedComment?.text?.getCommentValue("Deprecated"),
             url = url,
@@ -73,7 +73,7 @@ class DocService {
             contentType = contentType,
             requestParams = CommonPsiUtil.getRequestBody(project, goApiStruct.requestComment ?: throw DocBuildFailException("分析入参失败，请检查接口定义")),
             responseParams = CommonPsiUtil.getResponseBody(project, goApiStruct.responseComment),
-            errorParams = CommonPsiUtil.getErrnos(goApiStruct.errorComment)
+            errorParams = CommonPsiUtil.getErrnos(goApiStruct.errorComment.reversed())
         )
     }
 
