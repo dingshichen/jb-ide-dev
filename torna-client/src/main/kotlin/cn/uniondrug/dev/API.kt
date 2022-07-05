@@ -29,6 +29,8 @@ data class Api(
     var requestParams: List<ApiParam>?,
     /** 响应返回值入参 */
     var responseParams: List<ApiParam>?,
+    /** 错误状态码 */
+    var errorParams: List<ApiErrno>?,
 ) {
 
     val fileName: String by lazy {
@@ -69,6 +71,15 @@ data class Api(
         }
     }
 
+    val errors: String by lazy {
+        buildString {
+            append("|错误码|错误描述|解决方案|\n|:-----|:-----|:-----|\n")
+            errorParams?.forEach {
+                append("| ${it.errno} | ${it.error} | ${it.remark} | \n")
+            }
+        }
+    }
+
     val markdownText: String by lazy {
         "**$name**\n\n" +
                 "**URL:** `$url`\n\n" +
@@ -79,7 +90,8 @@ data class Api(
                 "**Body-parameters:**\n\n$requestBody\n\n" +
                 "**Request-example:**\n```json\n$requestExample\n```\n\n" +
                 "**Response-fields:**\n\n$responseBody\n\n" +
-                "**Response-example:**\n```json\n$responseExample\n```\n\n"
+                "**Response-example:**\n```json\n$responseExample\n```\n\n" +
+                "**Errors:**\n\n$errors\n\n"
     }
 
 }
@@ -113,6 +125,18 @@ data class ApiParam(
             return if (required) "true" else ""
         }
 }
+
+/**
+ * API 错误码
+ */
+data class ApiErrno(
+    /** 错误码 */
+    val errno: String,
+    /** 错误描述 */
+    val error: String,
+    /** 解决方案 */
+    val remark: String,
+)
 
 /**
  * MBS 事件结构

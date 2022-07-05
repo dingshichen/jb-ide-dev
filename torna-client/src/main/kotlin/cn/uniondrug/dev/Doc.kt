@@ -29,6 +29,7 @@ data class TornaDocDTO(
     val modifierName: String,
     val requestParams: MutableList<DocParamSaveCmd>,
     val responseParams: MutableList<DocParamSaveCmd>,
+    val errorCodeParams: MutableList<DocParamSaveCmd>,
 ) {
 
     /**
@@ -140,6 +141,7 @@ data class DocInfoSaveCmd(
     val projectId: String,
     val requestParams: MutableList<DocParamSaveCmd>,
     val responseParams: MutableList<DocParamSaveCmd>,
+    val errorCodeParams: MutableList<DocParamSaveCmd>,
 ) {
     var id: String? = null
     val type = 0
@@ -178,7 +180,6 @@ data class DocInfoSaveCmd(
     val pathParams: List<DocParamSaveCmd>? = null
     val headerParams: List<DocParamSaveCmd>? = null
     val queryParams: List<DocParamSaveCmd>? = null
-    val errorCodeParams: List<DocParamSaveCmd>? = null
     val globalHeaders: List<DocParamSaveCmd>? = null
     val globalParams: List<DocParamSaveCmd>? = null
     val globalReturns: List<DocParamSaveCmd>? = null
@@ -317,6 +318,11 @@ class TornaDocService {
                     it.responseParams.filter { param -> param.parentId.isNullOrBlank() },
                     it.responseParams
                 )
+                recursiveFillParamCmd(
+                    docSaveCmd.errorCodeParams,
+                    it.errorCodeParams,
+                    it.errorCodeParams
+                )
             }
         }
         // 保存
@@ -402,6 +408,7 @@ class TornaDocService {
             projectId = projectId,
             requestParams = apiParamToDocParamSaveCmd(docId, api.requestParams, style = 1),
             responseParams = apiParamToDocParamSaveCmd(docId, api.responseParams, style = 2),
+            errorCodeParams = apiErrorsToDocParamSaveCmd(docId, api.errorParams, style = 3),
         )
     }
 
@@ -439,6 +446,27 @@ class TornaDocService {
             saveParamCmds += saveCmd
         }
         return saveParamCmds
+    }
+
+    private fun apiErrorsToDocParamSaveCmd(
+        docId: String,
+        errorParams: List<ApiErrno>?,
+        style: Byte
+    ): MutableList<DocParamSaveCmd> {
+        if (errorParams == null) {
+            return mutableListOf()
+        }
+        return errorParams.map {
+            DocParamSaveCmd(
+                name = it.errno,
+                type = "string",
+                example = it.remark,
+                required = 1,
+                description = it.error,
+                docId = docId,
+                style = style,
+            )
+        }.toMutableList()
     }
 
     /**

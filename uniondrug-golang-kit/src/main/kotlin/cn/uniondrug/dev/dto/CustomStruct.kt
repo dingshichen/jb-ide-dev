@@ -9,7 +9,6 @@ import com.intellij.psi.PsiComment
 data class GoApiStruct(
     var nameComment: PsiComment? = null,
     var authorComment: PsiComment? = null,
-    var descComment: PsiComment? = null,
     var deprecatedComment: PsiComment? = null,
     var getComment: PsiComment? = null,
     var postComment: PsiComment? = null,
@@ -17,6 +16,8 @@ data class GoApiStruct(
     var responseComment: PsiComment? = null,
     val errorComment: ArrayList<PsiComment> = ArrayList(),
 ) {
+
+    val descComment = mutableListOf<PsiComment>()
 
     /**
      * 接口有效判断
@@ -27,6 +28,10 @@ data class GoApiStruct(
             || postComment != null
             || nameComment!!.text.startsWith("// Post")
             || nameComment!!.text.startsWith("// Get"))
+
+    fun addDescComment(psiComment: PsiComment) {
+        descComment += psiComment
+    }
 
 }
 

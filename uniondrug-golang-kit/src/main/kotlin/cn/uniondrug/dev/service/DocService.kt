@@ -34,15 +34,16 @@ class DocService {
      * 构建 API DTO
      */
     fun buildApiDoc(project: Project, method: GoMethodDeclaration, goApiStruct: GoApiStruct): Api {
+        val methodName = method.name ?: throw DocBuildFailException("分析接口方法名失败")
         val (url, httpMethod, contentType) = goApiStruct.getComment?.let {
             ApiBaseAccess(
-                url = it.text.getCommentValue("Get"),
+                url = it.text.getCommentValue("@Get"),
                 httpMethod = "GET",
                 contentType = "application/x-www-form-urlencoded",
             )
         } ?: goApiStruct.postComment?.let {
             ApiBaseAccess(
-                url = it.text.getCommentValue("Post"),
+                url = it.text.getCommentValue("@Post"),
                 httpMethod = "POST",
                 contentType = "application/json",
             )
@@ -59,19 +60,20 @@ class DocService {
                     httpMethod = "POST",
                     contentType = "application/json",
                 )
-            } else throw DocBuildFailException("分析接口基本协议错误，请检查接口定义")
+            } else null
         } ?: throw DocBuildFailException("分析接口基本协议错误，请检查接口定义")
         return Api(
             folder = method.receiverType?.presentationText?.replace("*", "") ?: "",
-            name = goApiStruct.nameComment?.text?.getCommentValue(method.name!!)!!,
-            description = goApiStruct.descComment?.text?.getCommentValue("Desc") ?: "",
+            name = goApiStruct.nameComment?.text?.getCommentValue(methodName) ?: throw DocBuildFailException("分析接口名称失败，请检查接口定义"),
+            description = goApiStruct.descComment.joinToString { it.text.replace("// ", "") },
             author = goApiStruct.authorComment?.text?.getCommentValue("Author") ?: "",
             deprecated = goApiStruct.deprecatedComment?.text?.getCommentValue("Deprecated"),
             url = url,
             httpMethod = httpMethod,
             contentType = contentType,
-            requestParams = CommonPsiUtil.getRequestBody(project, goApiStruct.requestComment!!),
+            requestParams = CommonPsiUtil.getRequestBody(project, goApiStruct.requestComment ?: throw DocBuildFailException("分析入参失败，请检查接口定义")),
             responseParams = CommonPsiUtil.getResponseBody(project, goApiStruct.responseComment),
+            errorParams = CommonPsiUtil.getErrnos(goApiStruct.errorComment)
         )
     }
 

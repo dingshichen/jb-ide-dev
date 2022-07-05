@@ -1,9 +1,6 @@
 package cn.uniondrug.dev.util
 
-import cn.uniondrug.dev.ApiParam
-import cn.uniondrug.dev.CommonType
-import cn.uniondrug.dev.CommonTypeConvertor
-import cn.uniondrug.dev.DocBuildFailException
+import cn.uniondrug.dev.*
 import com.goide.psi.*
 import com.goide.psi.impl.GoArrayOrSliceTypeImpl
 import com.goide.psi.impl.GoTypeUtil
@@ -100,6 +97,16 @@ object CommonPsiUtil {
             else -> throw DocBuildFailException("解析消息体异常，如需帮助请联系开发者")
         }
         return params
+    }
+
+    /**
+     * 获取错误码
+     */
+    fun getErrnos(errorComment: List<PsiComment>): List<ApiErrno> = errorComment.map {
+        it.text.split(" ").run {
+            if (this.size < 4) throw DocBuildFailException("解析错误码错误，请核对错误码是否定义如下：// @Error 1001 系统错误")
+            ApiErrno(this[2], this[3], if (this.size >= 5) this[4] else "")
+        }
     }
 
     private fun getBody(

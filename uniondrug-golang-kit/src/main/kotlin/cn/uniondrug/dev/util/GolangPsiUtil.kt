@@ -78,40 +78,40 @@ object GolangPsiUtil {
             when (val comment = psiElements[before]) {
                 is PsiComment -> {
                     when {
-                        comment.text.startsWith("// ${method.name}") -> {
+                        comment.text.startsWith("// ${method.name} ") -> {
                             commentStruct.nameComment = comment
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// Get") -> {
-                            commentStruct.getComment = comment
-                            resolve(commentStruct, before)
-                        }
-                        comment.text.startsWith("// Post") -> {
-                            commentStruct.postComment = comment
-                            resolve(commentStruct, before)
-                        }
-                        comment.text.startsWith("// Desc") -> {
-                            commentStruct.descComment = comment
-                            resolve(commentStruct, before)
-                        }
-                        comment.text.startsWith("// Author") -> {
-                            commentStruct.authorComment = comment
-                            resolve(commentStruct, before)
-                        }
-                        comment.text.startsWith("// Deprecated") -> {
+                        comment.text.startsWith("// Deprecated ") -> {
                             commentStruct.deprecatedComment = comment
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// Request") -> {
+                        comment.text.startsWith("// @Get ") -> {
+                            commentStruct.getComment = comment
+                            resolve(commentStruct, before)
+                        }
+                        comment.text.startsWith("// @Post ") -> {
+                            commentStruct.postComment = comment
+                            resolve(commentStruct, before)
+                        }
+                        comment.text.startsWith("// @Author ") -> {
+                            commentStruct.authorComment = comment
+                            resolve(commentStruct, before)
+                        }
+                        comment.text.startsWith("// @Request ") -> {
                             commentStruct.requestComment = comment
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// Response") -> {
+                        comment.text.startsWith("// @Response ") -> {
                             commentStruct.responseComment = comment
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// Error") -> {
+                        comment.text.startsWith("// @Error ") -> {
                             commentStruct.errorComment += comment
+                            resolve(commentStruct, before)
+                        }
+                        else -> {
+                            commentStruct.addDescComment(comment)
                             resolve(commentStruct, before)
                         }
                     }
@@ -161,19 +161,19 @@ object GolangPsiUtil {
                             commentStruct.nameComment = comment
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// Mbs") -> {
+                        comment.text.startsWith("// @Mbs") -> {
                             commentStruct.mbsComment = comment
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// Topic") -> {
+                        comment.text.startsWith("// @Topic") -> {
                             commentStruct.topicComment = comment
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// Tag") -> {
+                        comment.text.startsWith("// @Tag") -> {
                             commentStruct.tagComment = comment
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// Author") -> {
+                        comment.text.startsWith("// @Author") -> {
                             commentStruct.authorComment = comment
                             resolve(commentStruct, before)
                         }
