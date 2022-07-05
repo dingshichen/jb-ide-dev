@@ -53,7 +53,11 @@ object CommonPsiUtil {
      * 获取 RequestBoy
      */
     fun getRequestBody(project: Project, psiComment: PsiComment): ArrayList<ApiParam> {
-        return getBody(project, psiComment, getPackageName(psiComment))
+        return getBody(project,
+            psiComment,
+            getPackageName(psiComment),
+            fieldNode = newFieldNode(psiComment)
+        )
     }
 
     /**
@@ -66,19 +70,19 @@ object CommonPsiUtil {
         return when (psiComment.text.getCommentKey()) {
             "ResponseList" -> {
                 val result = getResultList()
-                val body = getBody(project, psiComment, getPackageName(psiComment), result[3])
+                val body = getBody(project, psiComment, getPackageName(psiComment), result[3], newFieldNode(psiComment))
                 result[3].children = body
                 result
             }
             "ResponsePaging" -> {
                 val result = getResultPagingBody()
-                val body = getBody(project, psiComment, getPackageName(psiComment), result[3].children!![0])
+                val body = getBody(project, psiComment, getPackageName(psiComment), result[3].children!![0], newFieldNode(psiComment))
                 result[3].children!![0].children = body
                 result
             }
             else -> {
                 val result = getResultData()
-                val body = getBody(project, psiComment, getPackageName(psiComment), result[3])
+                val body = getBody(project, psiComment, getPackageName(psiComment), result[3], newFieldNode(psiComment))
                 result[3].children = body
                 result
             }
@@ -92,7 +96,10 @@ object CommonPsiUtil {
         val params = ArrayList<ApiParam>()
         when (val struct = goTypeSpec.specType.type) {
             is GoStructType -> {
-                struct.fieldDeclarationList.forEach { buildDocParam(field = it, params = params) }
+                struct.fieldDeclarationList.forEach {
+                    // 获取权限定名
+                    buildDocParam(field = it, params = params, parentNode = FieldNode(goTypeSpec.qualifiedName!!))
+                }
             }
             else -> throw DocBuildFailException("解析消息体异常，如需帮助请联系开发者")
         }
@@ -114,6 +121,7 @@ object CommonPsiUtil {
         psiComment: PsiComment,
         packageName: String,
         parent: ApiParam? = null,
+        fieldNode: FieldNode,
     ): ArrayList<ApiParam> {
         val structName = getStructName(psiComment)
         val goTypeSpecs = GoTypesIndex.find(structName, project, null, null)
@@ -127,7 +135,7 @@ object CommonPsiUtil {
                             continue
                         }
                     }
-                    struct.fieldDeclarationList.forEach { buildDocParam(parent?.name, it, params) }
+                    struct.fieldDeclarationList.forEach { buildDocParam(parent?.name, it, params, fieldNode) }
                 }
             }
         }
@@ -151,14 +159,26 @@ object CommonPsiUtil {
     /**
      * 构建参数
      */
-    private fun buildDocParam(parent: String? = null, field: GoFieldDeclaration, params: ArrayList<ApiParam>) {
+    private fun buildDocParam(
+        parent: String? = null,
+        field: GoFieldDeclaration,
+        params: ArrayList<ApiParam>,
+        parentNode: FieldNode
+    ) {
         val commonTypeConvertor = field.project.getService(CommonTypeConvertor::class.java)
         field.type?.let {
             field.tag?.let { tag ->
+                // 从背后真实的类型转换 TODO 获取加包目录的全权限定名
+                val typeText = GolangPsiUtil.getRealTypeOrSelf(it).contextlessUnderlyingType.presentationText
+                val fieldNode = FieldNode(typeText)
+                if (fieldNode.existFromDownToUp(parentNode)) {
+                    // 防止无限递归
+                    return
+                }
+                parentNode += fieldNode
                 val param = ApiParam(
                     name = GolangPsiUtil.getFieldJsonName(field) ?: throw DocBuildFailException("获取参数属性 json 名称失败"),
-                    // 从背后真实的类型转换
-                    type = commonTypeConvertor.convert(GolangPsiUtil.getRealTypeOrSelf(it).contextlessUnderlyingType.presentationText),
+                    type = commonTypeConvertor.convert(typeText),
                     required = GolangPsiUtil.isRequired(tag),
                     maxLength = GolangPsiUtil.getMaxLength(tag),
                     parentId = parent,
@@ -166,11 +186,11 @@ object CommonPsiUtil {
                 )
                 when (param.type) {
                     CommonType.OBJECT -> {
-                        findChildrenFieldDeclaration(param, it, it.context)
+                        findChildrenFieldDeclaration(param, it, it.context, fieldNode)
                     }
                     CommonType.ARRAY_OBJECT -> {
                         if (it is GoArrayOrSliceTypeImpl) {
-                            findChildrenFieldDeclaration(param, it.type, it.type.context)
+                            findChildrenFieldDeclaration(param, it.type, it.type.context, fieldNode)
                         }
                     }
                     else -> {}
@@ -180,14 +200,21 @@ object CommonPsiUtil {
         }
     }
 
-    private fun findChildrenFieldDeclaration(param: ApiParam, goType: GoType, context: PsiElement?) {
+    private fun findChildrenFieldDeclaration(
+        param: ApiParam,
+        goType: GoType,
+        context: PsiElement?,
+        fieldNode: FieldNode
+    ) {
         val children = arrayListOf<ApiParam>()
         val typeSpec = GoTypeUtil.findTypeSpec(GolangPsiUtil.getRealTypeOrSelf(goType), context)
         when (val struct = typeSpec.specType.type) {
             is GoStructType -> {
-                struct.fieldDeclarationList.forEach { buildDocParam(param.name, it, children) }
+                struct.fieldDeclarationList.forEach { buildDocParam(param.name, it, children, fieldNode) }
                 param.children = children
             }
         }
     }
+
+    private fun newFieldNode(psiComment: PsiComment) = FieldNode(psiComment.text.split(" ")[2])
 }
