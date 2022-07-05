@@ -29,37 +29,37 @@ import java.io.IOException
  */
 class DocService {
 
-    companion object {
-
-        fun getInstance(): DocService = ApplicationManager.getApplication().getService(DocService::class.java)
-    }
-
     /**
      * 构建 API DTO
      */
     fun buildApiDoc(project: Project, method: GoMethodDeclaration, goApiStruct: GoApiStruct): Api {
-        var url = ""
-        var httpMethod = ""
-        var contentType = ""
-        goApiStruct.getComment?.let {
-            url = it.text.getCommentValue("Get")
-            httpMethod = "GET"
-            contentType = "application/x-www-form-urlencoded"
+        val (url, httpMethod, contentType) = goApiStruct.getComment?.let {
+            ApiBaseAccess(
+                url = it.text.getCommentValue("Get"),
+                httpMethod = "GET",
+                contentType = "application/x-www-form-urlencoded",
+            )
         } ?: goApiStruct.postComment?.let {
-            url = it.text.getCommentValue("Post")
-            httpMethod = "POST"
-            contentType = "application/json"
+            ApiBaseAccess(
+                url = it.text.getCommentValue("Post"),
+                httpMethod = "POST",
+                contentType = "application/json",
+            )
         } ?: goApiStruct.nameComment?.let {
             if (it.text.startsWith("// Get")) {
-                url = it.text.substring(6).humpToPath()
-                httpMethod = "Get"
-                contentType = "application/x-www-form-urlencoded"
+                ApiBaseAccess(
+                    url = it.text.substring(6).humpToPath(),
+                    httpMethod = "Get",
+                    contentType = "application/x-www-form-urlencoded",
+                )
             } else if (it.text.startsWith("// Post")) {
-                url = it.text.substring(7).humpToPath()
-                httpMethod = "POST"
-                contentType = "application/json"
-            }
-        }
+                ApiBaseAccess(
+                    url = it.text.substring(7).humpToPath(),
+                    httpMethod = "POST",
+                    contentType = "application/json",
+                )
+            } else throw DocBuildFailException("分析接口基本协议错误，请检查接口定义")
+        } ?: throw DocBuildFailException("分析接口基本协议错误，请检查接口定义")
         return Api(
             folder = method.receiverType?.presentationText?.replace("*", "") ?: "",
             name = goApiStruct.nameComment?.text?.getCommentValue(method.name!!)!!,
@@ -110,4 +110,14 @@ class DocService {
         }
     }
 
+    companion object {
+
+        fun getInstance(): DocService = ApplicationManager.getApplication().getService(DocService::class.java)
+    }
+
+    data class ApiBaseAccess(
+        val url: String,
+        val httpMethod: String,
+        val contentType: String,
+    )
 }

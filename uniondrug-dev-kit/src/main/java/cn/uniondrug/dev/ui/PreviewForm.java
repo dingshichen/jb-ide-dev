@@ -358,7 +358,7 @@ public class PreviewForm {
                         TornaKeyService tornaKeyService = TornaKeyService.Companion.getInstance(project);
                         try {
                             String token = tornaKeyService.getToken(project, apiSettings);
-                            service.saveDoc(token, dialog.getProjectId(), dialog.getModuleId(), dialog.getFolderId(), api,
+                            String docId = service.saveDoc(token, dialog.getProjectId(), dialog.getModuleId(), dialog.getFolderId(), api,
                                     () -> tornaKeyService.refreshToken(project, apiSettings));
                             notifyInfo(project, "文档上传成功");
                         } catch (Exception ex) {

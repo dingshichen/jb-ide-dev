@@ -12,6 +12,7 @@ import com.intellij.find.editorHeaderActions.Utils;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.highlighter.HighlighterFactory;
 import com.intellij.lang.Language;
+import com.intellij.notification.BrowseNotificationAction;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl;
 import com.intellij.openapi.application.ApplicationManager;
@@ -301,7 +302,7 @@ public class PreviewForm {
                 if (!JBCefApp.isSupported()) {
                     // 不支持 JCEF 不允许预览
                     previewIsHtml.set(false);
-                    notifyInfo(project, "不支持 JCEF 无法预览");
+                    notifyInfo(project, "不支持 JCEF 无法预览", null);
                 } else {
                     previewIsHtml.set(state);
                     if (state) {
@@ -356,9 +357,10 @@ public class PreviewForm {
                     TornaKeyService tornaKeyService = TornaKeyService.Companion.getInstance(project);
                     try {
                         String token = tornaKeyService.getToken(project, apiSettings);
-                        service.saveDoc(token, dialog.getProjectId(), dialog.getModuleId(), dialog.getFolderId(), api,
-                                () -> tornaKeyService.refreshToken(project, apiSettings));
-                        notifyInfo(project, "文档上传成功");
+                        String docId = service.saveDoc(token, dialog.getProjectId(), dialog.getModuleId(),
+                                dialog.getFolderId(), api, () -> tornaKeyService.refreshToken(project, apiSettings));
+                        String url = service.getDocViewUrl(docId);
+                        notifyInfo(project, "文档上传成功", new BrowseNotificationAction("快速查看 Torna", url));
                     } catch (Exception ex) {
                         notifyError(project, "文档上传失败：" + ex.getMessage());
                     }
@@ -391,7 +393,7 @@ public class PreviewForm {
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 clipboard.setContents(selection, selection);
 
-                notifyInfo(project, "复制成功");
+                notifyInfo(project, "复制成功", null);
             }
         });
 

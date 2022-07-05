@@ -11,6 +11,7 @@ import cn.uniondrug.dev.notifier.notifyWarn
 import cn.uniondrug.dev.service.DocService
 import cn.uniondrug.dev.util.GolangPsiUtil
 import com.goide.psi.GoMethodDeclaration
+import com.intellij.notification.BrowseNotificationAction
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -31,8 +32,14 @@ class PushAllDocAnAction : AnAction() {
         mutableListOf<VirtualFile>().apply {
             findAllFiles(virtualFile, this)
             if (isNotEmpty()) {
-                PushAllDocDialog(project).run {
+                PushAllDocDialog(project).run dialog@{
                     if (showAndGet()) {
+                        // 记住我的选择
+                        with(DocSetting.getInstance(project).state) {
+                            rememberSpaceBoxId = this@dialog.spaceId()
+                            rememberModuleBoxId = this@dialog.moduleId()
+                            rememberProjectBoxId = this@dialog.projectId()
+                        }
                         val apis = mutableListOf<Api>()
                         this@apply.forEach { childFile ->
                             PsiManager.getInstance(project).findFile(childFile)?.let { goFile ->
@@ -97,8 +104,11 @@ class PushAllDocAnAction : AnAction() {
                 }
                 tornaDocService.listFolderByModule(token, moduleId)
                     .find { f -> f.name == api.folder }
-                    ?.let { f -> tornaDocService.saveDoc(token, projectId, moduleId, f.id, api) }
-                notifyInfo(project, "文档 ${api.name} 上传成功")
+                    ?.let { f ->
+                        val docId = tornaDocService.saveDoc(token, projectId, moduleId, f.id, api)
+                        val url = tornaDocService.getDocViewUrl(docId)
+                        notifyInfo(project, "文档 ${api.name} 上传成功", BrowseNotificationAction("快速查看 Torna", url))
+                    }
             }
             notifyInfo(project, "批量上传任务执行完毕")
         } catch (ex: Exception) {

@@ -184,7 +184,7 @@ data class DocInfoSaveCmd(
     val globalReturns: List<DocParamSaveCmd>? = null
 }
 
-data class DocIdCmd(
+data class DocIdDTO(
     val id: String
 )
 
@@ -291,7 +291,7 @@ class TornaDocService {
         folderId: String,
         api: Api,
         loginFailBack: (() -> String)? = null
-    ) {
+    ): String {
         // 初步组装参数
         val docSaveCmd = apiToCmd(projectId, moduleId, folderId, api)
         // 查询模块下所有文档
@@ -324,16 +324,14 @@ class TornaDocService {
             .setDateFormat("yyyy-MM-dd")
             .create()
         val body = doPostTorna("/doc/save", gson.toJson(docSaveCmd), token)
-        val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type)
+        val tornaResult: TornaResult<DocIdDTO> = gson.fromJson(body, object : TypeToken<TornaResult<DocIdDTO>>() {}.type)
         if (tornaResult.isLoginError()) {
-            loginFailBack?.let {
-                saveDoc(it(), projectId, moduleId, folderId, api)
-            }
-            throw LoginException(tornaResult.msg)
+            return loginFailBack?.let { saveDoc(it(), projectId, moduleId, folderId, api) } ?: throw LoginException(tornaResult.msg)
         }
         if (tornaResult.isError()) {
             throw DocumentException("保存文档失败：${tornaResult.msg}")
         }
+        return tornaResult.data?.id ?: ""
     }
 
     /**
@@ -377,7 +375,7 @@ class TornaDocService {
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd")
             .create()
-        val body = doPostTorna("/doc/delete", gson.toJson(DocIdCmd(docId)), token)
+        val body = doPostTorna("/doc/delete", gson.toJson(DocIdDTO(docId)), token)
         val tornaResult: TornaResult<*> = gson.fromJson(body, object : TypeToken<TornaResult<*>>() {}.type)
         if (tornaResult.isLoginError()) {
             loginFailBack?.let {
@@ -442,4 +440,10 @@ class TornaDocService {
         }
         return saveParamCmds
     }
+
+    /**
+     * 获取文档视图 URL
+     */
+    fun getDocViewUrl(docId: String) = "$UNIONDRUG_TORNA_URL/#/view/$docId"
+
 }

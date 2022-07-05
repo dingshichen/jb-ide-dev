@@ -92,6 +92,10 @@ public class PushAllDocForm {
         return rootPanel;
     }
 
+    public String getSpaceId() {
+        return spaceBox.getItem().getId();
+    }
+
     public String getProjectId() {
         return projectBox.getItem().getId();
     }

@@ -9,7 +9,7 @@ import java.time.Duration
 /**
  * 固定 torna 域名
  */
-const val UNIONDRUG_TORNA_URL = "http://ud-torna.uniondrug.cn"
+const val UNIONDRUG_TORNA_URL = "https://ud-torna.uniondrug.cn"
 
 /**
  * 接口值包装结构
