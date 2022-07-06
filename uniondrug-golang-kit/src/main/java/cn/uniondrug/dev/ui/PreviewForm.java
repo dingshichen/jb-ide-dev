@@ -360,7 +360,7 @@ public class PreviewForm {
                         String docId = service.saveDoc(token, dialog.getProjectId(), dialog.getModuleId(),
                                 dialog.getFolderId(), api, () -> tornaKeyService.refreshToken(project, apiSettings));
                         String url = service.getDocViewUrl(docId);
-                        notifyInfo(project, "文档上传成功", new BrowseNotificationAction("快速查看 Torna", url));
+                        notifyInfo(project, "文档上传成功", new BrowseNotificationAction("-> Torna", url));
                     } catch (Exception ex) {
                         notifyError(project, "文档上传失败：" + ex.getMessage());
                     }

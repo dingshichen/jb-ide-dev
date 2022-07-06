@@ -107,7 +107,7 @@ class PushAllDocAnAction : AnAction() {
                     ?.let { f ->
                         val docId = tornaDocService.saveDoc(token, projectId, moduleId, f.id, api)
                         val url = tornaDocService.getDocViewUrl(docId)
-                        notifyInfo(project, "文档 ${api.name} 上传成功", BrowseNotificationAction("快速查看 Torna", url))
+                        notifyInfo(project, "文档 ${api.name} 上传成功", BrowseNotificationAction("-> Torna", url))
                     }
             }
             notifyInfo(project, "批量上传任务执行完毕")
