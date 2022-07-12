@@ -12,8 +12,14 @@ import javax.swing.Icon
 private val NOTIFIER = NotificationGroupManager.getInstance()
     .getNotificationGroup("Uniondrug.Notification.Group")
 
-fun notifyInfo(project: Project, content: String) =
-    NOTIFIER.createNotification(content, NotificationType.INFORMATION).notify(project)
+fun notifyInfo(project: Project, content: String, action: BrowseNotificationAction? = null) {
+    NOTIFIER.createNotification(content, NotificationType.INFORMATION).run {
+        action?.let {
+            addAction(it)
+        }
+        notify(project)
+    }
+}
 
 fun notifyWarn(project: Project, content: String) =
     NOTIFIER.createNotification(content, NotificationType.WARNING).notify(project)

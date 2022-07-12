@@ -10,6 +10,7 @@ import cn.uniondrug.dev.notifier.notifyInfo
 import cn.uniondrug.dev.notifier.notifyWarn
 import cn.uniondrug.dev.service.DocService
 import cn.uniondrug.dev.util.isSpringMVCMethod
+import com.intellij.notification.BrowseNotificationAction
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -95,8 +96,11 @@ class PushAllDocAnAction : AnAction() {
                 }
                 tornaDocService.listFolderByModule(token, moduleId)
                     .find { f -> f.name == api.folder }
-                    ?.let { f -> tornaDocService.saveDoc(token, projectId, moduleId, f.id, api) }
-                notifyInfo(project, "文档 ${api.name} 上传成功")
+                    ?.let { f ->
+                        val docId = tornaDocService.saveDoc(token, projectId, moduleId, f.id, api)
+                        val url = tornaDocService.getDocViewUrl(docId)
+                        notifyInfo(project, "文档 ${api.name} 上传成功", BrowseNotificationAction("-> Torna", url))
+                    }
             }
             notifyInfo(project, "批量上传任务执行完毕")
         } catch (ex: Exception) {
