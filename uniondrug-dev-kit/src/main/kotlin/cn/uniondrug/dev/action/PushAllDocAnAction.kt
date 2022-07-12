@@ -9,6 +9,7 @@ import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
 import cn.uniondrug.dev.notifier.notifyWarn
 import cn.uniondrug.dev.service.DocService
+import cn.uniondrug.dev.util.isNotIgnore
 import cn.uniondrug.dev.util.isSpringMVCMethod
 import com.intellij.notification.BrowseNotificationAction
 import com.intellij.openapi.actionSystem.AnAction
@@ -45,7 +46,7 @@ class PushAllDocAnAction : AnAction() {
                             PsiManager.getInstance(project).findFile(childFile)?.let {
                                 PsiTreeUtil.findChildrenOfType(it, PsiClass::class.java).forEach { psiClass ->
                                     psiClass.methods
-                                        .filter { it -> isSpringMVCMethod(it) }
+                                        .filter { it -> isSpringMVCMethod(it) && isNotIgnore(it) }
                                         .forEach apiForEach@{ psiMethod ->
                                             apis += try {
                                                 DocService.getInstance().buildApi(project, psiClass, psiMethod)

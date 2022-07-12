@@ -82,6 +82,16 @@ fun isDeprecated(psiClass: PsiClass, psiMethod: PsiMethod) =
             || AnnotationUtil.isAnnotated(psiMethod, DEPRECATED, 0)
 
 /**
+ * 是否忽略
+ */
+fun isIgnore(psiMethod: PsiMethod) = psiMethod.docComment?.findTagByName("ignore")?.let { true } ?: false
+
+/**
+ * 是否不忽略
+ */
+fun isNotIgnore(psiMethod: PsiMethod) = !isIgnore(psiMethod)
+
+/**
  * 获取属性名
  */
 fun getFieldName(psiField: PsiField): String {
