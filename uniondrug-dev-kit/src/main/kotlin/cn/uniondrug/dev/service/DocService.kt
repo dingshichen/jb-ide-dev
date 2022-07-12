@@ -42,7 +42,7 @@ class DocService {
         contentType = getContentType(psiMethod),
         requestParams = getRequestBody(project, psiMethod),
         responseParams = getResponseBody(project, psiMethod),
-        errorParams = TODO()
+        errorParams = getErrorParams(psiMethod),
     )
 
     /**

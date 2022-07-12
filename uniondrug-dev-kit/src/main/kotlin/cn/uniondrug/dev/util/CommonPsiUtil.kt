@@ -382,3 +382,15 @@ fun newFiledNode(psiType: PsiType) = psiType.presentableText.run {
     val type = if (isJavaGenericArray()) subJavaGeneric() else this
     FieldNode(type)
 }
+
+/**
+ * 获取错误状态码
+ */
+fun getErrorParams(psiMethod: PsiMethod): List<ApiErrno> {
+    return psiMethod.docComment?.findTagsByName("errno")?.map { tag ->
+        tag.valueElement?.commentText()?.split(" ")?.let {
+            if (it.size < 2) throw DocBuildFailException("错误状态码定义错误，请严格按照 wiki 中规范写注释")
+            ApiErrno(it[0], it[1], if (it.size == 2) "" else it[2])
+        } ?: throw DocBuildFailException("错误状态码解析错误，请核对注释内容")
+    } ?: emptyList()
+}
