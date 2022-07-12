@@ -32,8 +32,14 @@ class PushAllDocAnAction : AnAction() {
         mutableListOf<VirtualFile>().apply {
             findAllFiles(virtualFile, this)
             if (isNotEmpty()) {
-                PushAllDocDialog(project).run {
+                PushAllDocDialog(project).run dialog@{
                     if (showAndGet()) {
+                        // 记住我的选择
+                        with(DocSetting.getInstance(project).state) {
+                            rememberSpaceBoxId = this@dialog.spaceId()
+                            rememberModuleBoxId = this@dialog.moduleId()
+                            rememberProjectBoxId = this@dialog.projectId()
+                        }
                         val apis = mutableListOf<Api>()
                         this@apply.forEach { childFile ->
                             PsiManager.getInstance(project).findFile(childFile)?.let {

@@ -39,14 +39,16 @@ public class PushAllDocForm {
         this.project = project;
         this.tornaKeyService = TornaKeyService.Companion.getInstance(project);
         this.docSetting = DocSetting.Companion.getInstance(project);
-        initListener();
         initValue();
     }
 
-    private void initListener() {
+    private void initValue() {
+        String rememberSpaceBoxId = docSetting.getState().getRememberSpaceBoxId();
         String rememberProjectBoxId = docSetting.getState().getRememberProjectBoxId();
         String rememberModuleBoxId = docSetting.getState().getRememberModuleBoxId();
+
         String token = tornaKeyService.getToken(project, docSetting);
+
         spaceBox.addItemListener(s -> {
             if (s.getStateChange() == ItemEvent.SELECTED) {
                 TornaProjectService tornaProjectService = project.getService(TornaProjectService.class);
@@ -62,6 +64,7 @@ public class PushAllDocForm {
                 }
             }
         });
+
         projectBox.addItemListener(p -> {
             if (p.getStateChange() == ItemEvent.SELECTED) {
                 TornaModuleService tornaModuleService = project.getService(TornaModuleService.class);
@@ -76,18 +79,25 @@ public class PushAllDocForm {
                 }
             }
         });
-    }
 
-    private void initValue() {
-        String token = tornaKeyService.getToken(project, docSetting);
         TornaSpaceService tornaSpaceService = project.getService(TornaSpaceService.class);
         List<TornaSpaceDTO> spaces = tornaSpaceService.listMySpace(token, refreshToken);
         spaceBox.removeAllItems();
         spaces.forEach(e -> spaceBox.addItem(e));
+        if (StrUtil.isNotBlank(rememberSpaceBoxId)) {
+            spaces.stream()
+                    .filter(m -> m.getId().equals(rememberSpaceBoxId))
+                    .findFirst()
+                    .ifPresent(m -> spaceBox.setItem(m));
+        }
     }
 
     public JPanel getRootPanel() {
         return rootPanel;
+    }
+
+    public String getSpaceId() {
+        return spaceBox.getItem().getId();
     }
 
     public String getProjectId() {

@@ -13,7 +13,7 @@ class PushAllDocDialog(
     val project: Project
 ) : DialogWrapper(true) {
 
-    var pushAllDocForm: PushAllDocForm? = null
+    lateinit var pushAllDocForm: PushAllDocForm
 
     init {
         title = "上传所有"
@@ -22,7 +22,7 @@ class PushAllDocDialog(
 
     override fun createCenterPanel(): JComponent? {
         pushAllDocForm = PushAllDocForm(project)
-        return pushAllDocForm!!.rootPanel
+        return pushAllDocForm.rootPanel
     }
 
     override fun createActions(): Array<Action> {
@@ -31,8 +31,10 @@ class PushAllDocDialog(
         return arrayOf(okAction, cancelAction)
     }
 
-    fun projectId() = pushAllDocForm!!.projectId
+    fun spaceId(): String = pushAllDocForm.spaceId
 
-    fun moduleId() = pushAllDocForm!!.moduleId
+    fun projectId() = pushAllDocForm.projectId
+
+    fun moduleId() = pushAllDocForm.moduleId
 
 }
