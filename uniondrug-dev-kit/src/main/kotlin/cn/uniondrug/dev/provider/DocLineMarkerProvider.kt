@@ -55,10 +55,10 @@ class DocLineMarkerProvider : LineMarkerProvider {
                 element.textRange,
                 DevIcons.DOC_VIEW,
                 { "查看文档" },
-                { _, _ ->
+                { _, psiElement ->
                     val docService = DocService.getInstance()
                     try {
-                        val docItem = docService.buildApi(project, it, psiMethod)
+                        val docItem = docService.buildApi(project, it, psiElement.parent as PsiMethod)
                         PreviewForm.getInstance(project, containingFile, docItem).popup()
                     } catch (e: DocBuildFailException) {
                         notifyError(project, e.localizedMessage)
