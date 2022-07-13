@@ -33,8 +33,8 @@ class PushAllDocDialog(
 
     fun spaceId(): String = pushAllDocForm.spaceId
 
-    fun projectId() = pushAllDocForm.projectId
+    fun projectId(): String = pushAllDocForm.projectId
 
-    fun moduleId() = pushAllDocForm.moduleId
+    fun moduleId(): String = pushAllDocForm.moduleId
 
 }
