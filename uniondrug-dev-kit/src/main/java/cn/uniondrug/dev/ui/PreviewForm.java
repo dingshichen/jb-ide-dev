@@ -1,8 +1,9 @@
 package cn.uniondrug.dev.ui;
 
+import cn.hutool.core.util.StrUtil;
 import cn.uniondrug.dev.Api;
-import cn.uniondrug.dev.TornaDocService;
 import cn.uniondrug.dev.MbsEvent;
+import cn.uniondrug.dev.TornaDocService;
 import cn.uniondrug.dev.config.DocSetting;
 import cn.uniondrug.dev.config.DocSettingConfigurable;
 import cn.uniondrug.dev.config.TornaKeyService;
@@ -359,8 +360,17 @@ public class PreviewForm {
                         TornaKeyService tornaKeyService = TornaKeyService.Companion.getInstance(project);
                         try {
                             String token = tornaKeyService.getToken(project, apiSettings);
-                            String docId = service.saveDoc(token, dialog.getProjectId(), dialog.getModuleId(), dialog.getFolderId(), api,
-                                    () -> tornaKeyService.refreshToken(project, apiSettings));
+                            if (StrUtil.isEmpty(dialog.getFolderId())) {
+                                service.saveFolder(token, dialog.getModuleId(), api.getFolder(), () -> tornaKeyService.refreshToken(project, apiSettings));
+                            }
+                            String docId = service.saveDoc(
+                                    token,
+                                    dialog.getProjectId(),
+                                    dialog.getModuleId(),
+                                    StrUtil.emptyToDefault(dialog.getFolderId(), api.getFolder()),
+                                    api,
+                                    () -> tornaKeyService.refreshToken(project, apiSettings)
+                            );
                             String url = service.getDocViewUrl(docId);
                             notifyInfo(project, "文档上传成功", new BrowseNotificationAction("-> Torna", url));
                         } catch (Exception ex) {
