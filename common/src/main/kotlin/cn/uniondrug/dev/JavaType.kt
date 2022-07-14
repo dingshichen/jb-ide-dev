@@ -6,7 +6,6 @@ const val DEPRECATED = "java.lang.Deprecated"
 const val NOT_EMPTY = "javax.validation.constraints.NotEmpty"
 const val NOT_NULL = "javax.validation.constraints.NotNull"
 const val NOT_BLANK = "javax.validation.constraints.NotBlank"
-const val TRANSIENT = "java.beans.Transient"
 
 // 必填
 val REQUIRED = listOf(NOT_BLANK, NOT_EMPTY, NOT_NULL)
