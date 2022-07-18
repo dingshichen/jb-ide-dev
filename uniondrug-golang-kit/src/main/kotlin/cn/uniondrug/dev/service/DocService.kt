@@ -9,6 +9,7 @@ import cn.uniondrug.dev.dto.GoMbsStruct
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
 import cn.uniondrug.dev.util.CommonPsiUtil
+import cn.uniondrug.dev.util.GolangPsiUtil
 import cn.uniondrug.dev.util.getCommentValue
 import cn.uniondrug.dev.util.humpToPath
 import com.goide.psi.GoMethodDeclaration
@@ -31,10 +32,16 @@ import java.io.IOException
 class DocService {
 
     /**
-     * 构建 API DTO
+     * 构建 API DTO  # (method.receiverType as GoPointerTypeImpl).type.contextlessResolve().containingFile.children
      */
     fun buildApiDoc(project: Project, method: GoMethodDeclaration, goApiStruct: GoApiStruct): Api {
         val methodName = method.name ?: throw DocBuildFailException("分析接口方法名失败")
+        val receiverType = method.receiverType
+        val urlPrefix = if (receiverType != null) {
+            GolangPsiUtil.getRealTypeOrSelf(receiverType).contextlessResolve()?.let {
+                GolangPsiUtil.findRoutePrefix(it, it.containingFile)?.text?.getCommentValue("@RoutePrefix")
+            }
+        } else ""
         val (url, httpMethod, contentType) = goApiStruct.getComment?.let {
             ApiBaseAccess(
                 url = it.text.getCommentValue("@Get"),
@@ -63,12 +70,12 @@ class DocService {
             } else null
         } ?: throw DocBuildFailException("分析接口基本协议错误，请检查接口定义")
         return Api(
-            folder = method.receiverType?.presentationText?.replace("*", "") ?: "",
+            folder = receiverType?.presentationText?.replace("*", "") ?: "",
             name = goApiStruct.nameComment?.text?.getCommentValue(methodName) ?: throw DocBuildFailException("分析接口名称失败，请检查接口定义"),
             description = goApiStruct.descComment.reversed().joinToString("") { it.text.replace("// ", "") },
             author = goApiStruct.authorComment?.text?.getCommentValue("Author") ?: "",
             deprecated = goApiStruct.deprecatedComment?.text?.getCommentValue("Deprecated"),
-            url = url,
+            url = "/$urlPrefix/$url".replace("//", "/"),
             httpMethod = httpMethod,
             contentType = contentType,
             requestParams = CommonPsiUtil.getRequestBody(project, goApiStruct.requestComment ?: throw DocBuildFailException("分析入参失败，请检查接口定义")),

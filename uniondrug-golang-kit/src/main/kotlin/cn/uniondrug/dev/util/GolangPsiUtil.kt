@@ -129,7 +129,7 @@ object GolangPsiUtil {
         // 需要遍历的上级集合
         val psiElements: List<PsiElement> = when (element) {
             is GoTypeDeclaration -> psiFile.children.toList()
-            is GoTypeSpec -> GolangPsiUtil.getRealChildren(element.parent)
+            is GoTypeSpec -> getRealChildren(element.parent)
             else -> listOf()
         }
         // 结构体名称
@@ -161,19 +161,19 @@ object GolangPsiUtil {
                             commentStruct.nameComment = comment
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @Mbs") -> {
+                        comment.text.startsWith("// @Mbs ") -> {
                             commentStruct.mbsComment = comment
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @Topic") -> {
+                        comment.text.startsWith("// @Topic ") -> {
                             commentStruct.topicComment = comment
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @Tag") -> {
+                        comment.text.startsWith("// @Tag ") -> {
                             commentStruct.tagComment = comment
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @Author") -> {
+                        comment.text.startsWith("// @Author ") -> {
                             commentStruct.authorComment = comment
                             resolve(commentStruct, before)
                         }
@@ -183,5 +183,28 @@ object GolangPsiUtil {
         }
         resolve(commentStruct, firstIndex)
         return if (commentStruct.isValid()) commentStruct else null
+    }
+
+    /**
+     * 获取 controller 级路由前缀
+     */
+    fun findRoutePrefix(struct: PsiElement, psiFile: PsiFile): PsiComment? {
+        // 需要遍历的上级集合
+        val psiElements = psiFile.children
+        val firstIndex = psiElements.indexOf(struct.context)
+        var before = firstIndex - 2
+        while (before >= 0) {
+            when (val comment = psiElements[before]) {
+                is PsiComment -> {
+                    if (comment.text.startsWith("// @RoutePrefix ")) {
+                        return comment
+                    } else {
+                        before -= 2
+                    }
+                }
+                else -> before = 0
+            }
+        }
+        return null
     }
 }

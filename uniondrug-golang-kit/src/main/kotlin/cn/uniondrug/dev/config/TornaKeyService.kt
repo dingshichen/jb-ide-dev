@@ -15,12 +15,6 @@ import com.intellij.openapi.project.Project
  */
 class TornaKeyService {
 
-    companion object {
-        const val CREDENTIA_KEY = "Torna"
-        const val TOKEN_KEY = "cn.uniondrug.dev.torna.token"
-        fun getInstance(project: Project): TornaKeyService = project.getService(TornaKeyService::class.java)
-    }
-
     /**
      * 存储凭证
      */
@@ -45,7 +39,7 @@ class TornaKeyService {
     fun getToken(project: Project, docSetting: DocSetting): String {
         val username = docSetting.state.username
         val password = getPassword()
-        if (StringUtil.isAnyEmpty(username, password)) {
+        if (username.isNullOrBlank() || password.isNullOrBlank()) {
             throw LoginException("获取不到正确的项目配置")
         }
         val properties = PropertiesComponent.getInstance()
@@ -53,7 +47,7 @@ class TornaKeyService {
         if (token.isNullOrBlank()) {
             val loginService = project.getService(TornaUserService::class.java)
             token = try {
-                loginService.login(username!!, password!!)
+                loginService.login(username, password)
             } catch (e: Exception) {
                 throw LoginException("登陆失败：${e.message}")
             }
@@ -68,13 +62,13 @@ class TornaKeyService {
     fun refreshToken(project: Project, docSetting: DocSetting): String {
         val username = docSetting.state.username
         val password = getPassword()
-        if (StringUtil.isAnyEmpty(username, password)) {
+        if (username.isNullOrBlank() || password.isNullOrBlank()) {
             throw LoginException("获取不到正确的项目配置")
         }
         val properties = PropertiesComponent.getInstance()
         val loginService = project.getService(TornaUserService::class.java)
         val token = try {
-            loginService.login(username!!, password!!)
+            loginService.login(username, password)
         } catch (e: Exception) {
             throw LoginException("登陆失败：${e.message}")
         }
@@ -87,4 +81,9 @@ class TornaKeyService {
      */
     private fun createCredentialAttributes() = CredentialAttributes(generateServiceName("Uniondrug Torna Passphrase", CREDENTIA_KEY), CREDENTIA_KEY)
 
+    companion object {
+        const val CREDENTIA_KEY = "Torna"
+        const val TOKEN_KEY = "cn.uniondrug.dev.torna.token"
+        fun getInstance(project: Project): TornaKeyService = project.getService(TornaKeyService::class.java)
+    }
 }
