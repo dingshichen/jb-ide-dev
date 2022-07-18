@@ -2,7 +2,6 @@ package cn.uniondrug.dev.config
 
 import cn.uniondrug.dev.LoginException
 import cn.uniondrug.dev.TornaUserService
-import cn.uniondrug.dev.util.StringUtil
 import com.intellij.credentialStore.CredentialAttributes
 import com.intellij.credentialStore.Credentials
 import com.intellij.credentialStore.generateServiceName

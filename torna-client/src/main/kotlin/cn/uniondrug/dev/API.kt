@@ -1,7 +1,7 @@
 /** @author dingshichen */
 package cn.uniondrug.dev
 
-import cn.uniondrug.dev.util.BaseDataTypeMockUtil
+import cn.uniondrug.dev.mock.generateBaseTypeMockData
 import com.alibaba.fastjson.JSONArray
 import com.alibaba.fastjson.JSONObject
 
@@ -198,14 +198,14 @@ fun getExample(param: ApiParam): Any {
         CommonType.BYTE,
         CommonType.INT,
         CommonType.LONG,
-        CommonType.FLOAT -> BaseDataTypeMockUtil.getValByTypeAndFieldName(param.type.value, param.name)
-        CommonType.ARRAY -> JSONArray()
-        CommonType.BOOL -> true
+        CommonType.FLOAT,
+        CommonType.BOOL -> generateBaseTypeMockData(param.type, param.name)
         CommonType.OBJECT -> jsonObject {
             param.children?.forEach {
                 this[it.name] = getExample(it)
             }
         }
+        CommonType.ARRAY -> JSONArray()
         CommonType.ARRAY_STRING,
         CommonType.ARRAY_BOOL,
         CommonType.ARRAY_BYTE,
@@ -216,7 +216,7 @@ fun getExample(param: ApiParam): Any {
             val end = param.type.value.indexOf("]")
             val sampleType = param.type.value.substring(begin + 1, end)
             arrayJsonOf(
-                BaseDataTypeMockUtil.getValByTypeAndFieldName(sampleType, param.name)
+                generateBaseTypeMockData(param.type, sampleType)
             )
         }
         CommonType.ARRAY_OBJECT -> arrayJsonOf(
