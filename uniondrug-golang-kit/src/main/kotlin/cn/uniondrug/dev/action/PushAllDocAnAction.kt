@@ -47,6 +47,9 @@ class PushAllDocAnAction : AnAction() {
                                     GolangPsiUtil.resulveFuncComment(method, goFile.children)?.let api@{
                                         // 忽略标识 @Ignore 注解的
                                         if (it.isIgnore()) {
+                                            val receiver = method.receiverType
+                                            val controller = if (receiver == null) "" else GolangPsiUtil.getRealTypeOrSelf(receiver).presentationText
+                                            notifyInfo(project, "接口 $controller#${method.name} 有标识 @ignore 忽略上传")
                                             return@api
                                         }
                                         apis += try {
