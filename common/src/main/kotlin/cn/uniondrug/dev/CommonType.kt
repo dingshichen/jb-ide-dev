@@ -77,6 +77,7 @@ class GoTypeConvertor : CommonTypeConvertor {
     override fun convert(original: String) = when (original) {
         "string" -> CommonType.STRING
         "bool" -> CommonType.BOOL
+        "interface{}" -> CommonType.STRING
         in byteList -> CommonType.BYTE
         in intList -> CommonType.INT
         in longList -> CommonType.LONG

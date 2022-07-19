@@ -18,7 +18,7 @@ class TornaIndexDialog(
     val api: Api,
 ) : DialogWrapper(true) {
 
-    var tornaIndexForm: TornaIndexForm? = null
+    lateinit var tornaIndexForm: TornaIndexForm
 
     init {
         title = "Torna"
@@ -27,7 +27,7 @@ class TornaIndexDialog(
 
     override fun createCenterPanel(): JComponent? {
         tornaIndexForm = TornaIndexForm(project, api)
-        return tornaIndexForm!!.rootPanel
+        return tornaIndexForm.rootPanel
     }
 
     override fun createActions(): Array<Action> {
@@ -36,13 +36,13 @@ class TornaIndexDialog(
         return arrayOf(okAction, cancelAction)
     }
 
-    fun getSpaceId() = tornaIndexForm!!.spaceId
+    fun getSpaceId(): String = tornaIndexForm.spaceId
 
-    fun getProjectId() = tornaIndexForm!!.projectId
+    fun getProjectId(): String = tornaIndexForm.projectId
 
-    fun getModuleId() = tornaIndexForm!!.moduleId
+    fun getModuleId(): String = tornaIndexForm.moduleId
 
-    fun getFolderId() = tornaIndexForm!!.folderId
+    fun getFolderId(): String = tornaIndexForm.folderId
 }
 
 /**
@@ -57,17 +57,17 @@ class CreateFolderDialog(
         init()
     }
 
-    private var createFolderForm: CreateFolderForm? = null
+    private lateinit var createFolderForm: CreateFolderForm
 
     override fun createCenterPanel(): JComponent? {
         createFolderForm = CreateFolderForm(project)
-        return createFolderForm!!.rootPanel
+        return createFolderForm.rootPanel
     }
 
     /**
      * 获取目录名
      */
-    fun getFolder() = createFolderForm!!.folderText
+    fun getFolder(): String = createFolderForm.folderText
 
     override fun createActions(): Array<Action> {
         setOKButtonText("确定")

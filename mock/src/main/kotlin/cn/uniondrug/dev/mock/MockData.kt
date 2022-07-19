@@ -10,6 +10,9 @@ import cn.uniondrug.dev.util.JmInsureMockUtils
 import java.math.BigDecimal
 import java.util.*
 
+val organization = arrayOf("在水一方垂钓园筹备处", "开原市德彪投资股份有限公司", "开原市维多利亚国际娱乐广场",
+    "大帅打工子弟小学", "彪记靓汤餐饮有限公司", "桂英风味餐馆", "彪哥解梦馆", "小翠美容有限公司")
+
 // 规则 MAP
 val ROLE_MAP = mapOf(
     "uuid-string" to UUID.randomUUID().toString(),
@@ -17,7 +20,7 @@ val ROLE_MAP = mapOf(
     "id-string" to RandomUtil.randomInt(1, 3000).toString(),
     "nickname-string" to "BiaoGe",
     "hostname-string" to "127.0.0.1",
-    "name-string" to "范德彪",
+    "name-string" to RandomUtil.randomEle(arrayOf("德彪", "维力", "钢子", "玉芬", "富贵", "牛二", "小翠", "桂英", "德财", "阿薇")),
     "author-string" to "范德彪",
     "url-string" to "http://debiao.turboradio.cn",
     "username-string" to "FanDeBiao",
@@ -32,7 +35,17 @@ val ROLE_MAP = mapOf(
     "ip-string" to "218.94.117.256",
     "ipv4-string" to "218.94.117.256",
     "ipv6-string" to "1030::C9B4:FF12:48AA:1A2B",
-    "company-string" to RandomUtil.randomEle(arrayOf("南京云联数科科技有限公司", "上海聚音信息科技有限公司")),
+    "company-string" to RandomUtil.randomEle(organization),
+    "companyname-string" to RandomUtil.randomEle(organization),
+    "insurer-string" to RandomUtil.randomEle(organization),
+    "insurername-string" to RandomUtil.randomEle(organization),
+    "organizationname-string" to RandomUtil.randomEle(organization),
+    "merchant-string" to RandomUtil.randomEle(organization),
+    "merchantname-string" to RandomUtil.randomEle(organization),
+    "partner-string" to RandomUtil.randomEle(organization),
+    "partnername-string" to RandomUtil.randomEle(organization),
+    "store-string" to RandomUtil.randomEle(organization),
+    "storename-string" to RandomUtil.randomEle(organization),
     "timestamp-int" to System.currentTimeMillis(),
     "timestamp-string" to System.currentTimeMillis().toString(),
     "time-long" to System.currentTimeMillis(),

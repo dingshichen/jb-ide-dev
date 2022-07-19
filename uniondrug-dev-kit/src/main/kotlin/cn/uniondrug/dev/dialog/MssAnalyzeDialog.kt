@@ -20,11 +20,11 @@ class MssAnalyzeDialog(
         init()
     }
 
-    var mssAnalyzeForm: MssAnalyzeForm? = null
+    private lateinit var mssAnalyzeForm: MssAnalyzeForm
 
     override fun createCenterPanel(): JComponent? {
         mssAnalyzeForm = MssAnalyzeForm(project)
-        return mssAnalyzeForm!!.rootPanel
+        return mssAnalyzeForm.rootPanel
     }
 
     override fun createActions(): Array<Action> {
@@ -36,21 +36,21 @@ class MssAnalyzeDialog(
     override fun doValidateAll(): MutableList<ValidationInfo> {
         val list = mutableListOf<ValidationInfo>()
         if (getWorker().isEmpty()) {
-            list += ValidationInfo("需要正确填写中文姓名项目负责人，如：张三", mssAnalyzeForm!!.workerField)
+            list += ValidationInfo("需要正确填写中文姓名项目负责人，如：张三", mssAnalyzeForm.workerField)
         }
         if (getProjectCode().isEmpty()) {
-            list += ValidationInfo("需要正确填写项目英文编码，如：js-demo", mssAnalyzeForm!!.projectField)
+            list += ValidationInfo("需要正确填写项目英文编码，如：js-demo", mssAnalyzeForm.projectField)
         }
         if (getToken().isEmpty()) {
-            list += ValidationInfo("需要正确填写正确的认证 token，可从 web 后台抓包获取", mssAnalyzeForm!!.authField)
+            list += ValidationInfo("需要正确填写正确的认证 token，可从 web 后台抓包获取", mssAnalyzeForm.authField)
         }
         return list
     }
 
-    fun getWorker() = mssAnalyzeForm!!.worker
+    fun getWorker(): String = mssAnalyzeForm.worker
 
-    fun getProjectCode() = mssAnalyzeForm!!.projectCode
+    fun getProjectCode(): String = mssAnalyzeForm.projectCode
 
-    fun getToken() = mssAnalyzeForm!!.token
+    fun getToken(): String = mssAnalyzeForm.token
 
 }
