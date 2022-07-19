@@ -45,6 +45,10 @@ class PushAllDocAnAction : AnAction() {
                             PsiManager.getInstance(project).findFile(childFile)?.let { goFile ->
                                 PsiTreeUtil.findChildrenOfType(goFile, GoMethodDeclaration::class.java).forEach { method ->
                                     GolangPsiUtil.resulveFuncComment(method, goFile.children)?.let api@{
+                                        // 忽略标识 @Ignore 注解的
+                                        if (it.isIgnore()) {
+                                            return@api
+                                        }
                                         apis += try {
                                             DocService.getInstance().buildApiDoc(project, method, it)
                                         } catch (ex: Throwable) {

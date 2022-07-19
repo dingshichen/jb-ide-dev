@@ -31,11 +31,14 @@ object GolangPsiUtil {
     }?.substring(4)
 
     /**
+     * 获取 mock 值
+     */
+    fun getMockValue(tag: GoTag) = tag.getValue("mock")
+
+    /**
      * 获取属性的描述
      */
-    fun getFieldDescription(field: GoFieldDeclaration, tag: GoTag): String? {
-        return tag.getValue("label")
-    }
+    fun getFieldDescription(tag: GoTag) = tag.getValue("label")
 
     /**
      * 获取真实子集
@@ -108,6 +111,10 @@ object GolangPsiUtil {
                         }
                         comment.text.startsWith("// @Error ") -> {
                             commentStruct.errorComment += comment
+                            resolve(commentStruct, before)
+                        }
+                        comment.text.startsWith("// @Ignore") -> {
+                            commentStruct.ignoreComment = comment
                             resolve(commentStruct, before)
                         }
                         else -> {

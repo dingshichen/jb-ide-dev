@@ -110,20 +110,23 @@ data class ApiParam(
     var maxLength: String? = null,
     /** 描述  */
     var description: String? = null,
+    /** 示例值 */
+    var example: String? = null,
     /** 父节点  */
     var parentId: String? = null,
     /** 子节点  */
     var children: List<ApiParam>? = null,
 ) {
-    val example: String
-        get() {
-            return if (type.isBaseType) getExample(this).toString() else ""
-        }
 
     val requiredText: String
         get() {
             return if (required) "true" else ""
         }
+
+    /**
+     * 获取示例值
+     */
+    fun getExampleText() = if (type.isBaseType) getExample(this).toString() else ""
 }
 
 /**
@@ -199,7 +202,7 @@ fun getExample(param: ApiParam): Any {
         CommonType.INT,
         CommonType.LONG,
         CommonType.FLOAT,
-        CommonType.BOOL -> generateBaseTypeMockData(param.type, param.name)
+        CommonType.BOOL -> param.example ?: generateBaseTypeMockData(param.type, param.name)
         CommonType.OBJECT -> jsonObject {
             param.children?.forEach {
                 this[it.name] = getExample(it)
@@ -216,7 +219,7 @@ fun getExample(param: ApiParam): Any {
             val end = param.type.value.indexOf("]")
             val sampleType = param.type.value.substring(begin + 1, end)
             arrayJsonOf(
-                generateBaseTypeMockData(param.type, sampleType)
+                param.example ?: generateBaseTypeMockData(param.type, sampleType)
             )
         }
         CommonType.ARRAY_OBJECT -> arrayJsonOf(

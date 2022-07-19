@@ -153,31 +153,30 @@ object CommonPsiUtil {
      */
     private fun buildDocParam(parent: String? = null, field: GoFieldDeclaration, params: ArrayList<ApiParam>) {
         val commonTypeConvertor = field.project.getService(CommonTypeConvertor::class.java)
-        field.type?.let {
-            field.tag?.let { tag ->
-                val param = ApiParam(
-                    name = GolangPsiUtil.getFieldJsonName(field) ?: throw DocBuildFailException("获取参数属性 json 名称失败"),
-                    // 从背后真实的类型转换
-                    type = commonTypeConvertor.convert(GolangPsiUtil.getRealTypeOrSelf(it).contextlessUnderlyingType.presentationText),
-                    required = GolangPsiUtil.isRequired(tag),
-                    maxLength = GolangPsiUtil.getMaxLength(tag),
-                    parentId = parent,
-                    description = GolangPsiUtil.getFieldDescription(field, tag)
-                )
-                when (param.type) {
-                    CommonType.OBJECT -> {
-                        findChildrenFieldDeclaration(param, it, it.context)
-                    }
-                    CommonType.ARRAY_OBJECT -> {
-                        if (it is GoArrayOrSliceTypeImpl) {
-                            findChildrenFieldDeclaration(param, it.type, it.type.context)
-                        }
-                    }
-                    else -> {}
-                }
-                params += param
+        val fieldType = field.type ?: return
+        val tag = field.tag ?: return
+        val param = ApiParam(
+            name = GolangPsiUtil.getFieldJsonName(field) ?: throw DocBuildFailException("获取参数属性 json 名称失败"),
+            // 从背后真实的类型转换
+            type = commonTypeConvertor.convert(GolangPsiUtil.getRealTypeOrSelf(fieldType).contextlessUnderlyingType.presentationText),
+            required = GolangPsiUtil.isRequired(tag),
+            maxLength = GolangPsiUtil.getMaxLength(tag),
+            example = GolangPsiUtil.getMockValue(tag),
+            parentId = parent,
+            description = GolangPsiUtil.getFieldDescription(tag)
+        )
+        when (param.type) {
+            CommonType.OBJECT -> {
+                findChildrenFieldDeclaration(param, fieldType, fieldType.context)
             }
+            CommonType.ARRAY_OBJECT -> {
+                if (fieldType is GoArrayOrSliceTypeImpl) {
+                    findChildrenFieldDeclaration(param, fieldType.type, fieldType.type.context)
+                }
+            }
+            else -> {}
         }
+        params += param
     }
 
     private fun findChildrenFieldDeclaration(param: ApiParam, goType: GoType, context: PsiElement?) {

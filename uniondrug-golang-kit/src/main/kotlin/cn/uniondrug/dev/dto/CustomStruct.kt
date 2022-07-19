@@ -15,6 +15,7 @@ data class GoApiStruct(
     var requestComment: PsiComment? = null,
     var responseComment: PsiComment? = null,
     val errorComment: ArrayList<PsiComment> = ArrayList(),
+    var ignoreComment: PsiComment? = null,
 ) {
 
     val descComment = mutableListOf<PsiComment>()
@@ -28,6 +29,11 @@ data class GoApiStruct(
             || postComment != null
             || nameComment!!.text.startsWith("// Post")
             || nameComment!!.text.startsWith("// Get"))
+
+    /**
+     * 接口是否可忽略
+     */
+    fun isIgnore() = ignoreComment != null
 
     fun addDescComment(psiComment: PsiComment) {
         descComment += psiComment
