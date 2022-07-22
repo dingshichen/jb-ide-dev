@@ -109,6 +109,14 @@ object GolangPsiUtil {
                             commentStruct.responseComment = comment
                             resolve(commentStruct, before)
                         }
+                        comment.text.startsWith("// @ResponseList ") -> {
+                            commentStruct.responseComment = comment
+                            resolve(commentStruct, before)
+                        }
+                        comment.text.startsWith("// @ResponsePaging ") -> {
+                            commentStruct.responseComment = comment
+                            resolve(commentStruct, before)
+                        }
                         comment.text.startsWith("// @Error ") -> {
                             commentStruct.errorComment += comment
                             resolve(commentStruct, before)

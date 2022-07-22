@@ -64,13 +64,13 @@ object CommonPsiUtil {
             return getResultData()
         }
         return when (psiComment.text.getCommentKey()) {
-            "ResponseList" -> {
+            "@ResponseList" -> {
                 val result = getResultList()
                 val body = getBody(project, psiComment, getPackageName(psiComment), result[3])
                 result[3].children = body
                 result
             }
-            "ResponsePaging" -> {
+            "@ResponsePaging" -> {
                 val result = getResultPagingBody()
                 val body = getBody(project, psiComment, getPackageName(psiComment), result[3].children!![0])
                 result[3].children!![0].children = body
