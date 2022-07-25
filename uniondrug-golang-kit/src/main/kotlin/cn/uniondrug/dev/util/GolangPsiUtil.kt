@@ -1,7 +1,6 @@
 package cn.uniondrug.dev.util
 
-import cn.uniondrug.dev.dto.GoApiStruct
-import cn.uniondrug.dev.dto.GoMbsStruct
+import cn.uniondrug.dev.dto.*
 import com.goide.psi.*
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
@@ -68,6 +67,7 @@ object GolangPsiUtil {
      * 解析方法，解析注释
      */
     fun resulveFuncComment(method: GoMethodDeclaration, psiElements: Array<PsiElement>): GoApiStruct? {
+        val methodName = method.name ?: return null
         val firstIndex = psiElements.indexOf(method)
         val commentStruct = GoApiStruct()
         tailrec fun resolve(
@@ -81,43 +81,43 @@ object GolangPsiUtil {
             when (val comment = psiElements[before]) {
                 is PsiComment -> {
                     when {
-                        comment.text.startsWith("// ${method.name} ") -> {
-                            commentStruct.nameComment = comment
+                        comment.text.startsWith("// $methodName ") -> {
+                            commentStruct.nameComment = DocNameComment(methodName, comment)
                             resolve(commentStruct, before)
                         }
                         comment.text.startsWith("// Deprecated ") -> {
-                            commentStruct.deprecatedComment = comment
+                            commentStruct.deprecatedComment = DocDeprecatedComment(comment)
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @Get ") -> {
-                            commentStruct.getComment = comment
+                        docGetPattern.matcher(comment.text).find() -> {
+                            commentStruct.getComment = DocGetComment(comment)
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @Post ") -> {
-                            commentStruct.postComment = comment
+                        docPostPattern.matcher(comment.text).find() -> {
+                            commentStruct.postComment = DocPostComment(comment)
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @Author ") -> {
-                            commentStruct.authorComment = comment
+                        docAuthorPattern.matcher(comment.text).find() -> {
+                            commentStruct.authorComment = DocAuthorComment(comment)
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @Request ") -> {
-                            commentStruct.requestComment = comment
+                        docRequestPattern.matcher(comment.text).find() -> {
+                            commentStruct.requestComment = DocRequestComment(comment)
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @Response ") -> {
+                        docResponsePattern.matcher(comment.text).find() -> {
                             commentStruct.responseComment = comment
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @ResponseList ") -> {
+                        docResponseListPattern.matcher(comment.text).find() -> {
                             commentStruct.responseComment = comment
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @ResponsePaging ") -> {
+                        docResponsePagingPattern.matcher(comment.text).find() -> {
                             commentStruct.responseComment = comment
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @Error ") -> {
+                        docErrorParttern.matcher(comment.text).find() -> {
                             commentStruct.errorComment += comment
                             resolve(commentStruct, before)
                         }

@@ -7,10 +7,10 @@ import com.intellij.psi.PsiComment
  * GO API 注释结构
  */
 data class GoApiStruct(
-    var nameComment: PsiComment? = null,
-    var authorComment: PsiComment? = null,
-    var deprecatedComment: PsiComment? = null,
-    var getComment: PsiComment? = null,
+    var nameComment: DocNameComment? = null,
+    var authorComment: DocAuthorComment? = null,
+    var deprecatedComment: DocDeprecatedComment? = null,
+    var getComment: DocGetComment? = null,
     var postComment: PsiComment? = null,
     var requestComment: PsiComment? = null,
     var responseComment: PsiComment? = null,

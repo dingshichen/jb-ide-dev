@@ -18,6 +18,49 @@ fun String.getCommentValue(commentKey: String): String {
 }
 
 /**
+ * 获取注释值
+ */
+fun String.getAnnotationValue(annotationName: String) =
+    substring(indexOf(annotationName) + annotationName.length + 1, lastIndexOf(")"))
+
+/**
+ * 获取注释的多个值（"," 分割）
+ */
+fun String.getAnnotationMultiValues(annotationName: String) =
+    getAnnotationValue(annotationName).run {
+        var begin = 0
+        var isBegin = false
+        val pairs = mutableListOf<Pair<Int, Int>>()
+        val values = mutableListOf<String>()
+        forEachIndexed { index, char ->
+            if (char.toString() == "\"") {
+                if (isBegin) {
+                    pairs += Pair(begin, index + 1)
+                    begin = index
+                    isBegin = false
+                } else {
+                    begin = index
+                    isBegin = true
+                }
+
+            } else if (char.toString() == ",") {
+                if (!isBegin) {
+                    pairs += Pair(begin, index)
+                    begin = index
+                }
+            }
+        }
+        pairs.forEach { (begin, end) ->
+            substring(begin, end).replace("\"", "").trim().let {
+                if (it.isNotBlank()) {
+                    values += it
+                }
+            }
+        }
+        values
+    }
+
+/**
  * 驼峰转路径
  */
 fun String.humpToPath() = buildString {
@@ -29,3 +72,8 @@ fun String.humpToPath() = buildString {
         }
     }
 }
+
+/**
+ * 舍弃英文 . 后缀
+ */
+fun String.removeSuffix(): String = if (endsWith(".")) substring(0, length - 2) else this
