@@ -106,27 +106,27 @@ object GolangPsiUtil {
                             resolve(commentStruct, before)
                         }
                         docResponsePattern.matcher(comment.text).find() -> {
-                            commentStruct.responseComment = comment
+                            commentStruct.responseComment = DocResponseComment(comment)
                             resolve(commentStruct, before)
                         }
                         docResponseListPattern.matcher(comment.text).find() -> {
-                            commentStruct.responseComment = comment
+                            commentStruct.responseComment = DocResponseListComment(comment)
                             resolve(commentStruct, before)
                         }
                         docResponsePagingPattern.matcher(comment.text).find() -> {
-                            commentStruct.responseComment = comment
+                            commentStruct.responseComment = DocResponsePagingComment(comment)
                             resolve(commentStruct, before)
                         }
                         docErrorParttern.matcher(comment.text).find() -> {
-                            commentStruct.errorComment += comment
+                            commentStruct.errorComment += DocErrorComment(comment)
                             resolve(commentStruct, before)
                         }
                         comment.text.startsWith("// @Ignore") -> {
-                            commentStruct.ignoreComment = comment
+                            commentStruct.ignoreComment = DocIgnoreComment(comment)
                             resolve(commentStruct, before)
                         }
                         else -> {
-                            commentStruct.addDescComment(comment)
+                            commentStruct.descComment += DocDescComment(comment)
                             resolve(commentStruct, before)
                         }
                     }

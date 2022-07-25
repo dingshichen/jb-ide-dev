@@ -71,17 +71,17 @@ class DocRequestComment(psiComment: PsiComment) : PsiComment by psiComment
 /*
  * 接口返回值注释 数据类型为 object
  */
-class DocResponseComment(psiComment: PsiComment) : PsiComment by psiComment
+open class DocResponseComment(psiComment: PsiComment) : PsiComment by psiComment
 
 /*
  * 接口返回值注释 数据类型为 list
  */
-class DocResponseListComment(psiComment: PsiComment) : PsiComment by psiComment
+class DocResponseListComment(psiComment: PsiComment) : DocResponseComment(psiComment)
 
 /*
  * 接口返回值注释 数据类型为 paging
  */
-class DocResponsePagingComment(psiComment: PsiComment) : PsiComment by psiComment
+class DocResponsePagingComment(psiComment: PsiComment) : DocResponseComment(psiComment)
 
 /*
  * 接口错误码注释

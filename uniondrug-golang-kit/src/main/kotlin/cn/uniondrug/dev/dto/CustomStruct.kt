@@ -11,14 +11,15 @@ data class GoApiStruct(
     var authorComment: DocAuthorComment? = null,
     var deprecatedComment: DocDeprecatedComment? = null,
     var getComment: DocGetComment? = null,
-    var postComment: PsiComment? = null,
-    var requestComment: PsiComment? = null,
-    var responseComment: PsiComment? = null,
-    val errorComment: ArrayList<PsiComment> = ArrayList(),
+    var postComment: DocPostComment? = null,
+    var requestComment: DocRequestComment? = null,
+    var responseComment: DocResponseComment? = null,
+    val errorComment: MutableList<DocErrorComment> = mutableListOf(),
     var ignoreComment: PsiComment? = null,
+    val descComment: MutableList<DocDescComment> = mutableListOf(),
 ) {
 
-    val descComment = mutableListOf<PsiComment>()
+
 
     /**
      * 接口有效判断
@@ -34,10 +35,6 @@ data class GoApiStruct(
      * 接口是否可忽略
      */
     fun isIgnore() = ignoreComment != null
-
-    fun addDescComment(psiComment: PsiComment) {
-        descComment += psiComment
-    }
 
 }
 

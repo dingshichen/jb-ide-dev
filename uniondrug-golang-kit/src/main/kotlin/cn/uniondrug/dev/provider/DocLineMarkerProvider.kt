@@ -30,10 +30,10 @@ class DocLineMarkerProvider : LineMarkerProvider {
                         element.textRange,
                         DevIcons.DOC_VIEW,
                         { "查看文档" },
-                        { _, _ ->
-                            GolangPsiUtil.resulveFuncComment(element, children)?.let {
+                        { _, method ->
+                            GolangPsiUtil.resulveFuncComment(method, children)?.let {
                                 val docService = DocService.getInstance()
-                                val api = docService.buildApiDoc(project, element, it)
+                                val api = docService.buildApiDoc(project, method, it)
                                 PreviewForm.getInstance(project, this, api)
                                     .popup()
                             }
@@ -54,10 +54,10 @@ class DocLineMarkerProvider : LineMarkerProvider {
                         element.textRange,
                         DevIcons.DOC_VIEW,
                         { "查看文档" },
-                        { _, _ ->
-                            GolangPsiUtil.resulveStructComment(element, this)?.let {
+                        { _, typeSpec ->
+                            GolangPsiUtil.resulveStructComment(typeSpec, this)?.let {
                                 val docService = DocService.getInstance()
-                                val mbsEvent = docService.buildMbsDoc(element, it)
+                                val mbsEvent = docService.buildMbsDoc(typeSpec, it)
                                 PreviewForm.getInstance(project, this, mbsEvent)
                                     .popup()
                             }
