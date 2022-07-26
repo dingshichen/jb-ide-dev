@@ -36,22 +36,15 @@ fun String.getAnnotationMultiValues(annotationName: String) =
         val values = mutableListOf<String>()
         forEachIndexed { index, char ->
             if (char.toString() == "\"") {
-                if (isBegin) {
-                    pairs += Pair(begin, index + 1)
-                    begin = index
-                    isBegin = false
-                } else {
-                    begin = index
-                    isBegin = true
-                }
-
+                isBegin = !isBegin
             } else if (char.toString() == ",") {
                 if (!isBegin) {
                     pairs += Pair(begin, index)
-                    begin = index
+                    begin = index + 1
                 }
             }
         }
+        pairs += Pair(begin, this.length)
         pairs.forEach { (begin, end) ->
             substring(begin, end).replace("\"", "").trim().let {
                 if (it.isNotBlank()) {

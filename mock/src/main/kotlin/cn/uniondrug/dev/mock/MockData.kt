@@ -79,7 +79,6 @@ val ROLE_MAP = mapOf(
     "batchno-string" to JmInsureMockUtils.mockBatchNo(),
     "billno-string" to JmInsureMockUtils.mockBillNo(),
     "codeno-string" to RandomUtil.randomNumbers(13),
-    "insureno-string" to JmInsureMockUtils.mockInsureNo(),
     "invoiceno-string" to JmInsureMockUtils.mockInvoiceNo(),
     "ipackageno-string" to JmInsureMockUtils.mockIpackageNo(),
     "memberno-string" to JmInsureMockUtils.mockMemberNo(),

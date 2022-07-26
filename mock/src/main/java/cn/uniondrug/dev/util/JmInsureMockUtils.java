@@ -43,17 +43,6 @@ public class JmInsureMockUtils {
     }
 
     /**
-     * TODO
-     * mock insureNo 投单编号
-     * @return
-     */
-    public static String mockInsureNo() {
-//        return DateUtil.format(new Date(), DatePattern.PURE_DATE_PATTERN).substring(2) +
-//                StringUtils.leftPad(RandomUtil.randomInt(1, 100) + "", 5, "0");
-        return "";
-    }
-
-    /**
      * mock invoiceNo 发票号码
      * @return
      */

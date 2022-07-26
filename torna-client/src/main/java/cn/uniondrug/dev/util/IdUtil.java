@@ -34,7 +34,6 @@ public class IdUtil {
             }
             return arr[0];
         } catch (Exception e) {
-            // TODO 输出错误
 
             return null;
         }

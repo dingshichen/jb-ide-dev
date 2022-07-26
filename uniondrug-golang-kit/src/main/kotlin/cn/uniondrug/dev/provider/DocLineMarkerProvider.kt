@@ -1,7 +1,9 @@
 package cn.uniondrug.dev.provider
 
+import cn.uniondrug.dev.DocBuildFailException
 import cn.uniondrug.dev.consts.DevIcons
 import cn.uniondrug.dev.consts.DevKitPlugin
+import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.service.DocService
 import cn.uniondrug.dev.ui.PreviewForm
 import cn.uniondrug.dev.util.GolangPsiUtil
@@ -33,9 +35,13 @@ class DocLineMarkerProvider : LineMarkerProvider {
                         { _, method ->
                             GolangPsiUtil.resulveFuncComment(method, children)?.let {
                                 val docService = DocService.getInstance()
-                                val api = docService.buildApiDoc(project, method, it)
-                                PreviewForm.getInstance(project, this, api)
-                                    .popup()
+                                try {
+                                    val api = docService.buildApiDoc(project, method, it)
+                                    PreviewForm.getInstance(project, this, api)
+                                        .popup()
+                                } catch (e: DocBuildFailException) {
+                                    notifyError(project, e.localizedMessage)
+                                }
                             }
                         },
                         GutterIconRenderer.Alignment.CENTER,

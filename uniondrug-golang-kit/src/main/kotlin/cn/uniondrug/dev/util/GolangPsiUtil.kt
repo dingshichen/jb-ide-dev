@@ -85,7 +85,7 @@ object GolangPsiUtil {
                             commentStruct.nameComment = DocNameComment(methodName, comment)
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// Deprecated ") -> {
+                        comment.text.startsWith("// Deprecated") -> {
                             commentStruct.deprecatedComment = DocDeprecatedComment(comment)
                             resolve(commentStruct, before)
                         }

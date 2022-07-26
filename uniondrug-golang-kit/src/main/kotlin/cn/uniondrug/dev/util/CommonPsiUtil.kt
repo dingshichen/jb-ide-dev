@@ -118,25 +118,27 @@ object CommonPsiUtil {
     ): ArrayList<ApiParam> {
         val structName = getStructName(psiComment)
         val goTypeSpecs = GoTypesIndex.find(structName, project, null, null)
+        if (goTypeSpecs.isEmpty()) throw DocBuildFailException("查找不到 $packageName.$structName 结构体，请确认结构体名称是否正确")
         val params = ArrayList<ApiParam>()
+        var find = false
         for (goTypeSpec in goTypeSpecs) {
             when (val struct = goTypeSpec.specType.type) {
                 is GoStructType -> {
                     val file = struct.containingFile
-                    if (file is GoFile) {
-                        if (packageName != file.packageName) {
-                            continue
-                        }
+                    if (file is GoFile && packageName == file.packageName) {
+                        find = true
+                        struct.fieldDeclarationList.forEach { buildDocParam(parent?.name, it, params) }
+                        break
                     }
-                    struct.fieldDeclarationList.forEach { buildDocParam(parent?.name, it, params) }
                 }
             }
         }
+        if (!find) throw DocBuildFailException("查找不到 $packageName.$structName 结构体，请确认包目录是否正确")
         return params
     }
 
     /**
-     * 获取包名 TODO 校验包目录合理
+     * 获取包名
      */
     private fun getPackageName(psiComment: DocRequestComment): String {
         return psiComment.getParam().run {
@@ -164,7 +166,11 @@ object CommonPsiUtil {
         val type = GolangPsiUtil.getRealTypeOrSelf(fieldType).run {
             commonTypeConvertor.convert(this.contextlessUnderlyingType.presentationText)
         }
-        val example = generateExample(tag, type, name)  // TODO 示例值与类型不匹配抛出异常
+        val example = try {
+            generateExample(tag, type, name)
+        } catch (e: NumberFormatException) {
+            throw DocBuildFailException("参数 $name 的 mock 示例值 ${GolangPsiUtil.getMockValue(tag)} 与自身类型不匹配")
+        }
         val param = ApiParam(
             name = name,
             // 从背后真实的类型转换
