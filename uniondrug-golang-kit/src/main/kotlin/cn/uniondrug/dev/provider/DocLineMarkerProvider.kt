@@ -63,9 +63,13 @@ class DocLineMarkerProvider : LineMarkerProvider {
                         { _, typeSpec ->
                             GolangPsiUtil.resulveStructComment(typeSpec, this)?.let {
                                 val docService = DocService.getInstance()
-                                val mbsEvent = docService.buildMbsDoc(typeSpec, it)
-                                PreviewForm.getInstance(project, this, mbsEvent)
-                                    .popup()
+                                try {
+                                    val mbsEvent = docService.buildMbsDoc(typeSpec, it)
+                                    PreviewForm.getInstance(project, this, mbsEvent)
+                                        .popup()
+                                } catch (e: DocBuildFailException) {
+                                    notifyError(project, e.localizedMessage)
+                                }
                             }
                         },
                         GutterIconRenderer.Alignment.CENTER,
