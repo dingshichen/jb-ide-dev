@@ -117,7 +117,7 @@ object GolangPsiUtil {
                             commentStruct.responseComment = DocResponsePagingComment(comment)
                             resolve(commentStruct, before)
                         }
-                        docErrorParttern.matcher(comment.text).find() -> {
+                        docErrorPattern.matcher(comment.text).find() -> {
                             commentStruct.errorComment += DocErrorComment(comment)
                             resolve(commentStruct, before)
                         }
@@ -203,7 +203,7 @@ object GolangPsiUtil {
     /**
      * 获取 controller 级路由前缀
      */
-    fun findRoutePrefix(struct: PsiElement, psiFile: PsiFile): PsiComment? {
+    fun findRoutePrefix(struct: PsiElement, psiFile: PsiFile): DocRoutePrefixComment? {
         // 需要遍历的上级集合
         val psiElements = psiFile.children
         val firstIndex = psiElements.indexOf(struct.context)
@@ -211,8 +211,8 @@ object GolangPsiUtil {
         while (before >= 0) {
             when (val comment = psiElements[before]) {
                 is PsiComment -> {
-                    if (comment.text.startsWith("// @RoutePrefix ")) {
-                        return comment
+                    if (docRoutePrefixPattern.matcher(comment.text).find()) {
+                        return DocRoutePrefixComment(comment)
                     } else {
                         before -= 2
                     }

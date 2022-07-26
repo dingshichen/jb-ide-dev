@@ -13,17 +13,20 @@ import java.util.*
 val organization = arrayOf("在水一方垂钓园筹备处", "开原市德彪投资股份有限公司", "开原市维多利亚国际娱乐广场",
     "大帅打工子弟小学", "彪记靓汤餐饮有限公司", "桂英风味餐馆", "彪哥解梦馆", "小翠美容有限公司")
 
+val name = arrayOf("德彪", "维力", "钢子", "玉芬", "富贵", "牛二", "小翠", "桂英", "德财", "阿薇")
+
 // 规则 MAP
 val ROLE_MAP = mapOf(
     "uuid-string" to UUID.randomUUID().toString(),
     "id-int" to RandomUtil.randomInt(1, 3000),
     "id-string" to RandomUtil.randomInt(1, 3000).toString(),
-    "nickname-string" to "BiaoGe",
+    "nickname-string" to RandomUtil.randomEle(name),
     "hostname-string" to "127.0.0.1",
-    "name-string" to RandomUtil.randomEle(arrayOf("德彪", "维力", "钢子", "玉芬", "富贵", "牛二", "小翠", "桂英", "德财", "阿薇")),
-    "author-string" to "范德彪",
+    "name-string" to RandomUtil.randomEle(name),
+    "author-string" to RandomUtil.randomEle(name),
     "url-string" to "http://debiao.turboradio.cn",
-    "username-string" to "FanDeBiao",
+    "user-string" to RandomUtil.randomEle(name),
+    "username-string" to RandomUtil.randomEle(name),
     "page-int" to 1,
     "age-int" to RandomUtil.randomInt(0, 70),
     "email-string" to "fandebiao@turboradio.cn",
@@ -35,6 +38,7 @@ val ROLE_MAP = mapOf(
     "ip-string" to "218.94.117.256",
     "ipv4-string" to "218.94.117.256",
     "ipv6-string" to "1030::C9B4:FF12:48AA:1A2B",
+    "organizationid-int" to RandomUtil.randomInt(10000, 20000),
     "company-string" to RandomUtil.randomEle(organization),
     "companyname-string" to RandomUtil.randomEle(organization),
     "insurer-string" to RandomUtil.randomEle(organization),
@@ -96,16 +100,22 @@ val ROLE_MAP = mapOf(
 )
 
 /**
+ * 获取准备结果值
+ */
+fun getRoleValue(key: String) = ROLE_MAP[key]
+
+/**
  * 生成 mock 值
  */
-fun generateBaseTypeMockData(type: CommonType, fieldName: String): Any {
+fun generateBaseTypeMockData(type: String, fieldName: String): Any {
     return when (type) {
-        CommonType.BYTE,
-        CommonType.INT,
-        CommonType.LONG -> ROLE_MAP["${fieldName.lowercase()}-int"] ?: 0
-        CommonType.FLOAT -> RandomUtil.randomBigDecimal(BigDecimal("0.01"), BigDecimal("99.99")).toDouble()
-        CommonType.BOOL -> RandomUtil.randomBoolean()
-        CommonType.STRING -> ROLE_MAP["${fieldName.lowercase()}-string"] ?: "xxxxxx"
+        CommonType.BYTE.value,
+        CommonType.INT.value,
+        CommonType.LONG.value -> getRoleValue("${fieldName.lowercase()}-int") ?: 0
+        // Torna 不支持 float 数组展示，只能转化为字符串数组展示
+        CommonType.FLOAT.value -> RandomUtil.randomBigDecimal(BigDecimal("0.01"), BigDecimal("99.99")).toString()
+        CommonType.BOOL.value -> RandomUtil.randomBoolean()
+        CommonType.STRING.value -> getRoleValue("${fieldName.lowercase()}-string") ?: "xxxxxx"
         else -> ""
     }
 }

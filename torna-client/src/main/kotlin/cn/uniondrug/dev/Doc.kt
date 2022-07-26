@@ -431,7 +431,7 @@ class TornaDocService {
         params.forEach {
             val saveCmd = DocParamSaveCmd(
                 name = it.name,
-                type = it.type.value,
+                type = it.type.simpleValue,
                 example = it.getExampleText(),
                 required = if (it.required) 1 else 0,
                 maxLength = it.maxLength,

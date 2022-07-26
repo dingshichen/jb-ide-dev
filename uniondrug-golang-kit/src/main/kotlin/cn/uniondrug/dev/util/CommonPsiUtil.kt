@@ -2,6 +2,7 @@ package cn.uniondrug.dev.util
 
 import cn.uniondrug.dev.*
 import cn.uniondrug.dev.dto.*
+import cn.uniondrug.dev.mock.generateBaseTypeMockData
 import com.goide.psi.*
 import com.goide.psi.impl.GoArrayOrSliceTypeImpl
 import com.goide.psi.impl.GoTypeUtil
@@ -16,37 +17,37 @@ import com.intellij.psi.PsiElement
 object CommonPsiUtil {
 
     fun getResultData() = arrayListOf(
-        ApiParam(name = "errno", type = CommonType.INT, required = true, description = "状态码：0-成功；其他-失败"),
-        ApiParam(name = "error", type = CommonType.STRING, required = true, description = "状态描述"),
-        ApiParam(name = "dataType", type = CommonType.STRING, required = true, description = "数据类型：OBJECT/LIST/ERROR"),
-        ApiParam(name = "data", type = CommonType.OBJECT, required = true, description = "数据"),
+        ApiParam(name = "errno", type = CommonType.INT, required = true, description = "状态码：0-成功；其他-失败", example = 0),
+        ApiParam(name = "error", type = CommonType.STRING, required = true, description = "状态描述", example = "success"),
+        ApiParam(name = "dataType", type = CommonType.STRING, required = true, description = "数据类型：OBJECT/LIST/ERROR", example = "OBJECT"),
+        ApiParam(name = "data", type = CommonType.OBJECT, required = true, description = "数据", example = ""),
     )
 
     fun getResultList() = arrayListOf(
-        ApiParam(name = "errno", type = CommonType.INT, required = true, description = "状态码：0-成功；其他-失败"),
-        ApiParam(name = "error", type = CommonType.STRING, required = true, description = "状态描述"),
-        ApiParam(name = "dataType", type = CommonType.STRING, required = true, description = "数据类型：OBJECT/LIST/ERROR"),
-        ApiParam(name = "data", type = CommonType.ARRAY_OBJECT, required = true, description = "数据"),
+        ApiParam(name = "errno", type = CommonType.INT, required = true, description = "状态码：0-成功；其他-失败", example = 0),
+        ApiParam(name = "error", type = CommonType.STRING, required = true, description = "状态描述", example = "success"),
+        ApiParam(name = "dataType", type = CommonType.STRING, required = true, description = "数据类型：OBJECT/LIST/ERROR", example = "OBJECT"),
+        ApiParam(name = "data", type = CommonType.ARRAY_OBJECT, required = true, description = "数据", example = ""),
     )
 
     fun getResultPagingBody() = arrayListOf(
-        ApiParam(name = "errno", type = CommonType.INT, required = true, description = "状态码：0-成功；其他-失败"),
-        ApiParam(name = "error", type = CommonType.STRING, required = true, description = "状态描述"),
-        ApiParam(name = "dataType", type = CommonType.STRING, required = true, description = "数据类型：OBJECT/LIST/ERROR"),
+        ApiParam(name = "errno", type = CommonType.INT, required = true, description = "状态码：0-成功；其他-失败", example = 0),
+        ApiParam(name = "error", type = CommonType.STRING, required = true, description = "状态描述", example = "success"),
+        ApiParam(name = "dataType", type = CommonType.STRING, required = true, description = "数据类型：OBJECT/LIST/ERROR", example = "OBJECT"),
         ApiParam(name = "data", type = CommonType.OBJECT, required = true, description = "数据", children = arrayListOf(
-            ApiParam(name = "body", type = CommonType.ARRAY_OBJECT, required = true, description = "列表信息", parentId = "data"),
+            ApiParam(name = "body", type = CommonType.ARRAY_OBJECT, required = true, description = "列表信息", parentId = "data", example = ""),
             ApiParam(name = "paging", type = CommonType.OBJECT, required = true, description = "分页信息", parentId = "data",
                 children = arrayListOf(
-                    ApiParam(name = "first", type = CommonType.INT, required = true, description = "第一页", parentId = "paging"),
-                    ApiParam(name = "before", type = CommonType.INT, required = true, description = "前一页", parentId = "paging"),
-                    ApiParam(name = "current", type = CommonType.INT, required = true, description = "当前页", parentId = "paging"),
-                    ApiParam(name = "last", type = CommonType.INT, required = true, description = "最后一页", parentId = "paging"),
-                    ApiParam(name = "next", type = CommonType.INT, required = true, description = "下一页", parentId = "paging"),
-                    ApiParam(name = "limit", type = CommonType.INT, required = true, description = "每页条数", parentId = "paging"),
-                    ApiParam(name = "totalPages", type = CommonType.INT, required = true, description = "总页数", parentId = "paging"),
-                    ApiParam(name = "totalItems", type = CommonType.INT, required = true, description = "总数据量", parentId = "paging"),
-            )),
-        )),
+                    ApiParam(name = "first", type = CommonType.INT, required = true, description = "第一页", parentId = "paging", example = 1),
+                    ApiParam(name = "before", type = CommonType.INT, required = true, description = "前一页", parentId = "paging", example = 1),
+                    ApiParam(name = "current", type = CommonType.INT, required = true, description = "当前页", parentId = "paging", example = 1),
+                    ApiParam(name = "last", type = CommonType.INT, required = true, description = "最后一页", parentId = "paging", example = 9),
+                    ApiParam(name = "next", type = CommonType.INT, required = true, description = "下一页", parentId = "paging", example = 2),
+                    ApiParam(name = "limit", type = CommonType.INT, required = true, description = "每页条数", parentId = "paging", example = 10),
+                    ApiParam(name = "totalPages", type = CommonType.INT, required = true, description = "总页数", parentId = "paging", example = 10),
+                    ApiParam(name = "totalItems", type = CommonType.INT, required = true, description = "总数据量", parentId = "paging", example = 99),
+            ), example = ""),
+        ), example = ""),
     )
 
     /**
@@ -135,7 +136,7 @@ object CommonPsiUtil {
     }
 
     /**
-     * 获取包名
+     * 获取包名 TODO 校验包目录合理
      */
     private fun getPackageName(psiComment: DocRequestComment): String {
         return psiComment.getParam().run {
@@ -159,13 +160,18 @@ object CommonPsiUtil {
         val commonTypeConvertor = field.project.getService(CommonTypeConvertor::class.java)
         val fieldType = field.type ?: return
         val tag = field.tag ?: return
+        val name = GolangPsiUtil.getFieldJsonName(field) ?: throw DocBuildFailException("获取参数属性 json 名称失败")
+        val type = GolangPsiUtil.getRealTypeOrSelf(fieldType).run {
+            commonTypeConvertor.convert(this.contextlessUnderlyingType.presentationText)
+        }
+        val example = generateExample(tag, type, name)  // TODO 示例值与类型不匹配抛出异常
         val param = ApiParam(
-            name = GolangPsiUtil.getFieldJsonName(field) ?: throw DocBuildFailException("获取参数属性 json 名称失败"),
+            name = name,
             // 从背后真实的类型转换
-            type = commonTypeConvertor.convert(GolangPsiUtil.getRealTypeOrSelf(fieldType).contextlessUnderlyingType.presentationText),
+            type = type,
             required = GolangPsiUtil.isRequired(tag),
             maxLength = GolangPsiUtil.getMaxLength(tag),
-            example = GolangPsiUtil.getMockValue(tag),
+            example = example,
             parentId = parent,
             description = GolangPsiUtil.getFieldDescription(tag)
         )
@@ -181,6 +187,31 @@ object CommonPsiUtil {
             else -> {}
         }
         params += param
+    }
+
+    /**
+     * 数组的示例值可以是用 "," 分割的数组形式，但不要有 [] 符号
+     */
+    private fun generateExample(tag: GoTag, type: CommonType, fieldName: String): Any {
+        return GolangPsiUtil.getMockValue(tag).let {
+            when (type) {
+                CommonType.STRING -> it ?: generateBaseTypeMockData(type.value, fieldName)
+                CommonType.BOOL -> true
+                CommonType.BYTE -> it?.toInt() ?: generateBaseTypeMockData(type.value, fieldName)
+                CommonType.INT -> it?.toInt() ?: generateBaseTypeMockData(type.value, fieldName)
+                CommonType.LONG -> it?.toLong() ?: generateBaseTypeMockData(type.value, fieldName)
+                CommonType.FLOAT -> it?.toFloat() ?: generateBaseTypeMockData(type.value, fieldName)
+                CommonType.ARRAY -> it?.splitToTypeList(type) ?: emptyList<String>()
+                CommonType.OBJECT -> it ?: ""
+                CommonType.ARRAY_STRING -> it?.splitToTypeList(type) ?: listOf(generateBaseTypeMockData(CommonType.STRING.value, fieldName), generateBaseTypeMockData(CommonType.STRING.value, fieldName))
+                CommonType.ARRAY_BOOL -> listOf(false, true)
+                CommonType.ARRAY_BYTE -> it?.splitToTypeList(type) ?: listOf(generateBaseTypeMockData(CommonType.BYTE.value, fieldName),generateBaseTypeMockData(CommonType.BYTE.value, fieldName))
+                CommonType.ARRAY_INT -> it?.splitToTypeList(type) ?: listOf(generateBaseTypeMockData(CommonType.INT.value, fieldName), generateBaseTypeMockData(CommonType.INT.value, fieldName))
+                CommonType.ARRAY_LONG -> it?.splitToTypeList(type) ?: listOf(generateBaseTypeMockData(CommonType.LONG.value, fieldName), generateBaseTypeMockData(CommonType.LONG.value, fieldName))
+                CommonType.ARRAY_FLOAT -> it?.splitToTypeList(type) ?: listOf(generateBaseTypeMockData(CommonType.FLOAT.value, fieldName), generateBaseTypeMockData(CommonType.FLOAT.value, fieldName))
+                CommonType.ARRAY_OBJECT -> emptyList<String>()
+            }
+        }
     }
 
     private fun findChildrenFieldDeclaration(param: ApiParam, goType: GoType, context: PsiElement?) {

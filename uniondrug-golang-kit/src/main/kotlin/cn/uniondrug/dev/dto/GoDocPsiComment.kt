@@ -15,7 +15,8 @@ val docRequestPattern: Pattern = Pattern.compile("// @Request\\(.+\\)\\s*")
 val docResponsePattern: Pattern = Pattern.compile("// @Response\\(.+\\)\\s*")
 val docResponseListPattern: Pattern = Pattern.compile("// @ResponseList\\(.+\\)\\s*")
 val docResponsePagingPattern: Pattern = Pattern.compile("// @ResponsePaging\\(.+\\)\\s*")
-val docErrorParttern: Pattern = Pattern.compile("// @Error\\(.+\\)\\s*")
+val docErrorPattern: Pattern = Pattern.compile("// @Error\\(.+\\)\\s*")
+val docRoutePrefixPattern: Pattern = Pattern.compile("// @RoutePrefix\\(.+\\)\\s*")
 
 /**
  * 接口名称注释
@@ -26,8 +27,7 @@ class DocNameComment(
 ) : PsiComment by psiComment {
 
     fun getName() =
-        psiComment.text?.getCommentValue(methodName)
-            ?: throw DocBuildFailException("分析接口名称失败，请检查接口定义")
+        psiComment.text?.getCommentValue(methodName) ?: throw DocBuildFailException("分析接口名称失败，请检查接口定义")
 
     /**
      * 是否有接口请求方式前缀
@@ -47,6 +47,16 @@ class DocDeprecatedComment(
 ) : PsiComment by psiComment {
 
     fun getDeprecated() = psiComment.text.getCommentValue("Deprecated")
+}
+
+/**
+ * 接口路径前缀
+ */
+class DocRoutePrefixComment(
+    private val psiComment: PsiComment
+) : PsiComment by psiComment {
+
+    fun getPath() = psiComment.text.getAnnotationValue("RoutePrefix")
 }
 
 /**

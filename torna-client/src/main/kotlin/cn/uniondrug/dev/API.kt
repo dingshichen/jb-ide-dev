@@ -1,8 +1,6 @@
 /** @author dingshichen */
 package cn.uniondrug.dev
 
-import cn.uniondrug.dev.mock.generateBaseTypeMockData
-import com.alibaba.fastjson.JSONArray
 import com.alibaba.fastjson.JSONObject
 
 /**
@@ -110,8 +108,8 @@ data class ApiParam(
     var maxLength: String? = null,
     /** 描述  */
     var description: String? = null,
-    /** 示例值 */
-    var example: String? = null,
+    /** 示例值，示例值的类型随字段类型而变化 */
+    var example: Any,
     /** 父节点  */
     var parentId: String? = null,
     /** 子节点  */
@@ -202,25 +200,18 @@ fun getExample(param: ApiParam): Any {
         CommonType.INT,
         CommonType.LONG,
         CommonType.FLOAT,
-        CommonType.BOOL -> param.example ?: generateBaseTypeMockData(param.type, param.name)
-        CommonType.OBJECT -> jsonObject {
-            param.children?.forEach {
-                this[it.name] = getExample(it)
-            }
-        }
-        CommonType.ARRAY -> JSONArray()
+        CommonType.BOOL,
+        CommonType.ARRAY,
         CommonType.ARRAY_STRING,
         CommonType.ARRAY_BOOL,
         CommonType.ARRAY_BYTE,
         CommonType.ARRAY_INT,
         CommonType.ARRAY_LONG,
-        CommonType.ARRAY_FLOAT -> {
-            val begin = param.type.value.indexOf("[")
-            val end = param.type.value.indexOf("]")
-            val sampleType = param.type.value.substring(begin + 1, end)
-            arrayJsonOf(
-                param.example ?: generateBaseTypeMockData(param.type, sampleType)
-            )
+        CommonType.ARRAY_FLOAT -> param.example
+        CommonType.OBJECT -> jsonObject {
+            param.children?.forEach {
+                this[it.name] = getExample(it)
+            }
         }
         CommonType.ARRAY_OBJECT -> arrayJsonOf(
             jsonObject {

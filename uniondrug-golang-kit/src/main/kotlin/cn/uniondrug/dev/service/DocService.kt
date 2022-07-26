@@ -8,7 +8,10 @@ import cn.uniondrug.dev.dto.GoApiStruct
 import cn.uniondrug.dev.dto.GoMbsStruct
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
-import cn.uniondrug.dev.util.*
+import cn.uniondrug.dev.util.CommonPsiUtil
+import cn.uniondrug.dev.util.GolangPsiUtil
+import cn.uniondrug.dev.util.getCommentValue
+import cn.uniondrug.dev.util.humpToPath
 import com.goide.psi.GoMethodDeclaration
 import com.goide.psi.GoTypeDeclaration
 import com.goide.psi.GoTypeSpec
@@ -35,9 +38,7 @@ class DocService {
         val receiverType = method.receiverType
         val urlPrefix: String = if (receiverType != null) {
             GolangPsiUtil.getRealTypeOrSelf(receiverType).contextlessResolve()?.let {
-                GolangPsiUtil.findRoutePrefix(it, it.containingFile)?.let { psiComment ->
-                    psiComment.text?.getAnnotationValue("RoutePrefix") ?: throw DocBuildFailException("获取控制器路径前缀失败！请检查 @RoutePrefix 注解内容")
-                }
+                GolangPsiUtil.findRoutePrefix(it, it.containingFile)?.getPath()
             } ?: ""
         } else ""
         val (url, httpMethod, contentType) = goApiStruct.getComment?.let {
