@@ -2,9 +2,9 @@
 package cn.uniondrug.dev.dto
 
 import cn.uniondrug.dev.DocBuildFailException
+import cn.uniondrug.dev.util.getAnnotationMultiValues
 import cn.uniondrug.dev.util.getAnnotationValue
 import cn.uniondrug.dev.util.getCommentValue
-import cn.uniondrug.dev.util.removeSuffix
 import com.intellij.psi.PsiComment
 import java.util.regex.Pattern
 
@@ -26,7 +26,17 @@ class DocNameComment(
 ) : PsiComment by psiComment {
 
     fun getName() =
-        psiComment.text?.getCommentValue(methodName)?.removeSuffix() ?: throw DocBuildFailException("分析接口名称失败，请检查接口定义")
+        psiComment.text?.getCommentValue(methodName)
+            ?: throw DocBuildFailException("分析接口名称失败，请检查接口定义")
+
+    /**
+     * 是否有接口请求方式前缀
+     */
+    fun isRestfullPrefix() = isGetPrefix() || isPostPrefix()
+
+    fun isGetPrefix() = psiComment.text.startsWith("// Get")
+
+    fun isPostPrefix() = psiComment.text.startsWith("// Post")
 }
 
 /**
@@ -54,39 +64,70 @@ class DocGetComment(
  */
 class DocPostComment(
     private val psiComment: PsiComment
-) : PsiComment by psiComment
+) : PsiComment by psiComment {
+
+    fun getPath() = psiComment.text.getAnnotationValue("Post")
+}
 
 /*
  * 接口作者注释
  */
 class DocAuthorComment(
     private val psiComment: PsiComment
-) : PsiComment by psiComment
+) : PsiComment by psiComment {
+
+    fun getAuthor() = psiComment.text.getAnnotationValue("Author")
+}
 
 /*
  * 接口入参注释
  */
-class DocRequestComment(psiComment: PsiComment) : PsiComment by psiComment
+open class DocRequestComment(
+    private val psiComment: PsiComment
+) : PsiComment by psiComment {
+
+    open fun getParam() = psiComment.text.getAnnotationValue("Request")
+}
 
 /*
  * 接口返回值注释 数据类型为 object
  */
-open class DocResponseComment(psiComment: PsiComment) : PsiComment by psiComment
+open class DocResponseComment(
+    private val psiComment: PsiComment
+) : DocRequestComment(psiComment) {
+
+    override fun getParam() = psiComment.text.getAnnotationValue("Response")
+}
 
 /*
  * 接口返回值注释 数据类型为 list
  */
-class DocResponseListComment(psiComment: PsiComment) : DocResponseComment(psiComment)
+class DocResponseListComment(
+    private val psiComment: PsiComment
+) : DocResponseComment(psiComment) {
+
+    override fun getParam() = psiComment.text.getAnnotationValue("ResponseList")
+}
 
 /*
  * 接口返回值注释 数据类型为 paging
  */
-class DocResponsePagingComment(psiComment: PsiComment) : DocResponseComment(psiComment)
+class DocResponsePagingComment(
+    private val psiComment: PsiComment
+) : DocResponseComment(psiComment) {
+
+    override fun getParam() = psiComment.text.getAnnotationValue("ResponsePaging")
+}
 
 /*
  * 接口错误码注释
  */
-class DocErrorComment(psiComment: PsiComment) : PsiComment by psiComment
+class DocErrorComment(
+    private val psiComment: PsiComment
+) : PsiComment by psiComment {
+
+    fun getValues() = psiComment.text.getAnnotationMultiValues("Error")
+}
 
 /*
  * 接口是否忽略注释

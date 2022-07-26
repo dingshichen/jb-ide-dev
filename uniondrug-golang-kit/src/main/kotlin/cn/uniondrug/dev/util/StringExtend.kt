@@ -76,4 +76,4 @@ fun String.humpToPath() = buildString {
 /**
  * 舍弃英文 . 后缀
  */
-fun String.removeSuffix(): String = if (endsWith(".")) substring(0, length - 2) else this
+//fun String.removePointSuffix(): String = if (endsWith(".")) substring(0, length - 1) else this

@@ -1,12 +1,12 @@
 package cn.uniondrug.dev.util
 
 import cn.uniondrug.dev.*
+import cn.uniondrug.dev.dto.*
 import com.goide.psi.*
 import com.goide.psi.impl.GoArrayOrSliceTypeImpl
 import com.goide.psi.impl.GoTypeUtil
 import com.goide.stubs.index.GoTypesIndex
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 
 /**
@@ -52,25 +52,25 @@ object CommonPsiUtil {
     /**
      * 获取 RequestBoy
      */
-    fun getRequestBody(project: Project, psiComment: PsiComment): ArrayList<ApiParam> {
+    fun getRequestBody(project: Project, psiComment: DocRequestComment): ArrayList<ApiParam> {
         return getBody(project, psiComment, getPackageName(psiComment))
     }
 
     /**
      * 获取 ResponseBody
      */
-    fun getResponseBody(project: Project, psiComment: PsiComment?): ArrayList<ApiParam> {
+    fun getResponseBody(project: Project, psiComment: DocResponseComment?): ArrayList<ApiParam> {
         if (psiComment == null) {
             return getResultData()
         }
-        return when (psiComment.text.getCommentKey()) {
-            "@ResponseList" -> {
+        return when (psiComment) {
+            is DocResponseListComment -> {
                 val result = getResultList()
                 val body = getBody(project, psiComment, getPackageName(psiComment), result[3])
                 result[3].children = body
                 result
             }
-            "@ResponsePaging" -> {
+            is DocResponsePagingComment -> {
                 val result = getResultPagingBody()
                 val body = getBody(project, psiComment, getPackageName(psiComment), result[3].children!![0])
                 result[3].children!![0].children = body
@@ -102,16 +102,16 @@ object CommonPsiUtil {
     /**
      * 获取错误码
      */
-    fun getErrnos(errorComment: List<PsiComment>): List<ApiErrno> = errorComment.map {
-        it.text.split(" ").run {
-            if (this.size < 4) throw DocBuildFailException("解析错误码错误，请核对错误码是否定义如下：// @Error 1001 系统错误")
-            ApiErrno(this[2], this[3], if (this.size >= 5) this[4] else "")
+    fun getErrnos(errorComment: List<DocErrorComment>): List<ApiErrno> = errorComment.map {
+        it.getValues().run {
+            if (size < 2 || size > 3) throw DocBuildFailException("解析错误码错误，请核对错误码是否定义如下：// @Error(1001, 系统错误, 需发起重试)")
+            ApiErrno(this[0], this[1], if (this.size >= 3) this[2] else "")
         }
     }
 
     private fun getBody(
         project: Project,
-        psiComment: PsiComment,
+        psiComment: DocRequestComment,
         packageName: String,
         parent: ApiParam? = null,
     ): ArrayList<ApiParam> {
@@ -137,16 +137,20 @@ object CommonPsiUtil {
     /**
      * 获取包名
      */
-    private fun getPackageName(psiComment: PsiComment): String {
-        val allName = psiComment.text.split(" ")[2]
-        return allName.substring(0, allName.lastIndexOf("."))
+    private fun getPackageName(psiComment: DocRequestComment): String {
+        return psiComment.getParam().run {
+            substring(0, lastIndexOf("."))
+        }
     }
 
     /**
      * 获取结构体名称
      */
-    private fun getStructName(psiComment: PsiComment) =
-        psiComment.text.substring(psiComment.text.lastIndexOf(".") + 1)
+    private fun getStructName(psiComment: DocRequestComment): String {
+        return psiComment.getParam().run {
+            substring(lastIndexOf(".") + 1)
+        }
+    }
 
     /**
      * 构建参数

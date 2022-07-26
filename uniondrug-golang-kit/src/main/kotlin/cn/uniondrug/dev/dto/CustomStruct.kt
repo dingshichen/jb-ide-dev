@@ -19,8 +19,6 @@ data class GoApiStruct(
     val descComment: MutableList<DocDescComment> = mutableListOf(),
 ) {
 
-
-
     /**
      * 接口有效判断
      */
@@ -28,8 +26,7 @@ data class GoApiStruct(
             && requestComment != null
             && (getComment != null
             || postComment != null
-            || nameComment!!.text.startsWith("// Post")
-            || nameComment!!.text.startsWith("// Get"))
+            || nameComment!!.isRestfullPrefix())
 
     /**
      * 接口是否可忽略

@@ -8,10 +8,7 @@ import cn.uniondrug.dev.dto.GoApiStruct
 import cn.uniondrug.dev.dto.GoMbsStruct
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
-import cn.uniondrug.dev.util.CommonPsiUtil
-import cn.uniondrug.dev.util.GolangPsiUtil
-import cn.uniondrug.dev.util.getCommentValue
-import cn.uniondrug.dev.util.humpToPath
+import cn.uniondrug.dev.util.*
 import com.goide.psi.GoMethodDeclaration
 import com.goide.psi.GoTypeDeclaration
 import com.goide.psi.GoTypeSpec
@@ -35,35 +32,34 @@ class DocService {
      * 构建 API DTO  # (method.receiverType as GoPointerTypeImpl).type.contextlessResolve().containingFile.children
      */
     fun buildApiDoc(project: Project, method: GoMethodDeclaration, goApiStruct: GoApiStruct): Api {
-        val methodName = method.name ?: throw DocBuildFailException("分析接口方法名失败")
         val receiverType = method.receiverType
         val urlPrefix: String = if (receiverType != null) {
             GolangPsiUtil.getRealTypeOrSelf(receiverType).contextlessResolve()?.let {
                 GolangPsiUtil.findRoutePrefix(it, it.containingFile)?.let { psiComment ->
-                    psiComment.text?.getCommentValue("@RoutePrefix ") ?: throw DocBuildFailException("获取控制器路径前缀失败！请检查 @RoutePrefix 注解内容")
+                    psiComment.text?.getAnnotationValue("RoutePrefix") ?: throw DocBuildFailException("获取控制器路径前缀失败！请检查 @RoutePrefix 注解内容")
                 }
             } ?: ""
         } else ""
         val (url, httpMethod, contentType) = goApiStruct.getComment?.let {
             ApiBaseAccess(
-                url = it.text.getCommentValue("@Get"),
+                url = it.getPath(),
                 httpMethod = "GET",
                 contentType = "application/x-www-form-urlencoded",
             )
         } ?: goApiStruct.postComment?.let {
             ApiBaseAccess(
-                url = it.text.getCommentValue("@Post"),
+                url = it.getPath(),
                 httpMethod = "POST",
                 contentType = "application/json",
             )
         } ?: goApiStruct.nameComment?.let {
-            if (it.text.startsWith("// Get")) {
+            if (it.isGetPrefix()) {
                 ApiBaseAccess(
                     url = it.text.substring(6).split(" ")[0].humpToPath(),
                     httpMethod = "Get",
                     contentType = "application/x-www-form-urlencoded",
                 )
-            } else if (it.text.startsWith("// Post")) {
+            } else if (it.isPostPrefix()) {
                 ApiBaseAccess(
                     url = it.text.substring(7).split(" ")[0].humpToPath(),
                     httpMethod = "POST",
@@ -73,10 +69,10 @@ class DocService {
         } ?: throw DocBuildFailException("分析接口基本协议错误，请检查接口定义")
         return Api(
             folder = receiverType?.presentationText?.replace("*", "") ?: "",
-            name = goApiStruct.nameComment?.text?.getCommentValue(methodName) ?: throw DocBuildFailException("分析接口名称失败，请检查接口定义"),
+            name = goApiStruct.nameComment!!.getName(),
             description = goApiStruct.descComment.reversed().joinToString("") { it.text.replace("//", "") },
-            author = goApiStruct.authorComment?.text?.getCommentValue("Author") ?: "",
-            deprecated = goApiStruct.deprecatedComment?.text?.getCommentValue("Deprecated"),
+            author = goApiStruct.authorComment?.getAuthor() ?: "",
+            deprecated = goApiStruct.deprecatedComment?.getDeprecated() ?: "",
             url = "/$urlPrefix/$url".replace("///", "/").replace("//", "/"),
             httpMethod = httpMethod,
             contentType = contentType,
