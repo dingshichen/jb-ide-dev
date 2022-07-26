@@ -17,17 +17,20 @@ val docResponseListPattern: Pattern = Pattern.compile("// @ResponseList\\(.+\\)\
 val docResponsePagingPattern: Pattern = Pattern.compile("// @ResponsePaging\\(.+\\)\\s*")
 val docErrorPattern: Pattern = Pattern.compile("// @Error\\(.+\\)\\s*")
 val docRoutePrefixPattern: Pattern = Pattern.compile("// @RoutePrefix\\(.+\\)\\s*")
+val docMbsPattern: Pattern = Pattern.compile("// @Mbs\\(.+\\)\\s*")
+val docMbsTopicPattern: Pattern = Pattern.compile("// @Topic\\(.+\\)\\s*")
+val docMbsTagPattern: Pattern = Pattern.compile("// @Tag\\(.+\\)\\s*")
 
 /**
  * 接口名称注释
  */
 class DocNameComment(
-    private val methodName: String,
+    private val docName: String,
     private val psiComment: PsiComment
 ) : PsiComment by psiComment {
 
     fun getName() =
-        psiComment.text?.getCommentValue(methodName) ?: throw DocBuildFailException("分析接口名称失败，请检查接口定义")
+        psiComment.text?.getCommentValue(docName) ?: throw DocBuildFailException("分析接口名称失败，请检查接口定义")
 
     /**
      * 是否有接口请求方式前缀
@@ -79,7 +82,7 @@ class DocPostComment(
     fun getPath() = psiComment.text.getAnnotationValue("Post")
 }
 
-/*
+/**
  * 接口作者注释
  */
 class DocAuthorComment(
@@ -89,7 +92,7 @@ class DocAuthorComment(
     fun getAuthor() = psiComment.text.getAnnotationValue("Author")
 }
 
-/*
+/**
  * 接口入参注释
  */
 open class DocRequestComment(
@@ -99,7 +102,7 @@ open class DocRequestComment(
     open fun getParam() = psiComment.text.getAnnotationValue("Request")
 }
 
-/*
+/**
  * 接口返回值注释 数据类型为 object
  */
 open class DocResponseComment(
@@ -109,7 +112,7 @@ open class DocResponseComment(
     override fun getParam() = psiComment.text.getAnnotationValue("Response")
 }
 
-/*
+/**
  * 接口返回值注释 数据类型为 list
  */
 class DocResponseListComment(
@@ -119,7 +122,7 @@ class DocResponseListComment(
     override fun getParam() = psiComment.text.getAnnotationValue("ResponseList")
 }
 
-/*
+/**
  * 接口返回值注释 数据类型为 paging
  */
 class DocResponsePagingComment(
@@ -129,7 +132,7 @@ class DocResponsePagingComment(
     override fun getParam() = psiComment.text.getAnnotationValue("ResponsePaging")
 }
 
-/*
+/**
  * 接口错误码注释
  */
 class DocErrorComment(
@@ -139,12 +142,42 @@ class DocErrorComment(
     fun getValues() = psiComment.text.getAnnotationMultiValues("Error")
 }
 
-/*
+/**
  * 接口是否忽略注释
  */
 class DocIgnoreComment(psiComment: PsiComment) : PsiComment by psiComment
 
-/*
+/**
  * 接口详情描述注释
  */
 class DocDescComment(psiComment: PsiComment) : PsiComment by psiComment
+
+/**
+ * MBS 通道注释
+ */
+class DocMbsComment(
+    private val psiComment: PsiComment
+) : PsiComment by psiComment {
+
+    fun getMbs() = psiComment.text.getAnnotationValue("Mbs")
+}
+
+/**
+ * MBS Topic 注释
+ */
+class DocMbsTopicComment(
+    private val psiComment: PsiComment
+) : PsiComment by psiComment {
+
+    fun getTopic() = psiComment.text.getAnnotationValue("Topic")
+}
+
+/**
+ * MBS Tag 注释
+ */
+class DocMbsTagComment(
+    private val psiComment: PsiComment
+) : PsiComment by psiComment {
+
+    fun getTag() = psiComment.text.getAnnotationValue("Tag")
+}

@@ -39,11 +39,11 @@ data class GoApiStruct(
  * GO MBS 注释结构
  */
 data class GoMbsStruct(
-    var nameComment: PsiComment? = null,
-    var authorComment: PsiComment? = null,
-    var mbsComment: PsiComment? = null,
-    var topicComment: PsiComment? = null,
-    var tagComment: PsiComment? = null,
+    var nameComment: DocNameComment? = null,
+    var authorComment: DocAuthorComment? = null,
+    var mbsComment: DocMbsComment? = null,
+    var topicComment: DocMbsTopicComment? = null,
+    var tagComment: DocMbsTagComment? = null,
 ) {
 
     /**

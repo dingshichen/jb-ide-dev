@@ -93,10 +93,10 @@ class DocService {
             else -> throw DocBuildFailException("构建 MBS 文档失败，解析不到对应元素的类型")
         }
         return MbsEvent(
-            name = goMbsStruct.nameComment?.text?.getCommentValue(typeSpec.name!!)!!,
-            mbs = goMbsStruct.mbsComment?.text?.getCommentValue("Mbs")!!,
-            topic = goMbsStruct.topicComment?.text?.getCommentValue("Topic")!!,
-            tag = goMbsStruct.tagComment?.text?.getCommentValue("Tag")!!,
+            name = goMbsStruct.nameComment!!.getName(),
+            mbs = goMbsStruct.mbsComment!!.getMbs(),
+            topic = goMbsStruct.topicComment!!.getTopic(),
+            tag = goMbsStruct.tagComment!!.getTag(),
             author = goMbsStruct.authorComment?.text?.getCommentValue("Author") ?: "",
             messageParams =  CommonPsiUtil.getMessageBody(typeSpec)
         )

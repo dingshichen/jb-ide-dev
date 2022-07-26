@@ -172,24 +172,24 @@ object GolangPsiUtil {
             when (val comment = psiElements[before]) {
                 is PsiComment -> {
                     when {
-                        comment.text.startsWith("// $structName") -> {
-                            commentStruct.nameComment = comment
+                        comment.text.startsWith("// $structName ") -> {
+                            commentStruct.nameComment = DocNameComment(structName, comment)
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @Mbs ") -> {
-                            commentStruct.mbsComment = comment
+                        docMbsPattern.matcher(comment.text).find() -> {
+                            commentStruct.mbsComment = DocMbsComment(comment)
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @Topic ") -> {
-                            commentStruct.topicComment = comment
+                        docMbsTopicPattern.matcher(comment.text).find() -> {
+                            commentStruct.topicComment = DocMbsTopicComment(comment)
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @Tag ") -> {
-                            commentStruct.tagComment = comment
+                        docMbsTagPattern.matcher(comment.text).find() -> {
+                            commentStruct.tagComment = DocMbsTagComment(comment)
                             resolve(commentStruct, before)
                         }
-                        comment.text.startsWith("// @Author ") -> {
-                            commentStruct.authorComment = comment
+                        docAuthorPattern.matcher(comment.text).find() -> {
+                            commentStruct.authorComment = DocAuthorComment(comment)
                             resolve(commentStruct, before)
                         }
                     }
