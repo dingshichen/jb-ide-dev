@@ -222,4 +222,28 @@ object GolangPsiUtil {
         }
         return null
     }
+
+    /**
+     * 获取 controller 标题
+     */
+    fun findStructTitle(goType: GoType, struct: PsiElement, psiFile: PsiFile): String {
+        val structName = goType.presentationText.replace("*", "")
+        // 需要遍历的上级集合
+        val psiElements = psiFile.children
+        val firstIndex = psiElements.indexOf(struct.context)
+        var before = firstIndex - 2
+        while (before >= 0) {
+            when (val comment = psiElements[before]) {
+                is PsiComment -> {
+                    if (comment.text.startsWith("// $structName")) {
+                        return comment.text.getCommentValue(structName).ifBlank { structName }
+                    } else {
+                        before -= 2
+                    }
+                }
+                else -> before = 0
+            }
+        }
+        return structName
+    }
 }

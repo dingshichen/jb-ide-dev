@@ -36,11 +36,16 @@ class DocService {
      */
     fun buildApiDoc(project: Project, method: GoMethodDeclaration, goApiStruct: GoApiStruct): Api {
         val receiverType = method.receiverType
-        val urlPrefix: String = if (receiverType != null) {
+        var urlPrefix = ""
+        var folder = ""
+        if (receiverType != null) {
             GolangPsiUtil.getRealTypeOrSelf(receiverType).contextlessResolve()?.let {
-                GolangPsiUtil.findRoutePrefix(it, it.containingFile)?.getPath()
-            } ?: ""
-        } else ""
+                GolangPsiUtil.findRoutePrefix(it, it.containingFile)?.getPath()?.let { value ->
+                    urlPrefix = value
+                }
+                folder = GolangPsiUtil.findStructTitle(receiverType, it, it.containingFile)
+            }
+        }
         val (url, httpMethod, contentType) = goApiStruct.getComment?.let {
             ApiBaseAccess(
                 url = it.getPath(),
@@ -69,7 +74,7 @@ class DocService {
             } else null
         } ?: throw DocBuildFailException("分析接口基本协议错误，请检查接口定义")
         return Api(
-            folder = receiverType?.presentationText?.replace("*", "") ?: "",
+            folder = folder,
             name = goApiStruct.nameComment!!.getName(),
             description = goApiStruct.descComment.reversed().joinToString("") { it.text.replace("//", "") },
             author = goApiStruct.authorComment?.getAuthor() ?: "",
