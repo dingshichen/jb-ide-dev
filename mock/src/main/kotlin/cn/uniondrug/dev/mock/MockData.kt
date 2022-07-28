@@ -27,6 +27,10 @@ val ROLE_MAP = mapOf(
     "url-string" to "http://debiao.turboradio.cn",
     "user-string" to RandomUtil.randomEle(name),
     "username-string" to RandomUtil.randomEle(name),
+    "workername-string" to RandomUtil.randomEle(name),
+    "worker-string" to RandomUtil.randomEle(name),
+    "creatorname-string" to RandomUtil.randomEle(name),
+    "creator-string" to RandomUtil.randomEle(name),
     "page-int" to 1,
     "age-int" to RandomUtil.randomInt(0, 70),
     "email-string" to "fandebiao@turboradio.cn",
@@ -108,9 +112,9 @@ fun getRoleValue(key: String) = ROLE_MAP[key]
  */
 fun generateBaseTypeMockData(type: String, fieldName: String): Any {
     return when (type) {
-        CommonType.BYTE.value,
-        CommonType.INT.value,
-        CommonType.LONG.value -> getRoleValue("${fieldName.lowercase()}-int") ?: 0
+        CommonType.BYTE.value -> getRoleValue("${fieldName.lowercase()}-int") ?: RandomUtil.randomInt(0, 16)
+        CommonType.INT.value -> getRoleValue("${fieldName.lowercase()}-int") ?: RandomUtil.randomInt(128, 1024)
+        CommonType.LONG.value -> getRoleValue("${fieldName.lowercase()}-int") ?: RandomUtil.randomInt(100000, 1000000)
         // Torna 不支持 float 数组展示，只能转化为字符串数组展示
         CommonType.FLOAT.value -> RandomUtil.randomBigDecimal(BigDecimal("0.01"), BigDecimal("99.99")).toString()
         CommonType.BOOL.value -> RandomUtil.randomBoolean()
