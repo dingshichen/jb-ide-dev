@@ -119,7 +119,6 @@ fun generateBaseTypeMockData(type: String, fieldName: String): Any {
         // Torna 不支持 float 数组展示，只能转化为字符串数组展示
         CommonType.FLOAT.value -> RandomUtil.randomBigDecimal(BigDecimal("0.01"), BigDecimal("99.99")).run {
             setScale(2, RoundingMode.HALF_DOWN)
-            toString()
         }
         CommonType.BOOL.value -> RandomUtil.randomBoolean()
         CommonType.STRING.value -> getRoleValue("${fieldName.lowercase()}-string") ?: "xxxxxx"
