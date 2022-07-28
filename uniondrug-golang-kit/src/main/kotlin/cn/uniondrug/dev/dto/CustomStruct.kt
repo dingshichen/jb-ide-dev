@@ -22,8 +22,7 @@ data class GoApiStruct(
     /**
      * 接口有效判断
      */
-    fun isValid() = nameComment != null
-            && requestComment != null
+    fun isValid() = requestComment != null
             && (getComment != null
             || postComment != null
             || nameComment!!.isRestfullPrefix())

@@ -35,6 +35,8 @@ class DocService {
      * 构建 API
      */
     fun buildApiDoc(project: Project, method: GoMethodDeclaration, goApiStruct: GoApiStruct): Api {
+        val apiName = goApiStruct.nameComment?.getName()
+        if (apiName.isNullOrBlank()) throw DocBuildFailException("你的接口需要一个名称，请在第一行注释里定义此接口的名称，如 // PostAddUser 新增用户")
         val receiverType = method.receiverType
         var urlPrefix = ""
         var folder = ""
@@ -75,7 +77,7 @@ class DocService {
         } ?: throw DocBuildFailException("分析接口基本协议错误，请检查接口定义")
         return Api(
             folder = folder,
-            name = goApiStruct.nameComment!!.getName(),
+            name = apiName,
             description = goApiStruct.descComment.reversed().joinToString("") { it.text.replace("//", "") },
             author = goApiStruct.authorComment?.getAuthor() ?: "",
             deprecated = goApiStruct.deprecatedComment?.getDeprecated() ?: "",
