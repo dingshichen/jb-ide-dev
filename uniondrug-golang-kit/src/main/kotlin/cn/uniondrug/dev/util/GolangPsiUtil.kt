@@ -83,7 +83,6 @@ object GolangPsiUtil {
                     when {
                         comment.text.startsWith("// $methodName ") -> {
                             commentStruct.nameComment = DocNameComment(methodName, comment)
-                            resolve(commentStruct, before)
                         }
                         comment.text.startsWith("// Deprecated") -> {
                             commentStruct.deprecatedComment = DocDeprecatedComment(comment)
@@ -174,7 +173,6 @@ object GolangPsiUtil {
                     when {
                         comment.text.startsWith("// $structName ") -> {
                             commentStruct.nameComment = DocNameComment(structName, comment)
-                            resolve(commentStruct, before)
                         }
                         docMbsPattern.matcher(comment.text).find() -> {
                             commentStruct.mbsComment = DocMbsComment(comment)

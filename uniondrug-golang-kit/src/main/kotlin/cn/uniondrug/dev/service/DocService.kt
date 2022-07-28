@@ -32,7 +32,7 @@ import java.io.IOException
 class DocService {
 
     /**
-     * 构建 API DTO  # (method.receiverType as GoPointerTypeImpl).type.contextlessResolve().containingFile.children
+     * 构建 API
      */
     fun buildApiDoc(project: Project, method: GoMethodDeclaration, goApiStruct: GoApiStruct): Api {
         val receiverType = method.receiverType
