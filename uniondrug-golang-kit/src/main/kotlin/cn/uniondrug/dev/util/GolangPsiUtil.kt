@@ -15,7 +15,8 @@ object GolangPsiUtil {
     /**
      * 获取属性 json 字段名
      */
-    fun getFieldJsonName(field: GoFieldDeclaration) = field.tag?.getValue("json") ?: field.fieldDefinitionList[0].name
+    fun getFieldJsonName(field: GoFieldDeclaration) =
+        field.tag?.getValue("json")?.split(",")?.get(0) ?: field.fieldDefinitionList[0].name
 
     /**
      * 标签是否有必填
