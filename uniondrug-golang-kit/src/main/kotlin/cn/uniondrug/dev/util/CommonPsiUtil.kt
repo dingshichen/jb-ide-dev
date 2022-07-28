@@ -222,12 +222,17 @@ object CommonPsiUtil {
 
     private fun findChildrenFieldDeclaration(param: ApiParam, goType: GoType, context: PsiElement?) {
         val children = arrayListOf<ApiParam>()
-        val typeSpec = GoTypeUtil.findTypeSpec(GolangPsiUtil.getRealTypeOrSelf(goType), context)
-        when (val struct = typeSpec.specType.type) {
-            is GoStructType -> {
-                struct.fieldDeclarationList.forEach { buildDocParam(param.name, it, children) }
-                param.children = children
+        val struct: GoStructType? = if (goType is GoStructType) goType else {
+            GoTypeUtil.findTypeSpec(GolangPsiUtil.getRealTypeOrSelf(goType), context)?.let {
+                when (val value = it.specType.type) {
+                    is GoStructType -> value
+                    else -> null
+                }
             }
+        }
+        struct?.let { type ->
+            type.fieldDeclarationList.forEach { buildDocParam(param.name, it, children) }
+            param.children = children
         }
     }
 }
