@@ -8,6 +8,7 @@ import cn.hutool.core.util.RandomUtil
 import cn.uniondrug.dev.CommonType
 import cn.uniondrug.dev.util.JmInsureMockUtils
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.*
 
 val organization = arrayOf("在水一方垂钓园筹备处", "开原市德彪投资股份有限公司", "开原市维多利亚国际娱乐广场",
@@ -116,7 +117,10 @@ fun generateBaseTypeMockData(type: String, fieldName: String): Any {
         CommonType.INT.value -> getRoleValue("${fieldName.lowercase()}-int") ?: RandomUtil.randomInt(128, 1024)
         CommonType.LONG.value -> getRoleValue("${fieldName.lowercase()}-int") ?: RandomUtil.randomInt(100000, 1000000)
         // Torna 不支持 float 数组展示，只能转化为字符串数组展示
-        CommonType.FLOAT.value -> RandomUtil.randomBigDecimal(BigDecimal("0.01"), BigDecimal("99.99")).toString()
+        CommonType.FLOAT.value -> RandomUtil.randomBigDecimal(BigDecimal("0.01"), BigDecimal("99.99")).run {
+            setScale(2, RoundingMode.HALF_DOWN)
+            toString()
+        }
         CommonType.BOOL.value -> RandomUtil.randomBoolean()
         CommonType.STRING.value -> getRoleValue("${fieldName.lowercase()}-string") ?: "xxxxxx"
         else -> ""
