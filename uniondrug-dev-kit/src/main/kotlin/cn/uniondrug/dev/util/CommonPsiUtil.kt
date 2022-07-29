@@ -191,6 +191,7 @@ fun getBody(
             required = AnnotationUtil.isAnnotated(it, REQUIRED, 0),
             maxLength = getMaxLength(it),
             description = it.getFieldDescription() ?: getUniondrugFieldDescription(it, psiType),
+            example = "",
             parentId = parentField?.name ?: "",
             children = getChildren(project, it, fieldType, generics, chirldNode),
         )

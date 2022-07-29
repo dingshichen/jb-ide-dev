@@ -6,14 +6,14 @@
  */
 plugins {
     java
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.7.10"
 }
 group = "cn.uniondrug.dev"
 
 allprojects {
 
     val lombok = "1.18.20"
-    val jdk = JavaVersion.VERSION_11.toString()
+    val jdk = JavaVersion.VERSION_17.toString()
 
     apply {
         plugin("java")
