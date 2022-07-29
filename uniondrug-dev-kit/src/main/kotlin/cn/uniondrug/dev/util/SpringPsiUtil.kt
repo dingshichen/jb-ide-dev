@@ -146,12 +146,8 @@ fun getAnnotationStringValue(psiAnnotation: PsiAnnotation, attribute: String): S
 fun getAnnotationStringValues(psiAnnotation: PsiAnnotation, attribute: String): List<String>? {
     return psiAnnotation.findDeclaredAttributeValue(attribute)?.let { a ->
         when (a) {
-            is PsiLiteralExpression -> {
-                listOf(a.text.replace("\"", ""))
-            }
-            is PsiArrayInitializerMemberValue -> {
-                a.children.filterIsInstance<PsiLiteralExpression>().map { it.text.replace("\"", "") }
-            }
+            is PsiLiteralExpression -> listOf(a.text.replace("\"", ""))
+            is PsiArrayInitializerMemberValue -> a.children.filterIsInstance<PsiLiteralExpression>().map { it.text.replace("\"", "") }
             else -> null
         }
     }
