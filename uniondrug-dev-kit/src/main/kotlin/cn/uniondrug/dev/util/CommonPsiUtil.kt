@@ -2,6 +2,7 @@
 package cn.uniondrug.dev.util
 
 import cn.uniondrug.dev.*
+import cn.uniondrug.dev.mock.generateBaseTypeMockData
 import cn.uniondrug.dev.mss.MBS_SERVICE_1
 import cn.uniondrug.dev.mss.MBS_SERVICE_2
 import com.intellij.codeInsight.AnnotationUtil
@@ -177,7 +178,10 @@ fun getBody(
             // 替换成真实类型
             fieldType = pt
         }
-        val commonTypeConvertor = project.getService(CommonTypeConvertor::class.java)
+        val fieldName = getFieldName(it)
+        val commonType = project.getService(CommonTypeConvertor::class.java).run {
+            convert(fieldType.presentableText)
+        }
         val chirldNode = newFiledNode(fieldType)
         if (chirldNode.existFromDownToUp(fieldNode)) {
             // 防止无限递归
@@ -186,12 +190,12 @@ fun getBody(
         chirldNode.parentNode = fieldNode
         fieldNode += chirldNode
         params += ApiParam(
-            name = getFieldName(it),
-            type = commonTypeConvertor.convert(fieldType.presentableText),
+            name = fieldName,
+            type = commonType,
             required = AnnotationUtil.isAnnotated(it, REQUIRED, 0),
             maxLength = getMaxLength(it),
             description = it.getFieldDescription() ?: getUniondrugFieldDescription(it, psiType),
-            example = "",
+            example = generateExample(fieldName, commonType),
             parentId = parentField?.name ?: "",
             children = getChildren(project, it, fieldType, generics, chirldNode),
         )
@@ -403,4 +407,30 @@ fun getErrorParams(psiMethod: PsiMethod): List<ApiErrno> {
         val error = tag.dataElements[1].commentText()
         ApiErrno(errno, error, "")
     } ?: emptyList()
+}
+
+/**
+ * 生成示例值
+ */
+fun generateExample(fieldName: String, type: CommonType): Any {
+    return when (type) {
+        CommonType.STRING -> generateBaseTypeMockData(type.value, fieldName)
+        CommonType.BOOL -> true
+        CommonType.BYTE -> generateBaseTypeMockData(type.value, fieldName)
+        CommonType.INT -> generateBaseTypeMockData(type.value, fieldName)
+        CommonType.LONG -> generateBaseTypeMockData(type.value, fieldName)
+        CommonType.FLOAT -> generateBaseTypeMockData(type.value, fieldName)
+        CommonType.ARRAY -> emptyList<String>()
+        CommonType.OBJECT -> ""
+        CommonType.ARRAY_STRING -> listOf(generateBaseTypeMockData(CommonType.STRING.value, fieldName), generateBaseTypeMockData(CommonType.STRING.value, fieldName))
+        CommonType.ARRAY_BOOL -> listOf(false, true)
+        CommonType.ARRAY_BYTE -> listOf(
+            generateBaseTypeMockData(CommonType.BYTE.value, fieldName),
+            generateBaseTypeMockData(CommonType.BYTE.value, fieldName)
+        )
+        CommonType.ARRAY_INT -> listOf(generateBaseTypeMockData(CommonType.INT.value, fieldName), generateBaseTypeMockData(CommonType.INT.value, fieldName))
+        CommonType.ARRAY_LONG -> listOf(generateBaseTypeMockData(CommonType.LONG.value, fieldName), generateBaseTypeMockData(CommonType.LONG.value, fieldName))
+        CommonType.ARRAY_FLOAT -> listOf(generateBaseTypeMockData(CommonType.FLOAT.value, fieldName), generateBaseTypeMockData(CommonType.FLOAT.value, fieldName))
+        CommonType.ARRAY_OBJECT -> emptyList<String>()
+    }
 }
