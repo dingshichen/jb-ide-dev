@@ -12,10 +12,6 @@ import com.intellij.openapi.project.Project
 @State(name = "UniondrugDevKitDocSettingService", storages = [Storage("UniondrugDevKitDocSetting.xml")])
 class DocSetting : PersistentStateComponent<DocSetting.TornaState> {
 
-    companion object {
-        fun getInstance(project: Project): DocSetting = project.getService(DocSetting::class.java)
-    }
-
     private var state = TornaState()
 
     override fun getState(): TornaState {
@@ -44,5 +40,9 @@ class DocSetting : PersistentStateComponent<DocSetting.TornaState> {
         var mssProjectCode: String? = null,
         var mssToken: String? = null,
     )
+
+    companion object {
+        fun getInstance(project: Project): DocSetting = project.getService(DocSetting::class.java)
+    }
 
 }

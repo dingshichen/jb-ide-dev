@@ -15,12 +15,6 @@ import com.intellij.openapi.project.Project
  */
 class TornaKeyService {
 
-    companion object {
-        const val CREDENTIA_KEY = "Torna"
-        const val TOKEN_KEY = "cn.uniondrug.dev.torna.token"
-        fun getInstance(project: Project): TornaKeyService = project.getService(TornaKeyService::class.java)
-    }
-
     /**
      * 存储凭证
      */
@@ -87,4 +81,9 @@ class TornaKeyService {
      */
     private fun createCredentialAttributes() = CredentialAttributes(generateServiceName("Uniondrug Torna Passphrase", CREDENTIA_KEY), CREDENTIA_KEY)
 
+    companion object {
+        const val CREDENTIA_KEY = "Torna"
+        const val TOKEN_KEY = "cn.uniondrug.dev.torna.token"
+        fun getInstance(project: Project): TornaKeyService = project.getService(TornaKeyService::class.java)
+    }
 }
