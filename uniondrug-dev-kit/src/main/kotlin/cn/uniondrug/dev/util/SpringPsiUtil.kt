@@ -3,10 +3,7 @@ package cn.uniondrug.dev.util
 
 import com.intellij.codeInsight.AnnotationUtil
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiField
-import com.intellij.psi.PsiLiteralExpression
-import com.intellij.psi.PsiMethod
+import com.intellij.psi.*
 
 const val REQUEST_MAPPING = "org.springframework.web.bind.annotation.RequestMapping"
 const val POST_MAPPING = "org.springframework.web.bind.annotation.PostMapping"
@@ -69,14 +66,15 @@ fun getFeignClientMethodPath(psiMethod: PsiMethod): String? = AnnotationUtil.fin
 fun getUrl(project: Project, psiClass: PsiClass, psiMethod: PsiMethod): String {
     val classAnnotation = AnnotationUtil.findAnnotation(psiClass, REQUEST_MAPPING)
     val pathByClass: String? = classAnnotation?.let {
-        AnnotationUtil.getStringAttributeValue(it, "value")
+        getAnnotationStringValue(it, "value") ?: getAnnotationStringValue(it, "path")
     }
-    val methodAnnotation = AnnotationUtil.findAnnotation(psiMethod, MVC_ANNOTATIONS)
-    methodAnnotation ?: throw RuntimeException("获取 API 路径失败")
-    val pathByMethod = AnnotationUtil.getStringAttributeValue(methodAnnotation, "value")
-    return pathByClass?.let {
-        "/$it/$pathByMethod".replace("//", "/")
-    } ?: "/$pathByMethod".replace("//", "/")
+    val methodAnnotation = AnnotationUtil.findAnnotation(psiMethod, MVC_ANNOTATIONS) ?: throw RuntimeException("获取 API 路径失败")
+    return methodAnnotation.run {
+        val pathByMethod = getAnnotationStringValue(this, "value") ?: getAnnotationStringValue(this, "path")
+        pathByClass?.let {
+            "/$it/$pathByMethod".replace("//", "/")
+        } ?: "/$pathByMethod".replace("//", "/")
+    }
 }
 
 /**
@@ -127,4 +125,34 @@ fun getMaxLength(psiField: PsiField): String {
     return lengthAnno?.let {
         AnnotationUtil.getLongAttributeValue(lengthAnno, "max").toString()
     } ?: ""
+}
+
+/**
+ * 获取注解里的值
+ */
+fun getAnnotationStringValue(psiAnnotation: PsiAnnotation, attribute: String): String? {
+    return getAnnotationStringValues(psiAnnotation, attribute).run {
+        if (isNullOrEmpty()) {
+            null
+        } else {
+            get(0)
+        }
+    }
+}
+
+/**
+ * 获取注解里 的多个值
+ */
+fun getAnnotationStringValues(psiAnnotation: PsiAnnotation, attribute: String): List<String>? {
+    return psiAnnotation.findDeclaredAttributeValue(attribute)?.let { a ->
+        when (a) {
+            is PsiLiteralExpression -> {
+                listOf(a.text.replace("\"", ""))
+            }
+            is PsiArrayInitializerMemberValue -> {
+                a.children.filterIsInstance<PsiLiteralExpression>().map { it.text.replace("\"", "") }
+            }
+            else -> null
+        }
+    }
 }
