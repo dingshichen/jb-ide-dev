@@ -111,7 +111,7 @@ class DocLineMarkerProvider : LineMarkerProvider {
     private fun mbsCommentTag(psiDocComment: PsiDocComment) = MbsCommentTag(
         mbs = psiDocComment.findTagByName("mbs")?.valueElement?.commentText(),
         topic = psiDocComment.findTagByName("topic")?.valueElement?.commentText(),
-        tag = psiDocComment.findTagByName("tag")?.valueElement?.commentText(),
+        tag = psiDocComment.findTagByName("tag")?.text?.substring(5)?.replace("\n *", ""),
         author = psiDocComment.findTagByName("author")?.valueElement?.commentText(),
     )
 
