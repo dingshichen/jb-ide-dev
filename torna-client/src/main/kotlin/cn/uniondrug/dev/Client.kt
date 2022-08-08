@@ -68,6 +68,12 @@ fun doPostTorna(path: String, body: String, token: String? = null): String {
         .version(HttpClient.Version.HTTP_1_1)
         .connectTimeout(Duration.ofSeconds(8L))
         .build()
-    val response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString())
+    val response = try {
+        client.send(builder.build(), HttpResponse.BodyHandlers.ofString())
+    } catch (e: HttpTimeoutException) {
+        throw HttpTimeoutException("操作 Torna 超时，请检查网络或稍后重试，${e.localizedMessage}")
+    } catch (e: HttpConnectTimeoutException) {
+        throw HttpConnectTimeoutException("操作 Torna 超时，请检查网络或稍后重试，${e.localizedMessage}")
+    }
     return response.body()
 }
