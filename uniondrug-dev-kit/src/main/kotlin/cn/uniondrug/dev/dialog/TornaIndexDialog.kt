@@ -1,7 +1,6 @@
 package cn.uniondrug.dev.dialog
 
 import cn.uniondrug.dev.Api
-import cn.uniondrug.dev.ui.CreateFolderForm
 import cn.uniondrug.dev.ui.TornaIndexForm
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
@@ -42,36 +41,6 @@ class TornaIndexDialog(
 
     fun getModuleId(): String = tornaIndexForm.moduleId
 
-    fun getFolderId(): String = tornaIndexForm.folderId
+    fun getFolderId(): String? = tornaIndexForm.folderId
 }
 
-/**
- * 创建目录对话框
- */
-class CreateFolderDialog(
-    val project: Project
-) : DialogWrapper(true) {
-
-    init {
-        title = "新建目录"
-        init()
-    }
-
-    private lateinit var createFolderForm: CreateFolderForm
-
-    override fun createCenterPanel(): JComponent? {
-        createFolderForm = CreateFolderForm(project)
-        return createFolderForm.rootPanel
-    }
-
-    /**
-     * 获取目录名
-     */
-    fun getFolder(): String = createFolderForm.folderText
-
-    override fun createActions(): Array<Action> {
-        setOKButtonText("确定")
-        setCancelButtonText("取消")
-        return arrayOf(okAction, cancelAction)
-    }
-}
