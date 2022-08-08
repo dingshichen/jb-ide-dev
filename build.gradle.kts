@@ -13,7 +13,7 @@ group = "cn.uniondrug.dev"
 allprojects {
 
     val lombok = "1.18.20"
-    val jdk = JavaVersion.VERSION_17.toString()
+    val jdk = JavaVersion.VERSION_11.toString()
 
     apply {
         plugin("java")
