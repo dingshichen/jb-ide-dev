@@ -7,6 +7,7 @@ import cn.uniondrug.dev.TornaDocService;
 import cn.uniondrug.dev.config.DocSetting;
 import cn.uniondrug.dev.config.DocSettingConfigurable;
 import cn.uniondrug.dev.config.TornaKeyService;
+import cn.uniondrug.dev.dialog.IssueDialog;
 import cn.uniondrug.dev.dialog.TornaIndexDialog;
 import cn.uniondrug.dev.service.DocService;
 import com.intellij.find.editorHeaderActions.Utils;
@@ -192,6 +193,13 @@ public class PreviewForm {
 
     private void initHeadToolbar() {
         DefaultActionGroup group = new DefaultActionGroup();
+        group.add(new AnAction("Issue", "Post issue to developer", AllIcons.Diff.MagicResolve) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
+                popup.cancel();
+                IssueDialog.showIssueDialog(project);
+            }
+        });
         group.add(new AnAction("Setting", "Doc view settings", AllIcons.General.GearPlain) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {

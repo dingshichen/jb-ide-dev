@@ -38,6 +38,9 @@
         <projectService serviceImplementation="cn.uniondrug.dev.mss.MssApiService" />
         <projectService serviceImplementation="cn.uniondrug.dev.mss.MssService" />
 
+        <projectService serviceInterface="cn.uniondrug.dev.IssueService"
+                        serviceImplementation="cn.uniondrug.dev.IssueServiceImpl"  />
+
         <codeInsight.lineMarkerProvider language="JAVA"
                                         implementationClass="cn.uniondrug.dev.provider.DocLineMarkerProvider" />
 

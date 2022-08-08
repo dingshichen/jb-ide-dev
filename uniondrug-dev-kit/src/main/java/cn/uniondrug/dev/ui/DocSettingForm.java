@@ -1,7 +1,9 @@
 package cn.uniondrug.dev.ui;
 
+import cn.uniondrug.dev.IssueService;
 import cn.uniondrug.dev.config.DocSetting;
 import cn.uniondrug.dev.config.TornaKeyService;
+import cn.uniondrug.dev.dialog.IssueDialog;
 import com.intellij.openapi.project.Project;
 import org.apache.commons.lang3.StringUtils;
 
@@ -19,11 +21,15 @@ public class DocSettingForm {
     private JPanel rootPanel;
     private JLabel tornaPasswordLabel;
     private JPasswordField tornaPasswordField;
-
+    private JButton issueButton;
     private Project project;
+
+    private IssueService issueService;
 
     public DocSettingForm(Project project) {
         this.project = project;
+        this.issueService = project.getService(IssueService.class);
+        this.issueButton.addActionListener(e -> IssueDialog.showIssueDialog(project));
     }
 
     public JComponent getRootPanel() {
