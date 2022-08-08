@@ -1,9 +1,7 @@
 package cn.uniondrug.dev
 
 import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
+import java.net.http.*
 import java.time.Duration
 
 /**
@@ -38,13 +36,19 @@ fun doGetTorna(path: String, token: String): String {
         .uri(URI.create("$TORNA_SERVER$path"))
         .GET()
         .header("Authorization", "Bearer $token")
-        .timeout(Duration.ofSeconds(2L))
+        .timeout(Duration.ofSeconds(5L))
         .build()
     val client = HttpClient.newBuilder()
         .version(HttpClient.Version.HTTP_1_1)
-        .connectTimeout(Duration.ofSeconds(2L))
+        .connectTimeout(Duration.ofSeconds(5L))
         .build()
-    val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+    val response = try {
+        client.send(request, HttpResponse.BodyHandlers.ofString())
+    } catch (e: HttpTimeoutException) {
+        throw HttpTimeoutException("请求 Torna 超时，请检查网络或稍后重试，${e.localizedMessage}")
+    } catch (e: HttpConnectTimeoutException) {
+        throw HttpConnectTimeoutException("请求 Torna 超时，请检查网络或稍后重试，${e.localizedMessage}")
+    }
     return response.body()
 }
 
