@@ -89,6 +89,7 @@ public class PreviewForm {
 
     private Api api;
     private MbsEvent mbsEvent;
+    private String targetFolder;
     private JBPopup popup;
     // 如果是 API 文档预览，这里设置为 true ，如果是 MBS 文档预览，这里设置为 false
     private boolean isApi;
@@ -98,6 +99,7 @@ public class PreviewForm {
         this.psiFile = psiFile;
         this.api = api;
         this.isApi = true;
+        this.targetFolder = getTargetFolder();
         // UI调整
         initUI();
         initHeadToolbar();
@@ -339,52 +341,50 @@ public class PreviewForm {
     private void initPreviewRightToolbar() {
         DefaultActionGroup rightGroup = new DefaultActionGroup();
 
-        if (isApi) {
-            rightGroup.add(new AnAction("Upload", "Upload To Torna", AllIcons.Actions.Upload) {
-                @Override
-                public void actionPerformed(@NotNull AnActionEvent e) {
+        rightGroup.add(new AnAction("Upload", "Upload To Torna", AllIcons.Actions.Upload) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
 
-                    DocSetting apiSettings = DocSetting.instance(project);
-                    DocSetting.TornaState state = apiSettings.getState();
-                    if (StringUtils.isBlank(state.getUsername())) {
-                        // 说明没有配置 Torna, 跳转到配置页面
-                        notifyError(project, "请先完成 Torna 账号配置");
-                        ShowSettingsUtil.getInstance().showSettingsDialog(e.getProject(), DocSettingConfigurable.class);
-                        popup.cancel();
-                        return;
-                    }
-                    // 上传到 torna
-                    TornaIndexDialog dialog = new TornaIndexDialog(project, api);
-                    if (dialog.showAndGet()) {
-                        TornaDocService service = project.getService(TornaDocService.class);
-                        TornaKeyService tornaKeyService = TornaKeyService.instance(project);
-                        try {
-                            String token = tornaKeyService.getToken(project, apiSettings);
-                            if (StrUtil.isEmpty(dialog.getFolderId())) {
-                                service.saveFolder(token, dialog.getModuleId(), api.getFolder(), () -> tornaKeyService.refreshToken(project, apiSettings));
-                            }
-                            String docId = service.saveDoc(
-                                    token,
-                                    dialog.getProjectId(),
-                                    dialog.getModuleId(),
-                                    StrUtil.emptyToDefault(dialog.getFolderId(), api.getFolder()),
-                                    api,
-                                    () -> tornaKeyService.refreshToken(project, apiSettings)
-                            );
-                            String url = service.getDocViewUrl(docId);
-                            notifyInfo(project, "文档上传成功", new BrowseNotificationAction("-> Torna", url));
-                        } catch (Exception ex) {
-                            notifyError(project, "文档上传失败：" + ex.getMessage());
-                        }
-                        // 记住选择
-                        state.setRememberSpaceBoxId(dialog.getSpaceId());
-                        state.setRememberProjectBoxId(dialog.getProjectId());
-                        state.setRememberModuleBoxId(dialog.getModuleId());
-                    }
+                DocSetting apiSettings = DocSetting.instance(project);
+                DocSetting.TornaState state = apiSettings.getState();
+                if (StringUtils.isBlank(state.getUsername())) {
+                    // 说明没有配置 Torna, 跳转到配置页面
+                    notifyError(project, "请先完成 Torna 账号配置");
+                    ShowSettingsUtil.getInstance().showSettingsDialog(e.getProject(), DocSettingConfigurable.class);
+                    popup.cancel();
+                    return;
                 }
-            });
-            rightGroup.addSeparator();
-        }
+                // 上传到 torna
+                TornaIndexDialog dialog = new TornaIndexDialog(project, targetFolder);
+                if (dialog.showAndGet()) {
+                    TornaDocService service = project.getService(TornaDocService.class);
+                    TornaKeyService tornaKeyService = TornaKeyService.instance(project);
+                    try {
+                        String token = tornaKeyService.getToken(project, apiSettings);
+                        if (StrUtil.isEmpty(dialog.getFolderId())) {
+                            service.saveFolder(token, dialog.getModuleId(), targetFolder, () -> tornaKeyService.refreshToken(project, apiSettings));
+                        }
+                        String docId = service.saveDoc(
+                                token,
+                                dialog.getProjectId(),
+                                dialog.getModuleId(),
+                                StrUtil.emptyToDefault(dialog.getFolderId(), targetFolder),
+                                isApi ? api : mbsEvent.convertToApi(),
+                                () -> tornaKeyService.refreshToken(project, apiSettings)
+                        );
+                        String url = service.getDocViewUrl(docId);
+                        notifyInfo(project, "文档上传成功", new BrowseNotificationAction("-> Torna", url));
+                    } catch (Exception ex) {
+                        notifyError(project, "文档上传失败：" + ex.getMessage());
+                    }
+                    // 记住选择
+                    state.setRememberSpaceBoxId(dialog.getSpaceId());
+                    state.setRememberProjectBoxId(dialog.getProjectId());
+                    state.setRememberModuleBoxId(dialog.getModuleId());
+                }
+            }
+        });
+        rightGroup.addSeparator();
 
         rightGroup.add(new AnAction("Export", "Export markdown", AllIcons.ToolbarDecorator.Export) {
             @Override
@@ -432,5 +432,13 @@ public class PreviewForm {
             // 光标放在顶部
             markdownDocument.setText(isApi ? api.getMarkdownText() : mbsEvent.getMarkdownText());
         });
+    }
+
+    /**
+     * 获取目标目录
+     * @return
+     */
+    private String getTargetFolder() {
+        return isApi ? api.getFolder() : mbsEvent.getFolder();
     }
 }

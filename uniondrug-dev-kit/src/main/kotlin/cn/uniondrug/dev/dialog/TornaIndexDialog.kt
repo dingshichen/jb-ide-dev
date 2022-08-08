@@ -1,6 +1,5 @@
 package cn.uniondrug.dev.dialog
 
-import cn.uniondrug.dev.Api
 import cn.uniondrug.dev.ui.TornaIndexForm
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
@@ -13,8 +12,8 @@ import javax.swing.JComponent
  * @date 2022/6/10
  */
 class TornaIndexDialog(
-    val project: Project,
-    val api: Api,
+    private val project: Project,
+    private val targetFolder: String,
 ) : DialogWrapper(true) {
 
     lateinit var tornaIndexForm: TornaIndexForm
@@ -25,7 +24,7 @@ class TornaIndexDialog(
     }
 
     override fun createCenterPanel(): JComponent? {
-        tornaIndexForm = TornaIndexForm(project, api)
+        tornaIndexForm = TornaIndexForm(project, targetFolder)
         return tornaIndexForm.rootPanel
     }
 

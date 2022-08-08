@@ -34,7 +34,10 @@ public class TornaIndexForm {
 
     private DocSetting docSetting;
 
-    private Api api;
+    /**
+     * 目标目录
+     */
+    private String targetFolder;
 
     /**
      * 匹配到的目录ID
@@ -44,9 +47,9 @@ public class TornaIndexForm {
 
     private final Function0<String> refreshToken = () -> tornaKeyService.refreshToken(project, docSetting);
 
-    public TornaIndexForm(Project project, Api api) {
+    public TornaIndexForm(Project project, String targetFolder) {
         this.project = project;
-        this.api = api;
+        this.targetFolder = targetFolder;
         this.tornaKeyService = TornaKeyService.instance(project);
         this.docSetting = DocSetting.instance(project);
         initListener();
@@ -90,9 +93,9 @@ public class TornaIndexForm {
             if (m.getStateChange() == ItemEvent.SELECTED) {
                 TornaDocService tornaDocService = project.getService(TornaDocService.class);
                 List<TornaDocDTO> docs = tornaDocService.listFolderByModule(token, ((TornaModuleDTO) m.getItem()).getId(), refreshToken);
-                if (StrUtil.isNotBlank(api.getFolder())) {
+                if (StrUtil.isNotBlank(targetFolder)) {
                     docs.stream()
-                            .filter(d -> d.getName().equals(api.getFolder()))
+                            .filter(d -> d.getName().equals(targetFolder))
                             .findFirst()
                             .ifPresent(d -> folderId = d.getId());
                 }

@@ -12,23 +12,23 @@ data class Api(
     /** 文档名称  */
     val name: String,
     /** 文档概述  */
-    var description: String?,
+    var description: String? = null,
     /** 维护人  */
-    var author: String?,
+    var author: String? = null,
     /** 访问URL  */
     val url: String,
     /** 废弃信息  */
-    val deprecated: String?,
+    val deprecated: String? = null,
     /** HTTP 请求方式  */
     val httpMethod: String,
     /** HTTP ContentType  */
     val contentType: String,
     /** 请求入参 */
-    var requestParams: List<ApiParam>?,
+    var requestParams: List<ApiParam>? = null,
     /** 响应返回值入参 */
-    var responseParams: List<ApiParam>?,
+    var responseParams: List<ApiParam>? = null,
     /** 错误状态码 */
-    var errorParams: List<ApiErrno>?,
+    var errorParams: List<ApiErrno>? = null,
 ) {
 
     val fileName: String by lazy {
@@ -157,6 +157,8 @@ data class MbsEvent(
     var messageParams: List<ApiParam>? = null
 ) {
 
+    val folder = "MBS 事件"
+
     val fileName: String by lazy {
         tag.splitToSmallHump("_")
     }
@@ -187,6 +189,16 @@ data class MbsEvent(
                 "**Message-parameters:**\n\n$messageBody\n\n" +
                 "**Message-example:**\n```json\n$messageExample\n```"
     }
+
+    fun convertToApi() = Api(
+        folder = folder,
+        name = name,
+        author = author,
+        url = "Topic : $topic & Tag : $tag",
+        httpMethod = "MBS",
+        contentType = "",
+        requestParams = messageParams,
+    )
 }
 
 fun JSONObject.putParamExample(param: ApiParam) {
