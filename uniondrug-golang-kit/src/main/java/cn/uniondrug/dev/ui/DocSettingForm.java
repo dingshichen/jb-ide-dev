@@ -30,12 +30,12 @@ public class DocSettingForm {
     }
 
     public boolean isModified() {
-        DocSetting docSetting = DocSetting.Companion.getInstance(project);
+        DocSetting docSetting = DocSetting.instance(project);
         DocSetting.TornaState state = docSetting.getState();
         if (!StringUtils.equals(state.getUsername(), tornaUsernameText.getText())) {
             return true;
         }
-        TornaKeyService tornaKeyService = TornaKeyService.Companion.getInstance(project);
+        TornaKeyService tornaKeyService = TornaKeyService.instance(project);
         if (!StringUtils.equals(tornaKeyService.getPassword(), new String(tornaPasswordField.getPassword()))) {
             return true;
         }
@@ -43,20 +43,20 @@ public class DocSettingForm {
     }
 
     public void apply() {
-        DocSetting docSetting = DocSetting.Companion.getInstance(project);
+        DocSetting docSetting = DocSetting.instance(project);
         DocSetting.TornaState state = docSetting.getState();
         state.setUsername(tornaUsernameText.getText());
 
-        TornaKeyService tornaKeyService = TornaKeyService.Companion.getInstance(project);
+        TornaKeyService tornaKeyService = TornaKeyService.instance(project);
         tornaKeyService.setPassword(new String(tornaPasswordField.getPassword()));
     }
 
     public void reset() {
-        DocSetting docSetting = DocSetting.Companion.getInstance(project);
+        DocSetting docSetting = DocSetting.instance(project);
         DocSetting.TornaState state = docSetting.getState();
         tornaUsernameText.setText(state.getUsername());
 
-        TornaKeyService tornaKeyService = TornaKeyService.Companion.getInstance(project);
+        TornaKeyService tornaKeyService = TornaKeyService.instance(project);
         tornaPasswordField.setText(tornaKeyService.getPassword());
     }
 

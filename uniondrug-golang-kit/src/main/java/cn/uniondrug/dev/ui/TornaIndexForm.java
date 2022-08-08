@@ -46,14 +46,14 @@ public class TornaIndexForm {
     public TornaIndexForm(Project project, Api api) {
         this.project = project;
         this.api = api;
-        this.tornaKeyService = TornaKeyService.Companion.getInstance(project);
-        this.docSetting = DocSetting.Companion.getInstance(project);
+        this.tornaKeyService = TornaKeyService.instance(project);
+        this.docSetting = DocSetting.instance(project);
         initListener();
         initValue();
     }
 
     private void initListener() {
-        DocSetting docSetting = DocSetting.Companion.getInstance(project);
+        DocSetting docSetting = DocSetting.instance(project);
         String rememberProjectBoxId = docSetting.getState().getRememberProjectBoxId();
         String rememberModuleBoxId = docSetting.getState().getRememberModuleBoxId();
         String token = tornaKeyService.getToken(project, docSetting);
@@ -120,7 +120,7 @@ public class TornaIndexForm {
     }
 
     private void initValue() {
-        DocSetting docSetting = DocSetting.Companion.getInstance(project);
+        DocSetting docSetting = DocSetting.instance(project);
         String token = tornaKeyService.getToken(project, docSetting);
         TornaSpaceService tornaSpaceService = project.getService(TornaSpaceService.class);
         List<TornaSpaceDTO> spaces = tornaSpaceService.listMySpace(token, refreshToken);

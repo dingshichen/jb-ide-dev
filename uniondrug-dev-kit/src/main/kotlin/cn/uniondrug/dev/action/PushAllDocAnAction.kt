@@ -36,7 +36,7 @@ class PushAllDocAnAction : AnAction() {
                 PushAllDocDialog(project).run dialog@{
                     if (showAndGet()) {
                         // 记住我的选择
-                        with(DocSetting.getInstance(project).state) {
+                        with(DocSetting.instance(project).state) {
                             rememberSpaceBoxId = this@dialog.spaceId()
                             rememberModuleBoxId = this@dialog.moduleId()
                             rememberProjectBoxId = this@dialog.projectId()
@@ -53,7 +53,7 @@ class PushAllDocAnAction : AnAction() {
                                                 return@apiForEach
                                             }
                                             apis += try {
-                                                DocService.getInstance().buildApi(project, psiClass, psiMethod)
+                                                DocService.instance().buildApi(project, psiClass, psiMethod)
                                             } catch (ex: Throwable) {
                                                 notifyWarn(project, "有文档解析异常，跳过此接口 ${psiClass.name}#${psiMethod.name} ，错误信息：${ex.message}")
                                                 return@apiForEach
@@ -90,9 +90,9 @@ class PushAllDocAnAction : AnAction() {
      * 批量上传
      */
     private fun batchUpload(project: Project, apis: MutableList<Api>, pushAllDocDialog: PushAllDocDialog) {
-        val apiSettings = DocSetting.getInstance(project)
+        val apiSettings = DocSetting.instance(project)
         val tornaDocService = project.getService(TornaDocService::class.java)
-        val tornaKeyService = TornaKeyService.getInstance(project)
+        val tornaKeyService = TornaKeyService.instance(project)
         // token
         val token = tornaKeyService.getToken(project, apiSettings)
         // 项目

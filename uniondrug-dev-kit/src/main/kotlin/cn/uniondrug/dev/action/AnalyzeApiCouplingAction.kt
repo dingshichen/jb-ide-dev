@@ -41,7 +41,7 @@ class AnalyzeApiCouplingAction : AnAction() {
             notifyError(project, "请确认网络环境是否正确，无法连接测试环境 consul：${ex.message}")
             return
         }
-        val docSetting = DocSetting.getInstance(project)
+        val docSetting = DocSetting.instance(project)
         MssAnalyzeDialog(project).apply {
             if (showAndGet()) {
                 // 记住我的选择

@@ -26,7 +26,7 @@ public class MssAnalyzeForm {
 
     public MssAnalyzeForm(Project project) {
         this.project = project;
-        this.docSetting = DocSetting.Companion.getInstance(project);
+        this.docSetting = DocSetting.instance(project);
         init();
     }
 

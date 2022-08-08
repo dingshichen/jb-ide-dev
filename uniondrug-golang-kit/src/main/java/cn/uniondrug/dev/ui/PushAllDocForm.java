@@ -37,8 +37,8 @@ public class PushAllDocForm {
 
     public PushAllDocForm(Project project) {
         this.project = project;
-        this.tornaKeyService = TornaKeyService.Companion.getInstance(project);
-        this.docSetting = DocSetting.Companion.getInstance(project);
+        this.tornaKeyService = TornaKeyService.instance(project);
+        this.docSetting = DocSetting.instance(project);
         initValue();
     }
 

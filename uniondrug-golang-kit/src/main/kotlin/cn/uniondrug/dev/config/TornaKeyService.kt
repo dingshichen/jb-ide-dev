@@ -7,6 +7,7 @@ import com.intellij.credentialStore.Credentials
 import com.intellij.credentialStore.generateServiceName
 import com.intellij.ide.passwordSafe.PasswordSafe
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 
 /**
@@ -14,6 +15,14 @@ import com.intellij.openapi.project.Project
  * @date 2022/6/16
  */
 class TornaKeyService {
+
+    companion object {
+        const val CREDENTIA_KEY = "Torna"
+        const val TOKEN_KEY = "cn.uniondrug.dev.torna.token"
+
+        @JvmStatic
+        fun instance(project: Project): TornaKeyService = project.service()
+    }
 
     /**
      * 存储凭证
@@ -81,9 +90,4 @@ class TornaKeyService {
      */
     private fun createCredentialAttributes() = CredentialAttributes(generateServiceName("Uniondrug Torna Passphrase", CREDENTIA_KEY), CREDENTIA_KEY)
 
-    companion object {
-        const val CREDENTIA_KEY = "Torna"
-        const val TOKEN_KEY = "cn.uniondrug.dev.torna.token"
-        fun getInstance(project: Project): TornaKeyService = project.getService(TornaKeyService::class.java)
-    }
 }

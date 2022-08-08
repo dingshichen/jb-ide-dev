@@ -5,7 +5,7 @@ import cn.uniondrug.dev.MbsEvent
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
 import cn.uniondrug.dev.util.*
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
@@ -23,9 +23,9 @@ import java.io.IOException
 class DocService {
 
     companion object {
-        fun getInstance(): DocService {
-            return ApplicationManager.getApplication().getService(DocService::class.java)
-        }
+
+        @JvmStatic
+        fun instance(): DocService = service()
     }
 
     /**

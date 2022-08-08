@@ -3,6 +3,7 @@ package cn.uniondrug.dev.config
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 
 /**
@@ -11,6 +12,12 @@ import com.intellij.openapi.project.Project
  */
 @State(name = "UniondrugDevKitDocSettingService", storages = [Storage("UniondrugDevKitDocSetting.xml")])
 class DocSetting : PersistentStateComponent<DocSetting.TornaState> {
+
+    companion object {
+
+        @JvmStatic
+        fun instance(project: Project): DocSetting = project.service()
+    }
 
     private var state = TornaState()
 
@@ -40,9 +47,5 @@ class DocSetting : PersistentStateComponent<DocSetting.TornaState> {
         var mssProjectCode: String? = null,
         var mssToken: String? = null,
     )
-
-    companion object {
-        fun getInstance(project: Project): DocSetting = project.getService(DocSetting::class.java)
-    }
 
 }

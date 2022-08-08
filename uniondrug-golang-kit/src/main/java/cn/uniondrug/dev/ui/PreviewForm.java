@@ -341,7 +341,7 @@ public class PreviewForm {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
 
-                DocSetting apiSettings = DocSetting.Companion.getInstance(project);
+                DocSetting apiSettings = DocSetting.instance(project);
                 DocSetting.TornaState state = apiSettings.getState();
                 if (StringUtils.isBlank(state.getUsername())) {
                     // 说明没有配置 Torna, 跳转到配置页面
@@ -354,7 +354,7 @@ public class PreviewForm {
                 TornaIndexDialog dialog = new TornaIndexDialog(project, api);
                 if (dialog.showAndGet()) {
                     TornaDocService service = project.getService(TornaDocService.class);
-                    TornaKeyService tornaKeyService = TornaKeyService.Companion.getInstance(project);
+                    TornaKeyService tornaKeyService = TornaKeyService.instance(project);
                     try {
                         String token = tornaKeyService.getToken(project, apiSettings);
                         String docId = service.saveDoc(token, dialog.getProjectId(), dialog.getModuleId(),

@@ -56,7 +56,7 @@ class DocLineMarkerProvider : LineMarkerProvider {
                 DevIcons.DOC_VIEW,
                 { "查看文档" },
                 { _, psiElement ->
-                    val docService = DocService.getInstance()
+                    val docService = DocService.instance()
                     try {
                         val docItem = docService.buildApi(project, it, psiElement.parent as PsiMethod)
                         PreviewForm.getInstance(project, containingFile, docItem).popup()
@@ -92,7 +92,7 @@ class DocLineMarkerProvider : LineMarkerProvider {
                 DevIcons.DOC_VIEW,
                 { "查看文档" },
                 { _, _ ->
-                    val docService = DocService.getInstance()
+                    val docService = DocService.instance()
                     try {
                         mbsCommentTag(it).apply {
                             val mbsEvent = docService.buildMbs(project, psiClass, mbs!!, topic!!, tag!!, author)

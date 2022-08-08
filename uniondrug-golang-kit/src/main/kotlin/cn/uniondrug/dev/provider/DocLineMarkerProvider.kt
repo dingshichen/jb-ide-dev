@@ -34,7 +34,7 @@ class DocLineMarkerProvider : LineMarkerProvider {
                         { "查看文档" },
                         { _, method ->
                             GolangPsiUtil.resulveFuncComment(method, children)?.let {
-                                val docService = DocService.getInstance()
+                                val docService = DocService.instance()
                                 try {
                                     val api = docService.buildApiDoc(project, method, it)
                                     PreviewForm.getInstance(project, this, api)
@@ -62,7 +62,7 @@ class DocLineMarkerProvider : LineMarkerProvider {
                         { "查看文档" },
                         { _, typeSpec ->
                             GolangPsiUtil.resulveStructComment(typeSpec, this)?.let {
-                                val docService = DocService.getInstance()
+                                val docService = DocService.instance()
                                 try {
                                     val mbsEvent = docService.buildMbsDoc(typeSpec, it)
                                     PreviewForm.getInstance(project, this, mbsEvent)

@@ -15,7 +15,7 @@ import cn.uniondrug.dev.util.humpToPath
 import com.goide.psi.GoMethodDeclaration
 import com.goide.psi.GoTypeDeclaration
 import com.goide.psi.GoTypeSpec
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
@@ -30,6 +30,13 @@ import java.io.IOException
  * @date 2022/4/5
  */
 class DocService {
+
+    companion object {
+
+        @JvmStatic
+        fun instance(): DocService = service()
+    }
+
 
     /**
      * 构建 API
@@ -124,11 +131,6 @@ class DocService {
                 notifyError(project, "接口文档导出失败")
             }
         }
-    }
-
-    companion object {
-
-        fun getInstance(): DocService = ApplicationManager.getApplication().getService(DocService::class.java)
     }
 
 }
