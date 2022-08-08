@@ -20,8 +20,6 @@ import java.util.List;
  */
 public class TornaIndexForm {
 
-    private static final String TOKEN_KEY = "cn.uniondrug.dev.torna.token";
-
     private JPanel rootPanel;
     private JLabel spaceLable;
     private JLabel projectLable;
