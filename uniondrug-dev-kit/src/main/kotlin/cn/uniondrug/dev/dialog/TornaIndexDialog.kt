@@ -41,5 +41,10 @@ class TornaIndexDialog(
     fun getModuleId(): String = tornaIndexForm.moduleId
 
     fun getFolderId(): String? = tornaIndexForm.folderId
+
+    fun refreshFolderId() {
+        tornaIndexForm.refreshFolderId()
+    }
+
 }
 

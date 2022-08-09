@@ -194,8 +194,8 @@ data class MbsEvent(
         folder = folder,
         name = name,
         author = author,
-        url = "Topic : $topic & Tag : $tag",
-        httpMethod = "MBS",
+        url = "MBS: $mbs & Topic: $topic & Tag: $tag",
+        httpMethod = "EVENT",
         contentType = "",
         requestParams = messageParams,
     )

@@ -138,4 +138,17 @@ public class TornaIndexForm {
     public @Nullable String getFolderId() {
         return folderId;
     }
+
+    public void refreshFolderId() {
+        String token = tornaKeyService.getToken(project, docSetting);
+        TornaDocService tornaDocService = project.getService(TornaDocService.class);
+        List<TornaDocDTO> docs = tornaDocService.listFolderByModule(token, getModuleId(), refreshToken);
+        if (StrUtil.isNotBlank(targetFolder)) {
+            docs.stream()
+                    .filter(d -> d.getName().equals(targetFolder))
+                    .findFirst()
+                    .ifPresent(d -> folderId = d.getId());
+        }
+    }
+
 }

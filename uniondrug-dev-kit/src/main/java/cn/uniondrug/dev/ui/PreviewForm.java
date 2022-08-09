@@ -120,6 +120,7 @@ public class PreviewForm {
         this.psiFile = psiFile;
         this.mbsEvent = mbsEvent;
         this.isApi = false;
+        this.targetFolder = getTargetFolder();
         // UI调整
         initUI();
         initHeadToolbar();
@@ -372,11 +373,13 @@ public class PreviewForm {
                         if (StrUtil.isEmpty(dialog.getFolderId())) {
                             service.saveFolder(token, dialog.getModuleId(), targetFolder, () -> tornaKeyService.refreshToken(project, apiSettings));
                         }
+                        // 刷新新保存的目录
+                        dialog.refreshFolderId();
                         String docId = service.saveDoc(
                                 token,
                                 dialog.getProjectId(),
                                 dialog.getModuleId(),
-                                StrUtil.emptyToDefault(dialog.getFolderId(), targetFolder),
+                                dialog.getFolderId(),   // 此时应有值
                                 isApi ? api : mbsEvent.convertToApi(),
                                 () -> tornaKeyService.refreshToken(project, apiSettings)
                         );
