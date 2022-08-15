@@ -52,3 +52,22 @@ fun String.splitToSmallHump(split: String): String {
     }
     return builder.toString()
 }
+
+/**
+ * 分割字符串转换成对应 type 集合
+ */
+fun String.splitToTypeList(type: CommonType): List<Any> {
+    return this.split(",").map {
+        it.trim().run {
+            when (type) {
+                CommonType.ARRAY -> toString()
+                CommonType.ARRAY_STRING -> toString()
+                CommonType.ARRAY_BYTE -> toInt()
+                CommonType.ARRAY_INT -> toInt()
+                CommonType.ARRAY_LONG -> toLong()
+                CommonType.ARRAY_FLOAT -> toFloat()
+                else -> toString()
+            }
+        }
+    }
+}

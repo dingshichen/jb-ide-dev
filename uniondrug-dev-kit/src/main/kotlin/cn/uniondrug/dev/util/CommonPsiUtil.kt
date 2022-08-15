@@ -102,6 +102,11 @@ fun getFieldName(psiField: PsiField): String {
 }
 
 /**
+ * 获取 mock 示例值
+ */
+fun getMockValue(psiField: PsiField) = psiField.docComment?.findTagByName("mock")?.valueElement?.commentText()
+
+/**
  * 从参数中获取类型
  */
 fun getRequestBody(project: Project, parameter: PsiParameter) = parameter.type.run {
@@ -182,6 +187,13 @@ fun getBody(
         val commonType = project.getService(CommonTypeConvertor::class.java).run {
             convert(fieldType.presentableText)
         }
+        // 获取示例值
+        val mockValue = getMockValue(it)
+        val example = try {
+            generateExample(fieldName, commonType, mockValue)
+        } catch (e: NumberFormatException) {
+            throw DocBuildFailException("参数 $fieldName 的 mock 示例值 $mockValue 与自身类型不匹配")
+        }
         val chirldNode = newFiledNode(fieldType)
         if (chirldNode.existFromDownToUp(fieldNode)) {
             // 防止无限递归
@@ -195,7 +207,7 @@ fun getBody(
             required = AnnotationUtil.isAnnotated(it, REQUIRED, 0),
             maxLength = getMaxLength(it),
             description = it.getFieldDescription() ?: getUniondrugFieldDescription(it, psiType),
-            example = generateExample(fieldName, commonType),
+            example = example,
             parentId = parentField?.name ?: "",
             children = getChildren(project, it, fieldType, generics, chirldNode),
         )
@@ -412,25 +424,31 @@ fun getErrorParams(psiMethod: PsiMethod): List<ApiErrno> {
 /**
  * 生成示例值
  */
-fun generateExample(fieldName: String, type: CommonType): Any {
+fun generateExample(fieldName: String, type: CommonType, mockValue: String?): Any {
     return when (type) {
-        CommonType.STRING -> generateBaseTypeMockData(type.value, fieldName)
+        CommonType.STRING -> mockValue ?: generateBaseTypeMockData(type.value, fieldName)
         CommonType.BOOL -> true
-        CommonType.BYTE -> generateBaseTypeMockData(type.value, fieldName)
-        CommonType.INT -> generateBaseTypeMockData(type.value, fieldName)
-        CommonType.LONG -> generateBaseTypeMockData(type.value, fieldName)
-        CommonType.FLOAT -> generateBaseTypeMockData(type.value, fieldName)
-        CommonType.ARRAY -> emptyList<String>()
-        CommonType.OBJECT -> ""
-        CommonType.ARRAY_STRING -> listOf(generateBaseTypeMockData(CommonType.STRING.value, fieldName), generateBaseTypeMockData(CommonType.STRING.value, fieldName))
+        CommonType.BYTE -> mockValue?.toInt() ?: generateBaseTypeMockData(type.value, fieldName)
+        CommonType.INT -> mockValue?.toInt() ?: generateBaseTypeMockData(type.value, fieldName)
+        CommonType.LONG -> mockValue?.toLong() ?: generateBaseTypeMockData(type.value, fieldName)
+        CommonType.FLOAT -> mockValue?.toFloat() ?: generateBaseTypeMockData(type.value, fieldName)
+        CommonType.ARRAY -> mockValue?.splitToTypeList(type) ?: emptyList<String>()
+        CommonType.OBJECT -> mockValue ?: ""
+        CommonType.ARRAY_STRING -> mockValue?.splitToTypeList(type) ?: listOf(generateBaseTypeMockData(CommonType.STRING.value, fieldName), generateBaseTypeMockData(CommonType.STRING.value, fieldName))
         CommonType.ARRAY_BOOL -> listOf(false, true)
-        CommonType.ARRAY_BYTE -> listOf(
+        CommonType.ARRAY_BYTE -> mockValue?.splitToTypeList(type) ?: listOf(
             generateBaseTypeMockData(CommonType.BYTE.value, fieldName),
             generateBaseTypeMockData(CommonType.BYTE.value, fieldName)
         )
-        CommonType.ARRAY_INT -> listOf(generateBaseTypeMockData(CommonType.INT.value, fieldName), generateBaseTypeMockData(CommonType.INT.value, fieldName))
-        CommonType.ARRAY_LONG -> listOf(generateBaseTypeMockData(CommonType.LONG.value, fieldName), generateBaseTypeMockData(CommonType.LONG.value, fieldName))
-        CommonType.ARRAY_FLOAT -> listOf(generateBaseTypeMockData(CommonType.FLOAT.value, fieldName), generateBaseTypeMockData(CommonType.FLOAT.value, fieldName))
+        CommonType.ARRAY_INT -> mockValue?.splitToTypeList(type) ?: listOf(
+            generateBaseTypeMockData(CommonType.INT.value, fieldName),
+            generateBaseTypeMockData(CommonType.INT.value, fieldName))
+        CommonType.ARRAY_LONG -> mockValue?.splitToTypeList(type) ?: listOf(
+            generateBaseTypeMockData(CommonType.LONG.value, fieldName),
+            generateBaseTypeMockData(CommonType.LONG.value, fieldName))
+        CommonType.ARRAY_FLOAT -> mockValue?.splitToTypeList(type) ?: listOf(
+            generateBaseTypeMockData(CommonType.FLOAT.value, fieldName),
+            generateBaseTypeMockData(CommonType.FLOAT.value, fieldName))
         CommonType.ARRAY_OBJECT -> emptyList<String>()
     }
 }
