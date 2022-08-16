@@ -104,7 +104,8 @@ fun getFieldName(psiField: PsiField): String {
 /**
  * 获取 mock 示例值
  */
-fun getMockValue(psiField: PsiField) = psiField.docComment?.findTagByName("mock")?.valueElement?.commentText()
+fun getMockValue(psiField: PsiField) =
+    psiField.docComment?.findTagByName("mock")?.text?.replace("@mock", "")?.trim()?.ifEmpty { null }
 
 /**
  * 从参数中获取类型
