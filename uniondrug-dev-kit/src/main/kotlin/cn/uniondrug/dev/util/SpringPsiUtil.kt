@@ -87,7 +87,9 @@ fun getHttpMethod(psiMethod: PsiMethod): String {
             GET_MAPPING -> "GET"
             PUT_MAPPING -> "PUT"
             DELETE_MAPPING -> "DELETE"
-            REQUEST_MAPPING -> AnnotationUtil.getStringAttributeValue(annotation, "method") ?: "GET"
+            REQUEST_MAPPING -> AnnotationUtil.getStringAttributeValue(annotation, "method")
+                ?: (annotation.findDeclaredAttributeValue("method") as PsiReferenceExpression).resolve()?.text
+                ?: "POST"
             else -> continue
         }
     }
