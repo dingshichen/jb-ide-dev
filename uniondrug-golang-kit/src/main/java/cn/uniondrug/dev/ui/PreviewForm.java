@@ -1,11 +1,13 @@
 package cn.uniondrug.dev.ui;
 
+import cn.hutool.core.util.StrUtil;
 import cn.uniondrug.dev.Api;
 import cn.uniondrug.dev.MbsEvent;
 import cn.uniondrug.dev.TornaDocService;
 import cn.uniondrug.dev.config.DocSetting;
 import cn.uniondrug.dev.config.DocSettingConfigurable;
 import cn.uniondrug.dev.config.TornaKeyService;
+import cn.uniondrug.dev.dialog.IssueDialog;
 import cn.uniondrug.dev.dialog.TornaIndexDialog;
 import cn.uniondrug.dev.service.DocService;
 import com.intellij.find.editorHeaderActions.Utils;
@@ -88,15 +90,17 @@ public class PreviewForm {
 
     private Api api;
     private MbsEvent mbsEvent;
+    private String targetFolder;
     private JBPopup popup;
     // 如果是 API 文档预览，这里设置为 true ，如果是 MBS 文档预览，这里设置为 false
     private boolean isApi;
 
-    public PreviewForm(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull Api docItem) {
+    public PreviewForm(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull Api api) {
         this.project = project;
         this.psiFile = psiFile;
-        this.api = docItem;
+        this.api = api;
         this.isApi = true;
+        this.targetFolder = getTargetFolder();
         // UI调整
         initUI();
         initHeadToolbar();
@@ -116,6 +120,7 @@ public class PreviewForm {
         this.psiFile = psiFile;
         this.mbsEvent = mbsEvent;
         this.isApi = false;
+        this.targetFolder = getTargetFolder();
         // UI调整
         initUI();
         initHeadToolbar();
@@ -136,14 +141,15 @@ public class PreviewForm {
         rootPanel.addMouseMotionListener(windowMoveListener);
         headToolbarPanel.addMouseListener(windowMoveListener);
         headToolbarPanel.addMouseMotionListener(windowMoveListener);
+
     }
 
     public static PreviewForm getInstance(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull Api api) {
         return new PreviewForm(project, psiFile, api);
     }
 
-    public static PreviewForm getInstance(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull MbsEvent api) {
-        return new PreviewForm(project, psiFile, api);
+    public static PreviewForm getInstance(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull MbsEvent mbsEvent) {
+        return new PreviewForm(project, psiFile, mbsEvent);
     }
 
     public void popup() {
@@ -188,15 +194,22 @@ public class PreviewForm {
 
     private void initHeadToolbar() {
         DefaultActionGroup group = new DefaultActionGroup();
-//        group.add(new AnAction("Setting", "Doc view settings", AllIcons.General.GearPlain) {
-//            @Override
-//            public void actionPerformed(@NotNull AnActionEvent e) {
-//                popup.cancel();
-//                ShowSettingsUtil.getInstance().showSettingsDialog(e.getProject(), DocSettingConfigurable.class);
-//            }
-//        });
-//
-//        group.addSeparator();
+        group.add(new AnAction("Issue", "Post issue to developer", AllIcons.Diff.MagicResolve) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
+                popup.cancel();
+                IssueDialog.showIssueDialog(project);
+            }
+        });
+        group.add(new AnAction("Setting", "Doc view settings", AllIcons.General.GearPlain) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                popup.cancel();
+                ShowSettingsUtil.getInstance().showSettingsDialog(e.getProject(), DocSettingConfigurable.class);
+            }
+        });
+
+        group.addSeparator();
 
         group.add(new ToggleAction("Pin", "Pin window", AllIcons.General.Pin_tab) {
 
@@ -351,14 +364,25 @@ public class PreviewForm {
                     return;
                 }
                 // 上传到 torna
-                TornaIndexDialog dialog = new TornaIndexDialog(project, api);
+                TornaIndexDialog dialog = new TornaIndexDialog(project, targetFolder);
                 if (dialog.showAndGet()) {
                     TornaDocService service = project.getService(TornaDocService.class);
                     TornaKeyService tornaKeyService = TornaKeyService.instance(project);
                     try {
                         String token = tornaKeyService.getToken(project, apiSettings);
-                        String docId = service.saveDoc(token, dialog.getProjectId(), dialog.getModuleId(),
-                                dialog.getFolderId(), api, () -> tornaKeyService.refreshToken(project, apiSettings));
+                        if (StrUtil.isEmpty(dialog.getFolderId())) {
+                            service.saveFolder(token, dialog.getModuleId(), targetFolder, () -> tornaKeyService.refreshToken(project, apiSettings));
+                        }
+                        // 刷新新保存的目录
+                        dialog.refreshFolderId();
+                        String docId = service.saveDoc(
+                                token,
+                                dialog.getProjectId(),
+                                dialog.getModuleId(),
+                                dialog.getFolderId(),   // 此时应有值
+                                isApi ? api : mbsEvent.convertToApi(),
+                                () -> tornaKeyService.refreshToken(project, apiSettings)
+                        );
                         String url = service.getDocViewUrl(docId);
                         notifyInfo(project, "文档上传成功", new BrowseNotificationAction("-> Torna", url));
                     } catch (Exception ex) {
@@ -371,8 +395,6 @@ public class PreviewForm {
                 }
             }
         });
-
-
         rightGroup.addSeparator();
 
         rightGroup.add(new AnAction("Export", "Export markdown", AllIcons.ToolbarDecorator.Export) {
@@ -380,7 +402,8 @@ public class PreviewForm {
             public void actionPerformed(@NotNull AnActionEvent e) {
                 popup.cancel();
                 DocService service = ApplicationManager.getApplication().getService(DocService.class);
-                service.export(project, isApi ? api.getFileName() : mbsEvent.getFileName(),
+                service.export(project,
+                        isApi ? api.getFileName() : mbsEvent.getFileName(),
                         isApi ? api.getMarkdownText() : mbsEvent.getMarkdownText());
             }
         });
@@ -392,7 +415,6 @@ public class PreviewForm {
                 StringSelection selection = new StringSelection(isApi ? api.getMarkdownText() : mbsEvent.getMarkdownText());
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 clipboard.setContents(selection, selection);
-
                 notifyInfo(project, "复制成功", null);
             }
         });
@@ -412,7 +434,6 @@ public class PreviewForm {
 
     }
 
-
     private void buildDoc() {
         if (JBCefApp.isSupported()) {
             markdownHtmlPanel.setHtml(MarkdownUtil.INSTANCE.generateMarkdownHtml(psiFile.getVirtualFile(),
@@ -422,5 +443,13 @@ public class PreviewForm {
             // 光标放在顶部
             markdownDocument.setText(isApi ? api.getMarkdownText() : mbsEvent.getMarkdownText());
         });
+    }
+
+    /**
+     * 获取目标目录
+     * @return
+     */
+    private String getTargetFolder() {
+        return isApi ? api.getFolder() : mbsEvent.getFolder();
     }
 }
