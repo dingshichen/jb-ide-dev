@@ -35,6 +35,9 @@
 
         <postStartupActivity implementation="cn.uniondrug.dev.notifier.StartupNotifier" />
 
+        <projectService serviceInterface="cn.uniondrug.dev.IssueService"
+                        serviceImplementation="cn.uniondrug.dev.IssueServiceImpl"  />
+
         <codeInsight.lineMarkerProvider language="go"
                                         implementationClass="cn.uniondrug.dev.provider.DocLineMarkerProvider" />
 
