@@ -240,7 +240,7 @@ object GolangPsiUtil {
                         before -= 2
                     }
                 }
-                else -> before = 0
+                else -> before = -1
             }
         }
         return structName
