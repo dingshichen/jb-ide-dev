@@ -1,5 +1,7 @@
 package cn.uniondrug.dev.dialog
 
+import cn.uniondrug.dev.LoginException
+import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.ui.PushAllDocForm
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
@@ -37,4 +39,12 @@ class PushAllDocDialog(
 
     fun moduleId(): String = pushAllDocForm.moduleId
 
+}
+
+fun showAndGetPushAllDocDialog(project: Project, ok: PushAllDocDialog.() -> Unit) {
+    try {
+        PushAllDocDialog(project).run { if (showAndGet()) this.ok() }
+    } catch (e: LoginException) {
+        notifyError(project, "Torna 登陆失败，请确认 AD 账号密码是否正确！")
+    }
 }

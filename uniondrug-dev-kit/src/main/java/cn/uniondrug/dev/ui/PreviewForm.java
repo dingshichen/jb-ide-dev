@@ -2,6 +2,7 @@ package cn.uniondrug.dev.ui;
 
 import cn.hutool.core.util.StrUtil;
 import cn.uniondrug.dev.Api;
+import cn.uniondrug.dev.LoginException;
 import cn.uniondrug.dev.MbsEvent;
 import cn.uniondrug.dev.TornaDocService;
 import cn.uniondrug.dev.config.DocSetting;
@@ -364,7 +365,13 @@ public class PreviewForm {
                     return;
                 }
                 // 上传到 torna
-                TornaIndexDialog dialog = new TornaIndexDialog(project, targetFolder);
+                TornaIndexDialog dialog;
+                try {
+                    dialog = new TornaIndexDialog(project, targetFolder);
+                } catch (LoginException ex) {
+                    notifyError(project, "Torna 登陆失败，请确认 AD 账号密码是否正确！");
+                    return;
+                }
                 if (dialog.showAndGet()) {
                     TornaDocService service = project.getService(TornaDocService.class);
                     TornaKeyService tornaKeyService = TornaKeyService.instance(project);

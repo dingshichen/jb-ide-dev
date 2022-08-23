@@ -1,9 +1,9 @@
 package cn.uniondrug.dev
 
-class LoginException(message: String) : Exception(message)
+class LoginException(message: String) : RuntimeException(message)
 
-class SpaceException(message: String) : Exception(message)
+class SpaceException(message: String) : RuntimeException(message)
 
-class ProjectException(message: String) : Exception(message)
+class ProjectException(message: String) : RuntimeException(message)
 
-class DocumentException(message: String) : Exception(message)
+class DocumentException(message: String) : RuntimeException(message)

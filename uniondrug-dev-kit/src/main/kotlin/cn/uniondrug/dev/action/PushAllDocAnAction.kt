@@ -6,6 +6,7 @@ import cn.uniondrug.dev.config.DocSetting
 import cn.uniondrug.dev.config.DocSettingConfigurable
 import cn.uniondrug.dev.config.TornaKeyService
 import cn.uniondrug.dev.dialog.PushAllDocDialog
+import cn.uniondrug.dev.dialog.showAndGetPushAllDocDialog
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
 import cn.uniondrug.dev.notifier.notifyWarn
@@ -40,47 +41,45 @@ class PushAllDocAnAction : AnAction() {
             ShowSettingsUtil.getInstance().showSettingsDialog(e.project, DocSettingConfigurable::class.java)
             return
         }
-        mutableListOf<VirtualFile>().apply {
-            findAllFiles(virtualFile, this)
-            if (isNotEmpty()) {
-                PushAllDocDialog(project).run dialog@{
-                    if (showAndGet()) {
-                        // 记住我的选择
-                        with(docSetting.state) {
-                            rememberSpaceBoxId = this@dialog.spaceId()
-                            rememberModuleBoxId = this@dialog.moduleId()
-                            rememberProjectBoxId = this@dialog.projectId()
-                        }
-                        val apis = mutableListOf<Api>()
-                        this@apply.forEach { childFile ->
-                            PsiManager.getInstance(project).findFile(childFile)?.let {
-                                PsiTreeUtil.findChildrenOfType(it, PsiClass::class.java).forEach { psiClass ->
-                                    psiClass.methods
-                                        .filter { it -> isSpringMVCMethod(it) }
-                                        .forEach apiForEach@{ psiMethod ->
-                                            if (isIgnore(psiMethod)) {
-                                                notifyInfo(project, "接口 ${psiClass.name}#${psiMethod.name} 有标识 @ignore 忽略上传")
-                                                return@apiForEach
-                                            }
-                                            apis += try {
-                                                DocService.instance().buildApi(project, psiClass, psiMethod)
-                                            } catch (ex: Throwable) {
-                                                notifyWarn(project, "有文档解析异常，跳过此接口 ${psiClass.name}#${psiMethod.name} ，错误信息：${ex.message}")
-                                                return@apiForEach
-                                            }
+        mutableListOf<VirtualFile>()
+            .apply { findAllFiles(virtualFile, this) }
+            .takeIf { it.isNotEmpty() }
+            ?.let { files ->
+                showAndGetPushAllDocDialog(project) {
+                    // 记住我的选择
+                    with(docSetting.state) {
+                        rememberSpaceBoxId = spaceId()
+                        rememberModuleBoxId = moduleId()
+                        rememberProjectBoxId = projectId()
+                    }
+                    val apis = mutableListOf<Api>()
+                    files.forEach { childFile ->
+                        PsiManager.getInstance(project).findFile(childFile)?.let {
+                            PsiTreeUtil.findChildrenOfType(it, PsiClass::class.java).forEach { psiClass ->
+                                psiClass.methods
+                                    .filter { it -> isSpringMVCMethod(it) }
+                                    .forEach apiForEach@{ psiMethod ->
+                                        if (isIgnore(psiMethod)) {
+                                            notifyInfo(project, "接口 ${psiClass.name}#${psiMethod.name} 有标识 @ignore 忽略上传")
+                                            return@apiForEach
                                         }
-                                }
+                                        apis += try {
+                                            DocService.instance().buildApi(project, psiClass, psiMethod)
+                                        } catch (ex: Throwable) {
+                                            notifyWarn(project, "有文档解析异常，跳过此接口 ${psiClass.name}#${psiMethod.name} ，错误信息：${ex.message}")
+                                            return@apiForEach
+                                        }
+                                    }
                             }
                         }
-                        notifyInfo(project, "文档解析完成，开始上传......")
-                        // 批量上传
-                        ApplicationManager.getApplication().executeOnPooledThread {
-                            batchUpload(project, apis, this)
-                        }
+                    }
+                    notifyInfo(project, "文档解析完成，开始上传......")
+                    // 批量上传
+                    ApplicationManager.getApplication().executeOnPooledThread {
+                        batchUpload(project, apis, this)
                     }
                 }
             }
-        }
     }
 
     /**
