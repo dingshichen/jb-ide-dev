@@ -108,3 +108,11 @@ const val MEMBER_NAME = "memberName"
 const val OPERATOR_DTO = "cn.uniondrug.cloud.finance.dto.OperatorDTO"
 const val WORKER_ID = "workerId"
 const val WORKER_NAME = "workerName"
+
+val LOG_TYPE = listOf(
+    "org.slf4j.Logger",
+    "java.util.logging.Logger",
+    "ch.qos.logback.classic.Logger",
+    "org.apache.logging.log4j.Logger",
+    "org.apache.ibatis.logging.Log",
+)

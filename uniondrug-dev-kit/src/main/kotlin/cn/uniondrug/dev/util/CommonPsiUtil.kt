@@ -170,7 +170,7 @@ fun getBody(
     // 没有给出属性字段，则解析类型里的属性
     val fields = childrenFields ?: psiClass.fields
     fields.forEach {
-        if (it.name == "serialVersionUID" || it.name in ignoreFieldNames) {
+        if (it.name == "serialVersionUID" || it.type.canonicalText in LOG_TYPE || it.name in ignoreFieldNames) {
             // 序列化 ID || 忽略序列化
             return@forEach
         }
