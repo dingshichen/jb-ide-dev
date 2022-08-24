@@ -344,7 +344,7 @@ private fun getChildren(
         if (fieldType is PsiClassType) {
             if (fieldType.hasParameters()) {
                 generics[fieldType.parameters[0].presentableText]?.let {
-                    PsiUtil.resolveClassInClassTypeOnly(it)?.fields.let { fields ->
+                    PsiUtil.resolveClassInClassTypeOnly(it)?.allFields.let { fields ->
                         return getBody(project, psiField, fieldType, fields, parentNode, ignores)
                     }
                 }
