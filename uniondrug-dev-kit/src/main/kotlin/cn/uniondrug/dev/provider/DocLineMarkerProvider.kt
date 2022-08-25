@@ -4,9 +4,9 @@ import cn.uniondrug.dev.DocBuildFailException
 import cn.uniondrug.dev.consts.DevIcons
 import cn.uniondrug.dev.consts.DevKitPlugin
 import cn.uniondrug.dev.notifier.notifyError
+import cn.uniondrug.dev.psi.commentText
 import cn.uniondrug.dev.service.DocService
 import cn.uniondrug.dev.ui.PreviewForm
-import cn.uniondrug.dev.util.commentText
 import cn.uniondrug.dev.util.isNotSpringMVCMethod
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.LineMarkerProvider

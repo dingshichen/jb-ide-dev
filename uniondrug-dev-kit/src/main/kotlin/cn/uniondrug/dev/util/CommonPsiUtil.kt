@@ -5,107 +5,10 @@ import cn.uniondrug.dev.*
 import cn.uniondrug.dev.mock.generateBaseTypeMockData
 import cn.uniondrug.dev.mss.MBS_SERVICE_1
 import cn.uniondrug.dev.mss.MBS_SERVICE_2
-import com.intellij.codeInsight.AnnotationUtil
+import cn.uniondrug.dev.psi.*
 import com.intellij.openapi.project.Project
 import com.intellij.psi.*
-import com.intellij.psi.javadoc.PsiDocComment
 import com.intellij.psi.util.PsiUtil
-
-/**
- * 是否是基本类型
- */
-fun isBaseType(type: PsiType) = type.canonicalText in BASE
-
-fun isBaseCollection(type: PsiType): Boolean {
-    if (type is PsiClassType) {
-        if (type.canonicalText in FULL_BASE_LIST) {
-            return true
-        }
-    }
-    return false
-}
-
-/**
- * 获取目录的名称，先获取注释内容，没有描述的注释就获取 className
- */
-fun getFolder(psiClass: PsiClass) = psiClass.childrenDocComment()?.find {
-    it.isCommentData() && it.commentText().isNotBlank()
-}?.commentText() ?: psiClass.name!!
-
-/**
- * 获取 API 名称
- */
-fun getApiName(psiMethod: PsiMethod) = psiMethod.childrenDocComment()?.find {
-    it.isCommentData() && it.commentText().isNotBlank()
-}?.commentText() ?: throw DocBuildFailException("获取 API 名称失败，请检查方法注释是否存在")
-
-/**
- * 获取 MBS 事件名称
- */
-fun getMbsName(psiClass: PsiClass) = psiClass.childrenDocComment()?.find {
-    it.isCommentData()
-}?.commentText() ?: throw DocBuildFailException("获取 MBS 事件名称失败，请检查类注释是否有效")
-
-/**
- * 获取 API 描述
- */
-fun getApiDescription(psiMethod: PsiMethod) = psiMethod.childrenDocComment()?.let {
-    val comments = it.filter { e -> e.isCommentData() }
-    if (comments.size > 1) {
-        return comments[1].commentText()
-    } else {
-        return ""
-    }
-} ?: ""
-
-/**
- * 获取 API 作者
- */
-fun getApiAuthor(psiClass: PsiClass, psiMethod: PsiMethod) = psiMethod.docComment?.let {
-    getApiAuthor(it) ?: getClassAuthor(psiClass)
-} ?: getClassAuthor(psiClass)
-
-/**
- * 获取类注释里的作者
- */
-fun getClassAuthor(psiClass: PsiClass) = psiClass.docComment?.let { getApiAuthor(it) } ?: ""
-
-/**
- * 获取注释里的作者
- */
-fun getApiAuthor(docComment: PsiDocComment) = docComment.findTagByName("author")?.valueElement?.commentText()
-
-/**
- * 是否弃用
- */
-fun isDeprecated(psiClass: PsiClass, psiMethod: PsiMethod) =
-    AnnotationUtil.isAnnotated(psiClass, DEPRECATED, 0)
-            || AnnotationUtil.isAnnotated(psiMethod, DEPRECATED, 0)
-
-/**
- * 是否忽略
- */
-fun isIgnore(psiMethod: PsiMethod) = psiMethod.docComment?.findTagByName("ignore")?.let { true } ?: false
-
-/**
- * 是否不忽略
- */
-fun isNotIgnore(psiMethod: PsiMethod) = !isIgnore(psiMethod)
-
-/**
- * 获取属性名
- */
-fun getFieldName(psiField: PsiField): String {
-    return AnnotationUtil.findAnnotation(psiField, JSON_ALIAS)?.let {
-        AnnotationUtil.getStringAttributeValue(it, "value")
-    } ?: psiField.name
-}
-
-/**
- * 获取 mock 示例值
- */
-fun getMockValue(psiField: PsiField) =
-    psiField.docComment?.findTagByName("mock")?.text?.replace("@mock", "")?.trim()?.ifEmpty { null }
 
 /**
  * 从参数中获取类型
@@ -184,12 +87,12 @@ fun getBody(
             // 替换成真实类型
             fieldType = pt
         }
-        val fieldName = getFieldName(it)
+        val fieldName = it.getFieldName()
         val commonType = project.getService(CommonTypeConvertor::class.java).run {
             convert(fieldType.presentableText)
         }
         // 获取示例值
-        val mockValue = getMockValue(it)
+        val mockValue = it.getMockValue()
         val example = try {
             generateExample(fieldName, commonType, mockValue)
         } catch (e: NumberFormatException) {
@@ -205,7 +108,7 @@ fun getBody(
         params += ApiParam(
             name = fieldName,
             type = commonType,
-            required = AnnotationUtil.isAnnotated(it, REQUIRED, 0),
+            required = it.isAnnotated(REQUIRED),
             maxLength = getMaxLength(it),
             description = it.getFieldDescription() ?: getUniondrugFieldDescription(it, psiType),
             example = example,
@@ -335,7 +238,7 @@ private fun getChildren(
     generics: Map<String, PsiType>,
     parentNode: FieldNode,
 ): List<ApiParam>? {
-    return if (isBaseType(fieldType) || isBaseCollection(fieldType)) {
+    return if (fieldType.isBaseType() || fieldType.isBaseCollection()) {
         null
     } else {
         // 属性上可能有忽略注解
@@ -415,7 +318,7 @@ fun newFiledNode(psiType: PsiType) = psiType.presentableText.run {
  * 获取错误状态码
  */
 fun getErrorParams(psiMethod: PsiMethod): List<ApiErrno> {
-    return psiMethod.docComment?.findTagsByName("errno")?.map { tag ->
+    return psiMethod.findTagsByName("errno")?.map { tag ->
         val errno = tag.valueElement?.commentText() ?: throw DocBuildFailException("请正确定义错误状态码 errno")
         val error = tag.dataElements[1].commentText()
         ApiErrno(errno, error, "")

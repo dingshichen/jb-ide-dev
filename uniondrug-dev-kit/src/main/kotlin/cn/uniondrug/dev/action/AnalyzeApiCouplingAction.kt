@@ -112,7 +112,7 @@ class AnalyzeApiCouplingAction : AnAction() {
                                     method.name
                                 }
                                 path {
-                                    getUrl(project, psiClass, method).substringAfter("turboradio.cn")
+                                    getUrl(psiClass, method).substringAfter("turboradio.cn")
                                 }
                             }
                             result[ownResource] = this

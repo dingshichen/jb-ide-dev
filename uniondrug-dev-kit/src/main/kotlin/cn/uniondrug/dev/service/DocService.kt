@@ -1,9 +1,11 @@
 package cn.uniondrug.dev.service
 
 import cn.uniondrug.dev.Api
+import cn.uniondrug.dev.DocBuildFailException
 import cn.uniondrug.dev.MbsEvent
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
+import cn.uniondrug.dev.psi.*
 import cn.uniondrug.dev.util.*
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileChooser.FileChooser
@@ -32,12 +34,12 @@ class DocService {
      * 构建 Torna API
      */
     fun buildApi(project: Project, psiClass: PsiClass, psiMethod: PsiMethod) = Api(
-        folder = getFolder(psiClass),
-        name = getApiName(psiMethod),
-        description = getApiDescription(psiMethod),
-        author = getApiAuthor(psiClass, psiMethod),
-        url = getUrl(project, psiClass, psiMethod),
-        deprecated = if (isDeprecated(psiClass, psiMethod)) "已废弃（仍然可用，不建议使用）" else null,
+        folder = psiClass.getTitle() ?: throw DocBuildFailException("获取接口目录失败，请检查类注释！"),
+        name = psiMethod.getTitle() ?: throw DocBuildFailException("获取 API 名称失败，请检查方法注释是否存在"),
+        description = psiMethod.getCommentDescription(),
+        author = psiMethod.getAuthor(psiClass),
+        url = getUrl(psiClass, psiMethod),
+        deprecated = if (psiMethod.isDeprecated(psiClass)) "已废弃（仍然可用，不建议使用）" else null,
         httpMethod = getHttpMethod(psiMethod),
         contentType = getContentType(psiMethod),
         requestParams = getRequestBody(project, psiMethod),
@@ -51,7 +53,7 @@ class DocService {
     fun buildMbs(project: Project, psiClass: PsiClass, mbs: String, topic: String, tag: String, author: String?): MbsEvent {
         return PsiElementFactory.getInstance(project).createType(psiClass).run {
             MbsEvent (
-                name = getMbsName(psiClass),
+                name = psiClass.getSimpleTitle() ?: throw DocBuildFailException("获取 MBS 事件名称失败，请检查类注释是否有效"),
                 mbs = mbs,
                 topic = topic,
                 tag = tag,

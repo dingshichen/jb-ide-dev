@@ -80,7 +80,7 @@ data class DocParamSaveCmd(
     var children: MutableList<DocParamSaveCmd>? = null,
 ) {
     var id: String? = null
-    val enumId: String = ""
+    var enumId: String? = null
 
     /** 新增操作方式，0：人工操作，1：开放平台推送, 数据库字段：create_mode  */
     val createMode: Byte = 1
@@ -354,6 +354,7 @@ class TornaDocService {
         saveParams.forEachIndexed { idx, paramCmd ->
             tornaParams?.find { it == paramCmd }?.let {
                 paramCmd.id = it.id
+                paramCmd.enumId = it.enumId
                 paramCmd.children?.let { children ->
                     recursiveFillParamCmd(
                         children,

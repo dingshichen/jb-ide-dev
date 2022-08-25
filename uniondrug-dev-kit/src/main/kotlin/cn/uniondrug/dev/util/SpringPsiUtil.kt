@@ -1,6 +1,9 @@
 /** @author dingshichen */
 package cn.uniondrug.dev.util
 
+import cn.uniondrug.dev.DocBuildFailException
+import cn.uniondrug.dev.psi.findAnnotation
+import cn.uniondrug.dev.psi.isAnnotated
 import com.intellij.codeInsight.AnnotationUtil
 import com.intellij.openapi.project.Project
 import com.intellij.psi.*
@@ -35,22 +38,22 @@ fun isNotSpringMVCMethod(psiMethod: PsiMethod) = !isSpringMVCMethod(psiMethod)
 /**
  * 判断 PSI 方法是否是 SpringMVC 的方法
  */
-fun isSpringMVCMethod(psiMethod: PsiMethod) = AnnotationUtil.isAnnotated(psiMethod, MVC_ANNOTATIONS, 0)
+fun isSpringMVCMethod(psiMethod: PsiMethod) = psiMethod.isAnnotated(MVC_ANNOTATIONS)
 
 /**
  * 判断是不是 FeignClient
  */
-fun isFeignClient(psiClass: PsiClass) = psiClass.isInterface && AnnotationUtil.isAnnotated(psiClass, FEIGN_CLIENT, 0)
+fun isFeignClient(psiClass: PsiClass) = psiClass.isInterface && psiClass.isAnnotated(FEIGN_CLIENT)
 
 /**
  * 获取 feignClient url
  */
-fun getFeignClientUrl(psiClass: PsiClass) = AnnotationUtil.getStringAttributeValue(psiClass.modifierList?.findAnnotation("org.springframework.cloud.openfeign.FeignClient")!!, "url")
+fun getFeignClientUrl(psiClass: PsiClass) = AnnotationUtil.getStringAttributeValue(psiClass.modifierList?.findAnnotation(FEIGN_CLIENT)!!, "url")
 
 /**
  * 获取 feignClient 方法上的 path
  */
-fun getFeignClientMethodPath(psiMethod: PsiMethod): String? = AnnotationUtil.findAnnotation(psiMethod, MVC_ANNOTATIONS)?.let {
+fun getFeignClientMethodPath(psiMethod: PsiMethod): String? = psiMethod.findAnnotation(MVC_ANNOTATIONS)?.let {
     val value = AnnotationUtil.getStringAttributeValue(it, "value")
     if (value != null) {
         return value
@@ -63,12 +66,10 @@ fun getFeignClientMethodPath(psiMethod: PsiMethod): String? = AnnotationUtil.fin
 /**
  * 获取 MVC 接口 url
  */
-fun getUrl(project: Project, psiClass: PsiClass, psiMethod: PsiMethod): String {
-    val classAnnotation = AnnotationUtil.findAnnotation(psiClass, REQUEST_MAPPING)
-    val pathByClass: String? = classAnnotation?.let {
-        getAnnotationStringValue(it, "value") ?: getAnnotationStringValue(it, "path")
-    }
-    val methodAnnotation = AnnotationUtil.findAnnotation(psiMethod, MVC_ANNOTATIONS) ?: throw RuntimeException("获取 API 路径失败")
+fun getUrl(psiClass: PsiClass, psiMethod: PsiMethod): String {
+    val pathByClass = psiClass.findAnnotation(REQUEST_MAPPING)
+        ?.let { getAnnotationStringValue(it, "value") ?: getAnnotationStringValue(it, "path") }
+    val methodAnnotation = psiMethod.findAnnotation(MVC_ANNOTATIONS) ?: throw DocBuildFailException("获取 API 路径失败")
     return methodAnnotation.run {
         val pathByMethod = getAnnotationStringValue(this, "value") ?: getAnnotationStringValue(this, "path")
         pathByClass?.let {
@@ -101,18 +102,17 @@ fun getHttpMethod(psiMethod: PsiMethod): String {
  * TODO 没有参数怎么办
  */
 fun getContentType(psiMethod: PsiMethod) =
-    psiMethod.parameterList.parameters.find { AnnotationUtil.isAnnotated(it, BODY, 0) }
+    psiMethod.parameterList.parameters
+        .find { it.isAnnotated(BODY) }
         ?.let { "application/json" } ?: "application/x-www-form-urlencoded"
 
 /**
  * 查询 RequestBody 参数
  */
 fun getRequestBody(project: Project, psiMethod: PsiMethod) =
-    psiMethod.parameterList.parameters.find {
-        AnnotationUtil.isAnnotated(it, BODY, 0)
-    }?.let {
-        getRequestBody(project, it)
-    }
+    psiMethod.parameterList.parameters
+        .find { it.isAnnotated(BODY) }
+        ?.let { getRequestBody(project, it) }
 
 /**
  * 查询 ResponseBody 参数
@@ -123,9 +123,8 @@ fun getResponseBody(project: Project, psiMethod: PsiMethod) = psiMethod.returnTy
  * 获取属性最大长度
  */
 fun getMaxLength(psiField: PsiField): String {
-    val lengthAnno = AnnotationUtil.findAnnotation(psiField, LENGTH)
-    return lengthAnno?.let {
-        AnnotationUtil.getLongAttributeValue(lengthAnno, "max").toString()
+    return psiField.findAnnotation(LENGTH)?.let {
+        AnnotationUtil.getLongAttributeValue(it, "max").toString()
     } ?: ""
 }
 

@@ -10,8 +10,8 @@ import cn.uniondrug.dev.dialog.showAndGetPushAllDocDialog
 import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
 import cn.uniondrug.dev.notifier.notifyWarn
+import cn.uniondrug.dev.psi.isIgnore
 import cn.uniondrug.dev.service.DocService
-import cn.uniondrug.dev.util.isIgnore
 import cn.uniondrug.dev.util.isSpringMVCMethod
 import com.intellij.notification.BrowseNotificationAction
 import com.intellij.openapi.actionSystem.AnAction
@@ -59,7 +59,7 @@ class PushAllDocAnAction : AnAction() {
                                 psiClass.methods
                                     .filter { it -> isSpringMVCMethod(it) }
                                     .forEach apiForEach@{ psiMethod ->
-                                        if (isIgnore(psiMethod)) {
+                                        if (psiMethod.isIgnore()) {
                                             notifyInfo(project, "接口 ${psiClass.name}#${psiMethod.name} 有标识 @ignore 忽略上传")
                                             return@apiForEach
                                         }
