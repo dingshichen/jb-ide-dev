@@ -149,7 +149,7 @@ object GolangPsiUtil {
         }
         // 结构体名称
         val structName = when (element) {
-            is GoTypeDeclaration -> element.typeSpecList[0].name
+            is GoTypeDeclaration -> element.typeSpecList.firstOrNull()?.name
             is GoTypeSpec -> element.name
             else -> null
         } ?: return null
