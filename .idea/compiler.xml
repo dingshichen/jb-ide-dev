@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.20/lombok-1.18.20.jar" />
+        </processorPath>
+        <module name="uniondrug-jetbrains-kit.uniondrug-dev-kit.test" />
+        <module name="uniondrug-jetbrains-kit.common.test" />
+        <module name="uniondrug-jetbrains-kit.torna-client.test" />
+        <module name="uniondrug-jetbrains-kit.common.main" />
+        <module name="uniondrug-jetbrains-kit.mock.main" />
+        <module name="uniondrug-jetbrains-kit.test" />
+        <module name="uniondrug-jetbrains-kit.mss-client.test" />
+        <module name="uniondrug-jetbrains-kit.torna-client.main" />
+        <module name="uniondrug-jetbrains-kit.mock.test" />
+        <module name="uniondrug-jetbrains-kit.main" />
+        <module name="uniondrug-jetbrains-kit.uniondrug-golang-kit.main" />
+        <module name="uniondrug-jetbrains-kit.mss-client.main" />
+        <module name="uniondrug-jetbrains-kit.uniondrug-golang-kit.test" />
+        <module name="uniondrug-jetbrains-kit.uniondrug-dev-kit.main" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel target="11" />
+  </component>
+</project>

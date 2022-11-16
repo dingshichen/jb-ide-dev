@@ -14,7 +14,7 @@ intellij {
     pluginName.set("Uniondrug Golang Kit")
     type.set("GO")
 //    version.set("2022.1")
-    localPath.set("/Applications/GoLand.app")
+    localPath.set("/Users/dingshichen/Library/Application Support/JetBrains/Toolbox/apps/Goland/ch-0/222.4345.24/GoLand.app")
     plugins.set(listOf("markdown", "org.jetbrains.plugins.go"))
     updateSinceUntilBuild.set(false)
     sameSinceUntilBuild.set(false)
