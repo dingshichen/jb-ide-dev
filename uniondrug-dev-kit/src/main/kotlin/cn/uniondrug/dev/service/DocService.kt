@@ -7,6 +7,7 @@ import cn.uniondrug.dev.notifier.notifyError
 import cn.uniondrug.dev.notifier.notifyInfo
 import cn.uniondrug.dev.psi.*
 import cn.uniondrug.dev.util.*
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
@@ -27,7 +28,7 @@ class DocService {
     companion object {
 
         @JvmStatic
-        fun instance(): DocService = service()
+        fun instance(): DocService = ApplicationManager.getApplication().getService(DocService::class.java)
     }
 
     /**

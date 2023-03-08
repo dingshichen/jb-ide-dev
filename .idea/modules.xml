@@ -3,6 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/uniondrug-jetbrains-kit.iml" filepath="$PROJECT_DIR$/.idea/uniondrug-jetbrains-kit.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mock/uniondrug-jetbrains-kit.mock.main.iml" filepath="$PROJECT_DIR$/.idea/modules/mock/uniondrug-jetbrains-kit.mock.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/torna-client/uniondrug-jetbrains-kit.torna-client.main.iml" filepath="$PROJECT_DIR$/.idea/modules/torna-client/uniondrug-jetbrains-kit.torna-client.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/uniondrug-dev-kit/uniondrug-jetbrains-kit.uniondrug-dev-kit.main.iml" filepath="$PROJECT_DIR$/.idea/modules/uniondrug-dev-kit/uniondrug-jetbrains-kit.uniondrug-dev-kit.main.iml" />
     </modules>
   </component>
 </project>
