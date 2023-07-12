@@ -14,9 +14,9 @@ dependencies {
 
 intellij {
     pluginName.set("Uniondrug Dev Kit")
-//    type.set("IU")
-//    version.set("2022.3")
-    localPath.set("/Users/dingshichen/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-0/223.8617.56/IntelliJ IDEA.app/Contents")
+    type.set("IU")
+    version.set("2022.3")
+//    localPath.set("/Users/dingshichen/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-0/231.9161.38/IntelliJ IDEA.app/Contents")
     plugins.set(listOf("com.intellij.java", "markdown"))
     updateSinceUntilBuild.set(false)
     sameSinceUntilBuild.set(false)

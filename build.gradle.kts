@@ -22,7 +22,6 @@ allprojects {
 
     repositories {
         mavenLocal()
-        maven { url = uri("https://maven.turboradio.cn/repository/ud-release/") }
         maven { url = uri("https://maven.aliyun.com/repository/public") }
         mavenCentral()
     }

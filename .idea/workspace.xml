@@ -6,12 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="9899c55d-2a03-4d79-a6b9-a15a5f2011cc" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/uniondrug-dev-kit/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/uniondrug-dev-kit/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/uniondrug-dev-kit/src/main/kotlin/cn/uniondrug/dev/service/DocService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/uniondrug-dev-kit/src/main/kotlin/cn/uniondrug/dev/service/DocService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/uniondrug-golang-kit/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/uniondrug-golang-kit/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uniondrug-golang-kit/src/main/kotlin/cn/uniondrug/dev/service/DocService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/uniondrug-golang-kit/src/main/kotlin/cn/uniondrug/dev/service/DocService.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,12 +30,7 @@
         </task>
         <projects_view>
           <tree_state>
-            <expand>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="uniondrug-jetbrains-kit" type="f1a62948:ProjectNode" />
-              </path>
-            </expand>
+            <expand />
             <select />
           </tree_state>
         </projects_view>
@@ -45,6 +39,10 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="jar://$APPLICATION_HOME_DIR$/plugins/java/lib/java-impl.jar!/com/intellij/psi/PsiClass.class" root0="SKIP_INSPECTION" />
+    <setting file="jar://$APPLICATION_HOME_DIR$/plugins/java/lib/java-impl.jar!/com/intellij/psi/PsiClassType.class" root0="SKIP_INSPECTION" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -59,14 +57,15 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "master",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
+    "project.structure.last.edited": "模块",
+    "project.structure.proportion": "0.1882217",
+    "project.structure.side.proportion": "0.26621622",
     "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
     "vue.rearranger.settings.migration": "true"
   }
@@ -91,6 +90,7 @@
       <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
+      <ForceTestExec>false</ForceTestExec>
       <method v="2" />
     </configuration>
     <configuration name="jb-ide-dev:uniondrug-dev-kit [prepareSandbox]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
@@ -112,6 +112,7 @@
       <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
+      <ForceTestExec>false</ForceTestExec>
       <method v="2" />
     </configuration>
     <configuration name="jb-ide-dev:uniondrug-dev-kit [publishPlugin]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
@@ -133,12 +134,13 @@
       <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
+      <ForceTestExec>false</ForceTestExec>
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.jb-ide-dev:uniondrug-dev-kit [prepareSandbox]" />
         <item itemvalue="Gradle.jb-ide-dev:uniondrug-dev-kit [publishPlugin]" />
+        <item itemvalue="Gradle.jb-ide-dev:uniondrug-dev-kit [prepareSandbox]" />
         <item itemvalue="Gradle.jb-ide-dev:uniondrug-dev-kit [buildPlugin]" />
       </list>
     </recent_temporary>
@@ -172,8 +174,33 @@
       <workItem from="1674870598742" duration="38000" />
       <workItem from="1674999157177" duration="30000" />
       <workItem from="1675393990136" duration="2000" />
-      <workItem from="1678247387530" duration="1805000" />
+      <workItem from="1678247387530" duration="2047000" />
+      <workItem from="1678327354321" duration="217000" />
+      <workItem from="1678887090566" duration="368000" />
+      <workItem from="1679405171565" duration="3578000" />
+      <workItem from="1679453248053" duration="4871000" />
+      <workItem from="1679562196459" duration="238000" />
+      <workItem from="1679987998911" duration="7911000" />
+      <workItem from="1680008466412" duration="633000" />
+      <workItem from="1680169027540" duration="1425000" />
+      <workItem from="1680240644763" duration="26000" />
+      <workItem from="1680600472802" duration="1054000" />
+      <workItem from="1680602577801" duration="27000" />
+      <workItem from="1680602802710" duration="9000" />
+      <workItem from="1680697858845" duration="14000" />
+      <workItem from="1683625696331" duration="26000" />
+      <workItem from="1683628318298" duration="252000" />
+      <workItem from="1687335441678" duration="161000" />
+      <workItem from="1689127685261" duration="4706000" />
     </task>
+    <task id="LOCAL-00001" summary="简单更新一下，发一个新的适配">
+      <created>1678255071052</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1678255071052</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -189,5 +216,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="简单更新一下，发一个新的适配" />
+    <option name="LAST_COMMIT_MESSAGE" value="简单更新一下，发一个新的适配" />
   </component>
 </project>

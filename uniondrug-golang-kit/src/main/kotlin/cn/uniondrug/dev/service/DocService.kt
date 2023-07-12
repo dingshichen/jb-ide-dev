@@ -15,6 +15,7 @@ import cn.uniondrug.dev.util.humpToPath
 import com.goide.psi.GoMethodDeclaration
 import com.goide.psi.GoTypeDeclaration
 import com.goide.psi.GoTypeSpec
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
@@ -34,7 +35,7 @@ class DocService {
     companion object {
 
         @JvmStatic
-        fun instance(): DocService = service()
+        fun instance(): DocService = ApplicationManager.getApplication().getService(DocService::class.java)
     }
 
 
